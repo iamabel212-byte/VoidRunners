@@ -6317,50 +6317,7 @@ if(_clClose) safeTap(_clClose, function(){
 });
 // ══ END CHANNEL LOG ═══════════════════════════════════════════════════════
 
-  <!-- ========= MUSIC SYSTEM (PASTE HERE) ========= -->
-<audio id="music" preload="auto" loop></audio>
 
-<script>
-  // ====== MUSIC FILES GO HERE ======
-  // IMPORTANT: your file is named "Galaxy1.mp3" with a capital G
-  const MUSIC = {
-    galaxy1: "assets/audio/Galaxy1.mp3"
-  };
-
-  const musicEl = document.getElementById("music");
-
-  function playMusic(key) {
-    const src = MUSIC[key];
-    if (!src) {
-      console.warn("Music key not found:", key);
-      return;
-    }
-    if (musicEl.dataset.key === key) return;
-
-    musicEl.dataset.key = key;
-    musicEl.src = src;
-    musicEl.volume = 0.35;
-
-    musicEl.play().catch(() => {
-      console.log("Audio blocked until user clicks/taps once.");
-    });
-  }
-
-  function stopMusic() {
-    musicEl.pause();
-    musicEl.removeAttribute("src");
-    musicEl.load();
-    musicEl.dataset.key = "";
-  }
-
-  // iOS/mobile unlock (first tap enables audio)
-  function unlockAudioOnce() {
-    musicEl.play().then(() => musicEl.pause()).catch(() => {});
-    window.removeEventListener("pointerdown", unlockAudioOnce);
-  }
-  window.addEventListener("pointerdown", unlockAudioOnce, { once: true });
-</script>
-<!-- ========= END MUSIC SYSTEM ========= -->
 
 </script>
 
