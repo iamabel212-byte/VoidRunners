@@ -1954,6 +1954,37 @@ const GALAXIES=[
   {name:'MIRROR EXPANSE',   sky:'#020208',nebHue:180,starTint:[180,255,220], acc:'#aaffdd',diff:11.0, twist:'mirror',       requiredKillsToBoss:1,   bossIcon:'8'},
   {name:'THE VOID HEART',   sky:'#000000',nebHue:0,  starTint:[255,255,255], acc:'#ffffff',diff:14.0, twist:'voidheart',    requiredKillsToBoss:4160,bossIcon:'9'},
 ];
+// Regular-enemy balance is intentionally separate from the legacy galaxy
+// multiplier used by bosses and authored encounters. This prevents late-game
+// movement speed from scaling at the same rate as health.
+const GALAXY_COMBAT_BALANCE=[
+  {hp:1.00,dmg:1.00,spd:1.00,projectile:1.00,spawn:1.00},
+  {hp:1.55,dmg:1.25,spd:1.08,projectile:1.05,spawn:.97},
+  {hp:2.00,dmg:1.50,spd:1.15,projectile:1.10,spawn:.94},
+  {hp:2.50,dmg:1.80,spd:1.22,projectile:1.18,spawn:.91},
+  {hp:3.00,dmg:2.10,spd:1.28,projectile:1.24,spawn:.92},
+  {hp:3.50,dmg:2.40,spd:1.34,projectile:1.30,spawn:.86},
+  {hp:4.20,dmg:2.85,spd:1.42,projectile:1.38,spawn:.82},
+  {hp:4.80,dmg:3.20,spd:1.48,projectile:1.44,spawn:.80},
+  {hp:5.40,dmg:3.55,spd:1.54,projectile:1.50,spawn:.78},
+  {hp:6.10,dmg:3.95,spd:1.60,projectile:1.56,spawn:.76}
+];
+function getGalaxyCombatBalance(idx){
+  idx=Math.max(0,Math.min(GALAXY_COMBAT_BALANCE.length-1,Number(idx)||0));
+  return GALAXY_COMBAT_BALANCE[idx];
+}
+function normalizeRegularEnemyForGalaxy(enemy,idx){
+  if(!enemy||enemy.isBoss||enemy.isHerald||enemy._galaxyBalanceApplied)return;
+  var legacy=(GALAXIES[idx]||GALAXIES[0]).diff||1;
+  var bal=getGalaxyCombatBalance(idx);
+  var hpRatio=enemy.maxHp>0?enemy.hp/enemy.maxHp:1;
+  enemy.maxHp=Math.max(1,enemy.maxHp*(bal.hp/legacy));
+  enemy.hp=Math.max(1,enemy.maxHp*hpRatio);
+  enemy.dmg=Math.max(1,enemy.dmg*(bal.dmg/legacy));
+  enemy.spd=Math.max(1,enemy.spd*(bal.spd/legacy));
+  enemy._galaxyBalanceApplied=true;
+}
+
 let currentGalaxy=0,warpAnimating=false;
 
 function getEffectiveBossKillRequirement(galaxyOrIndex){
@@ -8778,7 +8809,7 @@ const PICKUPS=[
       if(activeSkin==='specter'&&Math.random()<0.2){var bonus=3+Math.floor(Math.random()*5);crystals+=bonus;lsS('vr_crystals',crystals);fmsg(svgIcon('crystal')+' SILVER LINING +'+bonus,'#c0c0c0');}}}}},
   {id:'adr',    icon:'lightning',label:'OVERDRIVE',       color:'#ffcc22',dur:10, desc:'Fire rate, bullet speed, and damage all increase dramatically',   onGet:function(g){g.adrActive=true;},         onEnd:function(g){g.adrActive=false;}},
   {id:'vamp',   icon:'vamp',     label:'VOID DRAIN',      color:'#cc44ff',dur:10, desc:'Every kill heals you for 5 HP',                                   onGet:function(g){g.vampActive=true;},        onEnd:function(g){g.vampActive=false;}},
-  {id:'cryst',  icon:'crystal',  label:'+15 CRYSTALS',    color:'#00f5ff',dur:0,  desc:'Instantly grants 15 crystals to spend in the loadout',            onGet:function(g){crystals+=15;lsS('vr_crystals',crystals);fmsg('💎 +15 CRYSTALS','#00f5ff');}},
+  {id:'cryst',  icon:'crystal',  label:'+15 CRYSTALS',    color:'#00f5ff',dur:0,  desc:'Instantly grants 15 crystals to spend in the loadout',            onGet:function(g){crystals+=15;_runStats.addGems(15,'pickup');lsS('vr_crystals',crystals);fmsg('💎 +15 CRYSTALS','#00f5ff');}},
   {id:'gemx2',  icon:'gemx2',    label:'GEM RUSH x2',     color:'#00ffcc',dur:10, desc:'All crystal drops are doubled for 10 seconds',                    onGet:function(g){g.gemMult=2;},             onEnd:function(g){g.gemMult=1;}},
   {id:'gemx3',  icon:'gemx3',    label:'GEM SURGE x3',    color:'#44ddff',dur:10, desc:'All crystal drops are tripled for 10 seconds',                    onGet:function(g){g.gemMult=3;},             onEnd:function(g){g.gemMult=1;}},
   {id:'gemx5',  icon:'gemx5',    label:'CRYSTAL NOVA x5', color:'#ffffff',dur:10, desc:'All crystal drops are multiplied by 5 — extremely rare',           onGet:function(g){g.gemMult=5;},             onEnd:function(g){g.gemMult=1;}},
@@ -14981,83 +15012,89 @@ var G=null;
 
 // ─── RUN STATS TRACKER ───────────────────────────────────────────────────────
 var _runStats = (function(){
-  var STORAGE_KEY = 'vr_runStats';
-  var OVERLAY_KEY = 'vr_runStatsOverlay';
-
-  function load(){
-    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{runs:[],overlayOn:false}; }
-    catch(e){ return {runs:[],overlayOn:false}; }
-  }
-  function save(data){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){} }
-
-  // Called at run start — reset current run tracking
-  var _currentRun = null;
+  var STORAGE_KEY='vr_runStats',OVERLAY_KEY='vr_runStatsOverlay',MAX_RUNS=10;
+  var _currentRun=null,_lastHp=null,_lastShield=null,_lastBossAlive=false,_lastWallet=0;
+  function emptyData(){return {version:3,runs:[],overlayOn:false};}
+  function load(){try{var d=JSON.parse(localStorage.getItem(STORAGE_KEY))||emptyData();if(!Array.isArray(d.runs))d.runs=[];d.version=3;return d;}catch(e){return emptyData();}}
+  function save(d){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch(e){}}
+  function galaxyKey(i){return i===-2?'s0':'g'+Math.max(0,i||0);}
+  function snapshot(){var o={};try{for(var k in permRanks)o[k]=permRanks[k]||0;}catch(e){}return o;}
   function startRun(){
-    _currentRun = { gems:0, deaths:{}, galaxy: currentGalaxy };
+    _currentRun={version:3,startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
+      outcome:null,galaxiesVisited:[],gems:0,gemsByGalaxy:{},crystalSources:{},asteroidsMined:0,
+      asteroidBase:0,asteroidBonus:0,walletStart:typeof crystals!=='undefined'?crystals:0,walletEnd:null,walletDelta:0,
+      deaths:{},deathEvents:[],damageDealt:0,bossDamage:0,damageTaken:0,shieldDamage:0,lowestHullPct:100,
+      revives:0,checkpointLoads:0,bossEncounters:0,bossFights:[],beam:typeof activeBeam!=='undefined'?activeBeam:null,
+      ship:typeof activeSkin!=='undefined'?activeSkin:null,permanentRanks:snapshot()};
+    _lastHp=null;_lastShield=null;_lastBossAlive=false;_lastWallet=_currentRun.walletStart;onGalaxyChange(currentGalaxy);
   }
-
-  // Called when player enters a new galaxy
-  function onGalaxyChange(gIdx){
-    if(_currentRun) _currentRun.galaxy = gIdx;
+  function onGalaxyChange(i){if(!_currentRun)return;_currentRun.galaxy=i;var k=galaxyKey(i);if(_currentRun.galaxiesVisited.indexOf(k)<0)_currentRun.galaxiesVisited.push(k);}
+  function addGems(n,source,meta){
+    if(!_currentRun)return;n=Math.max(0,Math.round(Number(n)||0));source=source||'unknown';
+    var k=galaxyKey(currentGalaxy);_currentRun.gems+=n;_currentRun.gemsByGalaxy[k]=(_currentRun.gemsByGalaxy[k]||0)+n;
+    _currentRun.crystalSources[source]=(_currentRun.crystalSources[source]||0)+n;
+    if(source==='asteroid'){_currentRun.asteroidsMined++;var base=Math.max(0,Math.round(meta&&meta.base||n));_currentRun.asteroidBase+=base;_currentRun.asteroidBonus+=Math.max(0,n-base);}
   }
-
-  // Called when a crystal is picked up mid-run
-  function addGems(n){
-    if(!_currentRun) return;
-    var gKey = 'g'+(currentGalaxy||0);
-    _currentRun.gems = (_currentRun.gems||0) + n;
-    if(!_currentRun.gemsByGalaxy) _currentRun.gemsByGalaxy = {};
-    _currentRun.gemsByGalaxy[gKey] = (_currentRun.gemsByGalaxy[gKey]||0) + n;
+  function markDanger(source,detail,amount){
+    if(_currentRun)_currentRun.lastDanger={source:source||'unknown',detail:detail||'',amount:Math.round((amount||0)*10)/10,at:Date.now(),galaxy:galaxyKey(currentGalaxy),wave:G&&G.wave||0};
   }
-
-  // Called on death
+  function inferDeath(){
+    var source='unknown',detail='',boss=null,p=G&&G.player;
+    if(G&&G.enemies)for(var i=0;i<G.enemies.length;i++)if(G.enemies[i].isBoss){boss=G.enemies[i];break;}
+    if(_currentRun&&_currentRun.lastDanger&&Date.now()-_currentRun.lastDanger.at<2500){source=_currentRun.lastDanger.source;detail=_currentRun.lastDanger.detail;}
+    else if(boss){source='boss';detail=boss.name||boss.type||'boss attack';}
+    else if(G&&G.bullets&&p){var near=null,nd=Infinity;for(var j=0;j<G.bullets.length;j++)if(G.bullets[j].isEnemy){var dx=G.bullets[j].x-p.x,dy=G.bullets[j].y-p.y,d=Math.sqrt(dx*dx+dy*dy);if(d<nd){nd=d;near=G.bullets[j];}}if(near&&nd<180){source='enemy projectile';detail=near.source||near.type||near.color||'';}}
+    return {source:source,detail:detail,boss:boss&&(boss.name||boss.type)||null,phase:boss&&(boss.architectPhase||boss.phase)||null};
+  }
   function onDeath(){
-    if(!_currentRun) return;
-    var gKey = 'g'+(currentGalaxy||0);
-    if(!_currentRun.deaths) _currentRun.deaths = {};
-    _currentRun.deaths[gKey] = (_currentRun.deaths[gKey]||0) + 1;
+    if(!_currentRun)return;var k=galaxyKey(currentGalaxy),c=inferDeath(),p=G&&G.player||{};
+    _currentRun.deaths[k]=(_currentRun.deaths[k]||0)+1;_currentRun.outcome='death';
+    _currentRun.deathEvents.push({galaxy:k,wave:G&&G.wave||0,kills:G&&G.kills||0,seconds:Math.round(G&&G.time||0),
+      source:c.source,detail:c.detail,boss:c.boss,phase:c.phase,checkpoint:!!(G&&G._loadedFromCheckpoint),
+      ship:typeof activeSkin!=='undefined'?activeSkin:null,beam:typeof activeBeam!=='undefined'?activeBeam:null,
+      hull:Math.max(0,Math.round(p.hp||0)),maxHull:Math.round(p.maxHp||0),shield:Math.round(p.shield&&p.shield.hp||0)});
   }
-
-  // Called at gameOver to finalize and save run
-  function endRun(totalGems){
-    if(!_currentRun) return;
-    _currentRun.gems = totalGems;
-    _currentRun.ts = Date.now();
-    var data = load();
-    data.runs.push(_currentRun);
-    if(data.runs.length > 200) data.runs = data.runs.slice(-200); // keep last 200 runs
-    save(data);
-    _currentRun = null;
+  function onRevive(){if(_currentRun)_currentRun.revives++;}
+  function onCheckpointLoad(){if(_currentRun)_currentRun.checkpointLoads++;}
+  function recordDamage(d,e){if(!_currentRun||!isFinite(d)||d<=0)return;var a=Math.min(Math.max(0,e&&e.hp||d),d);_currentRun.damageDealt+=a;if(e&&e.isBoss)_currentRun.bossDamage+=a;}
+  function tick(dt,g,p){
+    if(!_currentRun||!g||!p)return;_currentRun.duration=g.time||(_currentRun.duration+dt);
+    _currentRun.kills=Math.max(_currentRun.kills||0,g.kills||0);_currentRun.maxWave=Math.max(_currentRun.maxWave||1,g.wave||1);
+    _currentRun.maxEnemies=Math.max(_currentRun.maxEnemies||0,(g.enemies||[]).length);
+    _currentRun.lowestHullPct=Math.min(_currentRun.lowestHullPct,Math.max(0,Math.round(p.hp/Math.max(1,p.maxHp)*1000)/10));
+    if(_lastHp!==null&&p.hp<_lastHp)_currentRun.damageTaken+=_lastHp-p.hp;
+    var sh=p.shield?p.shield.hp:0;if(_lastShield!==null&&sh<_lastShield)_currentRun.shieldDamage+=_lastShield-sh;
+    _lastHp=p.hp;_lastShield=sh;
+    if(g.bossAlive&&!_lastBossAlive){_currentRun.bossEncounters++;_currentRun._bossStartedAt=g.time||0;}
+    else if(!g.bossAlive&&_lastBossAlive&&_currentRun._bossStartedAt!==undefined){_currentRun.bossFights.push({galaxy:g.galaxy||0,seconds:Math.max(0,(g.time||0)-_currentRun._bossStartedAt),defeated:!!g.bossFought});delete _currentRun._bossStartedAt;}
+    _lastBossAlive=!!g.bossAlive;if(typeof crystals!=='undefined')_lastWallet=crystals;
   }
-
-  // Get summary stats
+  function endRun(unused,outcome){
+    if(!_currentRun)return;if(outcome)_currentRun.outcome=outcome;_currentRun.endedAt=Date.now();_currentRun.outcome=_currentRun.outcome||'ended';
+    _currentRun.walletEnd=typeof crystals!=='undefined'?crystals:_lastWallet;_currentRun.walletDelta=_currentRun.walletEnd-_currentRun.walletStart;
+    _currentRun.reportedVsWallet=_currentRun.walletDelta-_currentRun.gems;
+    if(_currentRun.asteroidsMined)_currentRun.avgCrystalsPerAsteroid=Math.round((_currentRun.crystalSources.asteroid||0)/_currentRun.asteroidsMined*10)/10;
+    delete _currentRun._bossStartedAt;delete _currentRun.lastDanger;
+    var d=load();d.runs.push(_currentRun);if(d.runs.length>MAX_RUNS)d.runs=d.runs.slice(-MAX_RUNS);save(d);_currentRun=null;
+  }
   function getSummary(){
-    var data = load();
-    var runs = data.runs;
-    if(!runs.length) return null;
-    var totalGems = 0, gemsByGalaxy = {}, deathsByGalaxy = {};
-    runs.forEach(function(r){
-      totalGems += (r.gems||0);
-      if(r.gemsByGalaxy){ for(var k in r.gemsByGalaxy){ gemsByGalaxy[k]=(gemsByGalaxy[k]||0)+r.gemsByGalaxy[k]; } }
-      if(r.deaths){ for(var k in r.deaths){ deathsByGalaxy[k]=(deathsByGalaxy[k]||0)+r.deaths[k]; } }
-    });
-    var n = runs.length;
-    return {
-      runCount: n,
-      avgGems: Math.round(totalGems/n),
-      gemsByGalaxy: gemsByGalaxy,
-      deathsByGalaxy: deathsByGalaxy,
-      avgGemsByGalaxy: (function(){ var o={}; for(var k in gemsByGalaxy) o[k]=Math.round(gemsByGalaxy[k]/n); return o; })(),
-      avgDeathsByGalaxy: (function(){ var o={}; for(var k in deathsByGalaxy) o[k]=Math.round((deathsByGalaxy[k]/n)*10)/10; return o; })(),
-    };
-  }
-
-  function isOverlayOn(){ var d=load(); return !!d.overlayOn; }
-  function setOverlay(on){ var d=load(); d.overlayOn=on; save(d); }
-  function clearAll(){ save({runs:[],overlayOn:isOverlayOn()}); }
-
-  return { startRun:startRun, onGalaxyChange:onGalaxyChange, addGems:addGems, onDeath:onDeath, endRun:endRun, getSummary:getSummary, isOverlayOn:isOverlayOn, setOverlay:setOverlay, clearAll:clearAll, getCurrent:function(){ return _currentRun; } };
-})();
+    var runs=load().runs;if(!runs.length)return null;var gems=0,time=0,dealt=0,taken=0,gbg={},dbg={},src={},deathCauses={};
+    runs.forEach(function(r){gems+=r.gems||0;time+=r.duration||0;dealt+=r.damageDealt||0;taken+=r.damageTaken||0;
+      for(var k in r.gemsByGalaxy||{})gbg[k]=(gbg[k]||0)+r.gemsByGalaxy[k];for(var d in r.deaths||{})dbg[d]=(dbg[d]||0)+r.deaths[d];
+      for(var s in r.crystalSources||{})src[s]=(src[s]||0)+r.crystalSources[s];
+      (r.deathEvents||[]).forEach(function(e){var c=e.source+(e.detail?' · '+e.detail:'');deathCauses[c]=(deathCauses[c]||0)+1;});
+    });var n=runs.length;return {runCount:n,avgGems:Math.round(gems/n),avgSeconds:Math.round(time/n),avgDamageDealt:Math.round(dealt/n),avgDamageTaken:Math.round(taken/n),gemsByGalaxy:gbg,deathsByGalaxy:dbg,crystalSources:src,deathCauses:deathCauses,
+      avgGemsByGalaxy:(function(){var o={};for(var k in gbg)o[k]=Math.round(gbg[k]/n);return o;})(),
+      avgDeathsByGalaxy:(function(){var o={};for(var k in dbg)o[k]=Math.round(dbg[k]/n*10)/10;return o;})()};}
+  function isOverlayOn(){return !!load().overlayOn;}function setOverlay(on){var d=load();d.overlayOn=on;save(d);}
+  function clearAll(){var on=isOverlayOn(),d=emptyData();d.overlayOn=on;save(d);}
+  function getRuns(){return load().runs.slice().reverse();}
+  function exportData(){var d=JSON.parse(JSON.stringify(load()));if(_currentRun)d.currentRun=JSON.parse(JSON.stringify(_currentRun));return d;}
+  function endTest(){if(!_currentRun||!G)return false;endRun(null,'test ended');G.running=false;cleanupAllOverlays();document.getElementById('devPanel').style.display='none';showMainMenu();playMenuMusic();return true;}
+  window.getBalanceTelemetry=exportData;window.copyBalanceTelemetry=function(){var t=JSON.stringify(exportData(),null,2);if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t);return t;};
+  window.downloadBalanceTelemetry=function(){var t=JSON.stringify(exportData(),null,2),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));a.download='void-runners-telemetry-'+Date.now()+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);};
+  return {startRun:startRun,onGalaxyChange:onGalaxyChange,addGems:addGems,markDanger:markDanger,onDeath:onDeath,onRevive:onRevive,onCheckpointLoad:onCheckpointLoad,recordDamage:recordDamage,tick:tick,endRun:endRun,getSummary:getSummary,isOverlayOn:isOverlayOn,setOverlay:setOverlay,clearAll:clearAll,exportData:exportData,getRuns:getRuns,endTest:endTest,getCurrent:function(){return _currentRun;}};
+})()
 // Aetherwing passive: phase shift + ethereal form
 function awDmg(dmg,p){
   // ── Amplifier: Dodge chance ──
@@ -15183,7 +15220,7 @@ function newGame(){
     _shockwaveBonusR:0,supernovaActive:null,
     activeBuffs:[],bullets:[],enemies:[],orbs:[],particles:[],worldPickups:[],
     liveAsteroids:[],gemMult:1,galaxy:currentGalaxy,
-    spawnT:0,spawnRate:currentGalaxy===5?1.12:1.4,pickupT:0,pickupInterval:10,
+    spawnT:0,spawnRate:1.4*getGalaxyCombatBalance(currentGalaxy).spawn,pickupT:0,pickupInterval:10,
     joystick:{dx:0,dy:0},killStreak:0,killStreakT:0,bossAlive:false,bossFought:false,crystalsRun:0,
     miningLaser:null,killsForBoss:0,eliteTimer:120,_heraldAlive:false,_heraldFought:false,_heraldResumeTimer:0,
     
@@ -16789,6 +16826,7 @@ function hitE(g,e,dmg){
       }
     }
   }
+  _runStats.recordDamage(dmg,e);
   e.hp-=dmg;e.flashTimer=.1;
   // ── Amplifier: Lifesteal ──
 
@@ -16906,7 +16944,7 @@ function hitE(g,e,dmg){
       }
       document.getElementById('bb').style.display='none';
       for(var i=0;i<22;i++){(function(ii){setTimeout(function(){burst(g,e.x+(Math.random()-.5)*100,e.y+(Math.random()-.5)*100,e.color,20,250);},ii*70);})(i);}
-      var co=e.coins||25;crystals+=co;lsS('vr_crystals',crystals);g.crystalsRun+=co;fmsg('OVERLORD SLAIN +'+co+' CRYSTALS','#ffd700');
+      var co=e.coins||25;crystals+=co;_runStats.addGems(co,'boss');lsS('vr_crystals',crystals);g.crystalsRun+=co;fmsg('OVERLORD SLAIN +'+co+' CRYSTALS','#ffd700');
       incLS('bossKills');
       incLS('galaxiesConquered');
       // Boss ore bonus
@@ -16977,7 +17015,7 @@ function hitE(g,e,dmg){
         if(e.isElite) _crystDrop*=3;
         _crystDrop=Math.round(_crystDrop*(g.gemMult||1)*(g._relicGemMult||1)*getVoidMult('vp_crystal')*(1+(g._ampCrystal||0)+(g._ampCrystalSoul||0)));
         if(_crystDrop>0){
-          crystals+=_crystDrop;lsS('vr_crystals',crystals);g.crystalsRun+=_crystDrop;triggerCrystalPop();
+          crystals+=_crystDrop;_runStats.addGems(_crystDrop,e.isElite?'elite':'enemy');lsS('vr_crystals',crystals);g.crystalsRun+=_crystDrop;triggerCrystalPop();
           incLS('gemsCollected',_crystDrop);
           fmsg(svgIcon('crystal')+' +'+_crystDrop,'#00f5ff');
           for(var _cpi=0;_cpi<Math.min(_crystDrop,4);_cpi++) g.particles.push({type:'gem',x:e.x+(Math.random()-.5)*30,y:e.y+(Math.random()-.5)*30,vx:(Math.random()-.5)*60,vy:(Math.random()-.5)*60,life:.7,sz:4,color:'#00f5ff'});
@@ -17097,7 +17135,7 @@ function hitE(g,e,dmg){
           fmsg('MIRROR DETONATION!','#ffaacc');
         }
       }
-      if(e.isElite){var ec=Math.round((30+Math.floor(Math.random()*30))*((typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.20,prestigeCount),4.0):1));crystals+=ec;lsS('vr_crystals',crystals);triggerCrystalPop();fmsg(svgIcon('crown')+' ELITE SLAIN +'+ec+' CRYSTALS','#ffd700');burst(g,e.x,e.y,'#ffd700',20,160);}
+      if(e.isElite){var ec=Math.round((30+Math.floor(Math.random()*30))*((typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.20,prestigeCount),4.0):1));crystals+=ec;_runStats.addGems(ec,'elite');lsS('vr_crystals',crystals);triggerCrystalPop();fmsg(svgIcon('crown')+' ELITE SLAIN +'+ec+' CRYSTALS','#ffd700');burst(g,e.x,e.y,'#ffd700',20,160);}
       // Relic: ring resonance
       if(g._ringResonance>0&&Math.random()<0.25*g._ringResonance){g.particles.push({type:'ring',x:p.x,y:p.y,radius:0,maxR:120+g._ringResonance*30,life:.5,maxLife:.5,color:'#9b59ff'});for(var ri=0;ri<g.enemies.length;ri++){if(!g.enemies[ri].isBoss&&dst(p,g.enemies[ri])<140)hitE(g,g.enemies[ri],40*g._ringResonance);}}
       // Relic: spiral core — bonus XP orb
@@ -17224,6 +17262,7 @@ function update(dt){
   _diagUpdateCount++;
   var g=G;g.time+=dt;g.waveTimer+=dt;
   var p=g.player,c=chaos();
+  _runStats.tick(dt,g,p);
   // Dev Room: keep all enemies frozen if freeze toggle is on
   if(window._devRoom && window._drFreeze && g.enemies){
     for(var _dfi=0;_dfi<g.enemies.length;_dfi++){ g.enemies[_dfi].frozen=9999; }
@@ -18661,6 +18700,12 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     }
     for(var bi=g.bullets.length-1;bi>=0;bi--){
     var b=g.bullets[bi];
+    // Regular-enemy projectile pressure rises gently by galaxy. Boss patterns
+    // retain their authored speeds for individual encounter tuning.
+    if(b.isEnemy&&!b._galaxyProjectileScaled&&!g.bossAlive){
+      var _gbProj=getGalaxyCombatBalance(g.galaxy||0).projectile;
+      b.vx*=_gbProj;b.vy*=_gbProj;b._galaxyProjectileScaled=true;
+    }
     if(b.homing&&b.target&&g.enemies.indexOf(b.target)>=0){var ha=Math.atan2(b.target.y-b.y,b.target.x-b.x),hs=Math.sqrt(b.vx*b.vx+b.vy*b.vy);b.vx+=(Math.cos(ha)*hs-b.vx)*.07;b.vy+=(Math.sin(ha)*hs-b.vy)*.07;}
     // Chain bullet: seek nearest unhit enemy after hitting one
     // ── Chain Arc: on hit spawn next chain bolt to nearest unvisited enemy ──
@@ -18804,6 +18849,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         if(b.freezing&&p.invincible<=0){g._freezePlayerTimer=2;p.spd*=0.25;setTimeout(function(){if(G&&G.player)G.player.spd=G.player.spd*4;},2000);fmsg('FROZEN','#88ddff');}
         if(b.isLash){g._lashSlowTimer=2;fmsg('SLOWED','#aa44ff');burst(g,p.x,p.y,'#aa44ff',6,50);}
         if(p.shield&&p.shield.hp>0){
+          _runStats.markDanger('enemy projectile',b.source||b.type||b.color||'projectile',b.dmg);
           var absorbed2=Math.min(p.shield.hp,b.dmg);
           p.shield.hp-=absorbed2;p.shield.regenTimer=0;burst(g,p.x,p.y,'#33aaff',4,60);
           var overflow2=b.dmg-absorbed2;
@@ -18840,7 +18886,9 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
 
   // Update enemies
   for(var eni=g.enemies.length-1;eni>=0;eni--){
-    var en=g.enemies[eni];if(en.flashTimer>0)en.flashTimer-=dt;
+    var en=g.enemies[eni];
+    if(!en.isBoss&&!en.isHerald)normalizeRegularEnemyForGalaxy(en,en.galaxy===undefined?(g.galaxy||0):en.galaxy);
+    if(en.flashTimer>0)en.flashTimer-=dt;
     // Nova stun — blocks movement and AI
     if(en._stunTimer>0){en._stunTimer-=dt;if(en._stunTimer<=0){en._novaStunned=false;}else{continue;}}
     // Burn DoT from R5 nova
@@ -21400,6 +21448,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       }
     }
     if(p.invincible<=0&&dst(p,en)<p.r+en.r){
+      _runStats.markDanger(en.isBoss?'boss contact':'enemy contact',en.name||en.type||en.aiType||'contact',en.dmg||0);
       var dmgAmt=(en.isBoss?en.dmg*dt*2:en.dmg)*(1-(g._dmgReduction||0));
       if(p.shield&&p.shield.hp>0){
         // Shield fully absorbs ALL damage until depleted
@@ -21444,7 +21493,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         SFX.asteroidBreak();
         var gems=Math.ceil(mAst.gemVal*(g.gemMult||1));
         if(g.galaxy===-2) gems=2;
-        crystals+=Math.round(gems*getVoidMult('vp_crystal')*(1+(G._ampCrystal||0)+(G._ampCrystalSoul||0)));lsS('vr_crystals',crystals);if(crystals>=40)setTimeout(tutCheckPauseTip,500);g.crystalsRun+=gems;triggerCrystalPop();
+        var _minedPaid=Math.round(gems*getVoidMult('vp_crystal')*(1+(G._ampCrystal||0)+(G._ampCrystalSoul||0)));crystals+=_minedPaid;_runStats.addGems(_minedPaid,'asteroid',{base:gems});lsS('vr_crystals',crystals);if(crystals>=40)setTimeout(tutCheckPauseTip,500);g.crystalsRun+=gems;triggerCrystalPop();
         // Ore drop (handled fully by dropOre below)
         incLS('gemsCollected',gems);incLS('asteroidsDestroyed');
         dropOre(g, mAst.x, mAst.y);
@@ -32479,6 +32528,7 @@ function restoreBossCheckpoint(){
   // Death can leave a queued loop marked active even though it has already
   // stopped rendering. Force one clean restart after all layers are visible.
   last=0;loopRunning=false;safeRAF();
+  _runStats.onCheckpointLoad();
   return true;
 }
 
@@ -32556,6 +32606,7 @@ function tryResurrect(){
     lsS('vr_voidKeys', voidKeys);
     updateKeyHUD();
     _resurrectCount++;
+    _runStats.onRevive();
     // Revive player
     G.player.hp = G.player.maxHp;
     G.player.invincible = 3.0; // 3s invincibility
@@ -32713,7 +32764,7 @@ function gameOver(){
   document.getElementById('pauseBtn').style.display='none';
   document.getElementById('pauseMenu').style.display='none';
   var _bb=document.getElementById('bb');if(_bb)_bb.style.display='none';
-  var earned=G.crystalsRun+Math.floor(G.kills/5);crystals+=earned;lsS('vr_crystals',crystals);
+  var earned=G.crystalsRun+Math.floor(G.kills/5);crystals+=earned;_runStats.addGems(earned,'end of run');lsS('vr_crystals',crystals);
   G._deathEarned=earned;
   _runStats.endRun(G.crystalsRun);
   // Void gift — guarantee 60 crystals on first death so player can buy Pulse Laser
@@ -34869,6 +34920,39 @@ function _openDevPanelInner(panel, content){
     });
     content2.appendChild(clearRow);
     panel2.style.display = 'flex';
+  }));
+
+
+
+  // Mobile balance telemetry controls
+  statsRows.push(devRow('CURRENT / RECENT REPORTS','#44ddff',function(){
+    var panel2=document.getElementById('devPanel'),content2=document.getElementById('devContent');content2.innerHTML='';
+    function addLine(label,value,color){var x=document.createElement('div');x.style.cssText='padding:10px 12px;border-bottom:1px solid rgba(68,221,255,.09);display:flex;justify-content:space-between;gap:12px;font-family:Orbitron,sans-serif;font-size:9px;line-height:1.5;';x.innerHTML='<span style="color:#6d8799">'+label+'</span><span style="color:'+(color||'#fff')+';text-align:right">'+value+'</span>';content2.appendChild(x);}
+    var back=devRow('← BACK TO DEV MENU','#557799',openDevPanel);content2.appendChild(back);
+    var cur=_runStats.getCurrent(),runs=_runStats.getRuns(),r=cur||runs[0];
+    var title=document.createElement('div');title.style.cssText='padding:18px;text-align:center;font-family:Orbitron,sans-serif;color:#44ddff;letter-spacing:3px;font-size:13px;';title.textContent=cur?'CURRENT PLAYTEST':'LATEST SAVED PLAYTEST';content2.appendChild(title);
+    if(!r)addLine('STATUS','NO REPORTS YET','#556677');
+    else{
+      addLine('RESULT',(r.outcome||'IN PROGRESS').toUpperCase(),r.outcome==='death'?'#ff5577':'#44ddff');
+      addLine('GALAXIES',(r.galaxiesVisited||[]).join(' → ')||('g'+(r.galaxy||0)),'#bb88ff');
+      addLine('TIME / WAVE',Math.floor((r.duration||0)/60)+':'+String(Math.floor((r.duration||0)%60)).padStart(2,'0')+' · WAVE '+(r.maxWave||1));
+      addLine('KILLS / DAMAGE',(r.kills||0)+' · '+Math.round(r.damageDealt||0).toLocaleString());
+      addLine('HULL / SHIELD DAMAGE',Math.round(r.damageTaken||0)+' · '+Math.round(r.shieldDamage||0),'#ff9977');
+      addLine('LOWEST HULL',(r.lowestHullPct===undefined?'—':r.lowestHullPct+'%'),'#ff5577');
+      addLine('CRYSTALS TRACKED',(r.gems||0).toLocaleString(),'#ffd700');
+      addLine('ASTEROIDS',(r.asteroidsMined||0)+' · AVG '+(r.avgCrystalsPerAsteroid||0),'#35dfff');
+      addLine('CRYSTAL SOURCES',Object.keys(r.crystalSources||{}).map(function(k){return k+': '+r.crystalSources[k];}).join('<br>')||'—','#ffd700');
+      addLine('REVIVES / CHECKPOINTS',(r.revives||0)+' · '+(r.checkpointLoads||0));
+      addLine('DEATHS',(r.deathEvents||[]).map(function(d){return d.galaxy+' W'+d.wave+' — '+d.source+(d.detail?' ('+d.detail+')':'');}).join('<br>')||'NONE','#ff6688');
+      if(r.walletEnd!==null)addLine('WALLET CHECK','Δ '+r.walletDelta+' · discrepancy '+r.reportedVsWallet,(r.reportedVsWallet||0)!==0?'#ff9944':'#55ff99');
+    }
+    var copy=devRow('COPY FULL REPORT','#44ddff',function(){window.copyBalanceTelemetry();fmsg('TELEMETRY COPIED','#44ddff');});content2.appendChild(copy);
+    var dl=devRow('DOWNLOAD JSON','#bb88ff',function(){window.downloadBalanceTelemetry();});content2.appendChild(dl);
+    addLine('SAVED HISTORY',runs.length+' / 10 RUNS','#7799aa');
+    panel2.style.display='flex';
+  }));
+  if(G&&G.running)statsRows.push(devRow('END TEST & SAVE','#ffcc44',function(){
+    if(confirm('Save this partial playtest and return to the main menu?')){_runStats.endTest();}
   }));
 
   content.appendChild(devSection('RUN STATS', '#44ddff', statsRows, false));
