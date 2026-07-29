@@ -82,6 +82,9 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 .cmdCompanion{display:flex;align-items:center;gap:10px;width:min(94vw,500px);margin:11px auto 0;padding:8px 10px;box-sizing:border-box;border:1px solid rgba(0,245,255,.18);background:rgba(1,12,22,.76)}.navDroid{position:relative;width:40px;height:34px;flex:0 0 40px;border:2px solid #3d7ea0;border-radius:40% 45% 35% 42%;background:linear-gradient(145deg,#16334d,#071222);box-shadow:0 0 13px rgba(0,245,255,.25)}.navDroid:before{content:'';position:absolute;left:9px;top:9px;width:19px;height:9px;border-radius:50%;background:#00f5ff;box-shadow:0 0 11px #00f5ff}.navDroid:after{content:'';position:absolute;right:5px;top:-8px;width:2px;height:10px;background:#5d91aa;transform:rotate(20deg);transform-origin:bottom}.cmdGreeting{font:7px Orbitron,sans-serif;letter-spacing:1.2px;line-height:1.6;color:#6ea2b5}.cmdGreeting b{display:block;color:#bffaff;font-size:8px}
 .navK0Sprite{display:block;width:64px;height:64px;flex:0 0 64px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 9px rgba(0,245,255,.48));animation:k0Hover 2.6s ease-in-out infinite;transform-origin:50% 65%}
 @keyframes k0Hover{0%,100%{transform:translateY(1px) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}
+.cmdCompanion{cursor:pointer;transition:border-color .25s,background .25s,transform .15s}.cmdCompanion:active{transform:scale(.985)}.cmdCompanion.k0-alert{border-color:rgba(255,190,45,.48);background:rgba(35,20,2,.82)}.cmdCompanion.k0-alert .navK0Sprite{filter:drop-shadow(0 0 11px rgba(255,190,45,.68))}.cmdCompanion.k0-happy{border-color:rgba(75,255,160,.42)}.cmdCompanion.k0-happy .navK0Sprite{filter:drop-shadow(0 0 12px rgba(75,255,160,.58))}.cmdCompanion.k0-glitch .navK0Sprite{animation:k0Glitch .18s steps(2) 3,k0Hover 2.6s ease-in-out .6s infinite}
+@keyframes k0Glitch{0%{transform:translate(0)}25%{transform:translate(3px,-1px);filter:hue-rotate(70deg)}50%{transform:translate(-2px,1px)}75%{transform:translate(2px,2px);filter:hue-rotate(-70deg)}100%{transform:translate(0)}}
+.k0Speaker{display:block;color:#bffaff;font-size:8px;margin-bottom:2px}.k0Line{display:block;min-height:22px;color:#6ea2b5}.k0Hint{display:block;margin-top:3px;font-size:5px;color:#36596b;letter-spacing:1px}
 .cmdFooter{display:flex;justify-content:space-between;align-items:center;width:min(94vw,500px);margin:7px auto 0}.cmdDev{width:auto!important;min-width:55px!important;padding:7px!important;margin:0!important;font-size:7px!important;opacity:.42}.cmdVersion{font:6px Orbitron,sans-serif;letter-spacing:2px;color:#2d4357}
 @media(max-height:720px){.cmdLaunch{height:120px!important}.cmdCard{height:72px!important}.cmdCard svg{width:22px;height:22px;margin-bottom:4px}.cmdCompanion{margin-top:7px;padding:5px 9px}.cmdResources{margin-top:12px}.cmdLogo h1{font-size:28px!important}}
 /* Pilot Archives */
@@ -7054,7 +7057,10 @@ function ownedBeam(){ return activeBeam&&(beamRanks[activeBeam]||0)>=1?activeBea
 function beamRank(){ return activeBeam?(beamRanks[activeBeam]||0):0; }
 var visitedGalaxies = lsG('vr_visitedGalaxies', [0]);
 function markGalaxyVisited(idx){
-  if(visitedGalaxies.indexOf(idx)<0){visitedGalaxies.push(idx);lsS('vr_visitedGalaxies',visitedGalaxies);}
+  if(visitedGalaxies.indexOf(idx)<0){
+    visitedGalaxies.push(idx);lsS('vr_visitedGalaxies',visitedGalaxies);
+    if(idx>0) try{k0QueueEvent('galaxy',{idx:idx});}catch(e){}
+  }
 }
 var galaxySelectFromPause = false;
 // ── GALAXY SELECT STAR MAP ──────────────────────────────────────────────
@@ -16403,6 +16409,10 @@ function hitE(g,e,dmg){
       try{ awardSkillPoint(g.galaxy||0); }catch(err){}
       var _bemEl=document.getElementById('bossEndMarker');if(_bemEl)_bemEl.style.display='none';
       stopMusic(); stopBossMusic(); // silence after boss defeat
+      try{
+        k0QueueEvent('boss',{galaxy:g.galaxy||0});
+        setTimeout(function(){fmsg('K-0 // LARGE HOSTILE REMOVED. I WAS ONLY MILDLY CONCERNED.','#55ddff');},1500);
+      }catch(_k0BossErr){}
       // Unlock Leviathan ship after defeating LEVIATHAN WYRM (G1 = galaxy index 1)
       if((g.galaxy||0)===1&&!lsG('vr_leviathanUnlocked',false)){
         lsS('vr_bossCleared_1',true);
@@ -32025,6 +32035,7 @@ function gameOver(){
   }
   var m=Math.floor(G.time/60).toString().padStart(2,'0'),s=Math.floor(G.time%60).toString().padStart(2,'0');
   var _deathCount=lsG('vr_deathCount',0)+1; lsS('vr_deathCount',_deathCount);
+  try{k0QueueEvent('death',{count:_deathCount,wave:G.wave||0});}catch(_k0DeathErr){}
   var _motiveLine=_getDeathMotivation(_deathCount);
   var ov=document.getElementById('menu');
   ov.innerHTML=''
@@ -32035,6 +32046,7 @@ function gameOver(){
     +(voidKeys>0?'<div style="font-family:Orbitron,sans-serif;font-size:11px;color:#ffd700;letter-spacing:2px;margin-bottom:16px;">'+svgIcon('amp_key').replace(/width="28"/g,'width="14"').replace(/height="28"/g,'height="14"')+' '+voidKeys+' VOID KEY'+(voidKeys!==1?'S':'')+' — SPEND IN THE VAULT</div>':'<div style="margin-bottom:16px;"></div>')
     +(G._voidGift>0?'<div style="font-family:Orbitron,sans-serif;font-size:11px;color:#9b59ff;letter-spacing:1.5px;margin-bottom:12px;">💎 THE VOID GRANTS YOU A GIFT — +'+G._voidGift+' BONUS CRYSTALS</div>':'')
     +_motiveLine
+    +k0DeathMarkup(_deathCount)
     +'<button class="btn" id="goRBtn" style="font-size:15px;padding:16px 0;margin-bottom:10px;"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> RETRY</button>'
     +'<button class="btn" id="goLBtn" style="border-color:#00f5ff;color:#00f5ff;">'
     +'<svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><path d="M10 2L3 5v6c0 4 3.5 7 7 8 3.5-1 7-4 7-8V5z" stroke="currentColor" stroke-width="1.5" fill="rgba(0,245,255,0.15)"/></svg> LOADOUT</button>'
@@ -38021,6 +38033,116 @@ if(_clClose) safeTap(_clClose, function(){
 // ═══════════════════════════════════════════════════════════════════
 // REBUILD MAIN MENU
 // ═══════════════════════════════════════════════════════════════════
+var _k0MenuTimer=null,_k0TypeTimer=null,_k0Recent=[];
+var K0_IDLE_LINES=[
+  'Navigation array aligned. Mostly. The left sensor has opinions.',
+  'I ran seventeen simulations. You survived eight. Encouraging!',
+  'The void is quiet today. Suspiciously quiet. I dislike polite voids.',
+  'All systems nominal. I checked twice because you were watching.',
+  'I polished the launch controls. Please admire them before pressing one.',
+  'If we get lost, it is exploration. If we return, it was navigation.',
+  'I am not hovering nervously. This is precision altitude maintenance.',
+  'The ship made a new noise. I have classified it as probably fine.',
+  'Welcome back, Runner. I kept your seat warm. Metaphorically. Fire risk.',
+  'I mapped a shortcut through reality. Legal department says not to call it that.'
+];
+var K0_TAP_LINES=[
+  'Yes? Oh. You tapped me. Very official.',
+  'My visor is a sensor, not a button. It can be both, apparently.',
+  'K-0 reporting for unnecessary but enthusiastic duty.',
+  'Please stop poking the navigation unit during delicate calculations.',
+  'Boop acknowledged. Returning ceremonial boop.',
+  'I contain several maps and one deeply held grudge against asteroids.'
+];
+var K0_RARE_LINES=[
+  'Between us? The Architect has terrible interior-design instincts.',
+  'I once outran a black hole. The black hole disputes this account.',
+  'There is a 0.03% chance this is all a simulation. I rounded down for morale.',
+  'Secret diagnostic: you are doing better than you think.',
+  'I found the edge of the map. It asked me not to tell anyone.'
+];
+function k0QueueEvent(type,data){
+  lsS('vr_k0_event',{type:type,data:data||{},at:Date.now()});
+}
+function k0TakeEvent(){
+  var ev=lsG('vr_k0_event',null);
+  if(ev)lsS('vr_k0_event',null);
+  return ev;
+}
+function k0Pick(lines){
+  var available=lines.filter(function(line){return _k0Recent.indexOf(line)<0;});
+  if(!available.length)available=lines.slice();
+  var line=available[Math.floor(Math.random()*available.length)];
+  _k0Recent.push(line);if(_k0Recent.length>5)_k0Recent.shift();
+  return line;
+}
+function k0ContextTip(){
+  var rank=(typeof beamRank==='function'?beamRank():0);
+  if(voidKeys>=10)return {line:'You have enough Void Keys for a weapon ultimate. The vault is practically humming.',mood:'alert',tag:'RESOURCE TIP'};
+  if(crystals>=1000)return {line:'Those crystals are not decorative. Spend them before the void invents taxes.',mood:'alert',tag:'UPGRADE TIP'};
+  if(oreFragments>=25)return {line:'Ore reserves are healthy. Your ship, however, has submitted a renovation request.',mood:'happy',tag:'SHIP TIP'};
+  if(rank>0&&rank<5)return {line:'Your beam has room to grow. Upgrade damage before enemies learn confidence.',mood:'alert',tag:'COMBAT TIP'};
+  if(typeof currentGalaxy!=='undefined'&&currentGalaxy>=3)return {line:'Deep-sector reminder: movement is armor that never runs out.',mood:'alert',tag:'PILOT TIP'};
+  return {line:'Short movements beat panic spirals. Usually. I have charts.',mood:'normal',tag:'PILOT TIP'};
+}
+function k0EventLine(ev){
+  if(!ev)return null;
+  if(ev.type==='boss')return {line:'Boss signal terminated. I knew you had it handled, so I only prepared six escape routes.',mood:'happy',tag:'VICTORY LOG'};
+  if(ev.type==='galaxy'){
+    var gal=GALAXIES[ev.data.idx]||null;
+    return {line:'New route decoded'+(gal?': '+gal.name:'')+'. Try not to scratch the spacetime.',mood:'happy',tag:'NAV UPDATE'};
+  }
+  if(ev.type==='death'){
+    var c=ev.data.count||1;
+    return {line:c===1?'First destruction logged. Good news: the ship warranty was imaginary.':'Destruction #'+c+' logged. Your persistence subroutine is frankly intimidating.',mood:'glitch',tag:'RECOVERY LOG'};
+  }
+  return null;
+}
+function k0Say(entry){
+  var lineEl=document.getElementById('k0Line'),speaker=document.getElementById('k0Speaker'),box=document.getElementById('k0Companion');
+  if(!lineEl||!speaker||!box)return;
+  clearInterval(_k0TypeTimer);
+  box.classList.remove('k0-alert','k0-happy','k0-glitch');
+  if(entry.mood&&entry.mood!=='normal')box.classList.add('k0-'+entry.mood);
+  speaker.textContent='K-0 // '+(entry.tag||'NAV UNIT');
+  lineEl.textContent='';
+  var i=0,text=entry.line;
+  _k0TypeTimer=setInterval(function(){
+    if(!document.getElementById('k0Line')){clearInterval(_k0TypeTimer);return;}
+    i+=2;lineEl.textContent=text.slice(0,i);
+    if(i>=text.length)clearInterval(_k0TypeTimer);
+  },24);
+}
+function k0NextMenuLine(forceTap){
+  if(forceTap){k0Say({line:k0Pick(K0_TAP_LINES),mood:Math.random()<.25?'glitch':'normal',tag:'DIRECT QUERY'});return;}
+  if(Math.random()<.04){k0Say({line:k0Pick(K0_RARE_LINES),mood:'glitch',tag:'RESTRICTED FILE'});return;}
+  if(Math.random()<.38){k0Say(k0ContextTip());return;}
+  k0Say({line:k0Pick(K0_IDLE_LINES),mood:'normal',tag:'NAV UNIT'});
+}
+function k0InitMenu(){
+  clearTimeout(_k0MenuTimer);
+  var box=document.getElementById('k0Companion');if(!box)return;
+  var queued=k0EventLine(k0TakeEvent());
+  k0Say(queued||{line:k0Pick(K0_IDLE_LINES),mood:'normal',tag:'NAV UNIT'});
+  safeTap(box,function(){try{SFX.click&&SFX.click();}catch(e){}k0NextMenuLine(true);clearTimeout(_k0MenuTimer);_k0MenuTimer=setTimeout(k0ScheduleMenuLine,11000);});
+  _k0MenuTimer=setTimeout(k0ScheduleMenuLine,11000);
+}
+function k0ScheduleMenuLine(){
+  var box=document.getElementById('k0Companion'),menu=document.getElementById('menu');
+  if(!box||!menu||menu.style.display!=='flex')return;
+  k0NextMenuLine(false);
+  _k0MenuTimer=setTimeout(k0ScheduleMenuLine,11000+Math.random()*5000);
+}
+function k0DeathMarkup(count){
+  var lines=[
+    'I have marked that maneuver as educational.',
+    'Hull integrity reached zero. Your determination did not.',
+    'Excellent data collection. Terrible survival. We can improve one of those.',
+    'The void has requested a rematch. Rude, but convenient.',
+    'I saved the flight recorder. I may selectively edit the embarrassing part.'
+  ];
+  return '<div class="cmdCompanion" style="margin-bottom:14px"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><span class="k0Speaker">K-0 // RECOVERY LOG '+count+'</span><span class="k0Line">'+lines[(count-1)%lines.length]+'</span></div></div>';
+}
 function rebuildMainMenu(){
   stopMusic();stopDeathMusic();stopVaultMusic();
   var ov = document.getElementById('menu');
@@ -38038,11 +38160,12 @@ function rebuildMainMenu(){
     +'<button class="btn" id="mExtrasBtn" style="border-color:#d49b32;color:#e8bd5a">EXTRAS</button>'
     +'<button class="btn" id="mCLBtn" style="border-color:#31586c;color:#7295a6">CHANNEL LOG</button>'
     +'<button class="btn" id="menuSettingsBtn" style="border-color:#31586c;color:#7295a6">SETTINGS</button></div>'
-    +'<div class="cmdCompanion"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><b>NAV UNIT K-0 ONLINE</b>ROUTE LOCKED. SYSTEMS NOMINAL.</div></div>'
+    +'<div class="cmdCompanion" id="k0Companion"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><span class="k0Speaker" id="k0Speaker">K-0 // NAV UNIT</span><span class="k0Line" id="k0Line">ROUTE LOCKED. SYSTEMS NOMINAL.</span><span class="k0Hint">TAP K-0 TO TALK</span></div></div>'
     +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.4</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
   showMainMenu();playMenuMusic();
+  k0InitMenu();
   updatePrestigeUI();
   // Rewire button handlers
   document.getElementById('sBtn').addEventListener('pointerdown',function(){
