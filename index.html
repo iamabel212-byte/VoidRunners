@@ -32157,13 +32157,20 @@ function openHangar(fd){hangarFromDeath=!!fd;renderHangar();document.getElementB
 
 // Scroll-safe tap: only fires if pointer didn't move (not a scroll)
 function safeTap(el, fn){
-  var startY=0, startX=0, moved=false;
-  el.addEventListener('pointerdown',function(e){startY=e.clientY;startX=e.clientX;moved=false;},{passive:true});
+  var startY=0, startX=0, moved=false, armed=false;
+  el.addEventListener('pointerdown',function(e){startY=e.clientY;startX=e.clientX;moved=false;armed=true;},{passive:true});
   el.addEventListener('pointermove',function(e){
+    if(!armed)return;
     var dy=Math.abs(e.clientY-startY), dx=Math.abs(e.clientX-startX);
     if(dy>12||dx>12) moved=true;
   },{passive:true});
-  el.addEventListener('pointerup',function(e){if(!moved){e.stopPropagation();fn(e);}});
+  el.addEventListener('pointerup',function(e){
+    if(!armed)return;
+    armed=false;
+    if(!moved){e.stopPropagation();fn(e);}
+  });
+  el.addEventListener('pointercancel',function(){armed=false;moved=false;},{passive:true});
+  el.addEventListener('pointerleave',function(){armed=false;},{passive:true});
 }
 function renderPermPanel(tab){
   document.getElementById('pcoins').innerHTML=svgIcon('crystal')+' '+crystals.toLocaleString()+' CRYSTALS';
