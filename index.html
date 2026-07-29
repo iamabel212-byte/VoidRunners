@@ -54,7 +54,23 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 .bch .bt2{color:var(--g);font-family:'Orbitron',sans-serif;font-size:8px;}
 .dch{background:rgba(30,5,5,0.92);border:1px solid rgba(255,50,50,0.25);padding:2px 6px;font-size:9px;display:flex;align-items:center;gap:3px;border-radius:2px;font-family:'Orbitron',sans-serif;letter-spacing:0.5px;}
 .dch .dt2{font-family:'Orbitron',sans-serif;font-size:7px;opacity:0.8;}
-#prow{display:none;flex-direction:row;flex-wrap:wrap;gap:4px;justify-content:center;padding:8px 12px 12px;width:100%;box-sizing:border-box;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:8px;}
+#prowWrap{width:100%;margin:0 0 10px;box-sizing:border-box;border:1px solid rgba(155,89,255,.24);background:rgba(10,2,24,.58);overflow:hidden;}
+#prowToggle{width:100%;min-height:44px;padding:0 12px;border:0;background:linear-gradient(90deg,rgba(155,89,255,.12),rgba(0,245,255,.04));color:#a879e8;display:flex;align-items:center;justify-content:space-between;font:8px Orbitron,sans-serif;letter-spacing:1.5px;cursor:pointer;touch-action:manipulation;}
+#prowToggle .prowSummary{display:flex;align-items:center;gap:8px;color:#6f8a9e;font-size:7px;white-space:nowrap;}
+#prowCount{color:#c79cff;font-size:8px;}
+#prowChevron{font-style:normal;color:#00f5ff;font-size:16px;line-height:1;transition:transform .2s ease;}
+#prowBody{max-height:0;opacity:0;overflow:hidden;transition:max-height .25s ease,opacity .18s ease;border-top:1px solid transparent;}
+#prowWrap.open #prowBody{max-height:min(35vh,260px);opacity:1;overflow-y:auto;-webkit-overflow-scrolling:touch;border-top-color:rgba(155,89,255,.18);}
+#prowWrap.open #prowChevron{transform:rotate(180deg);}
+#prow{display:flex;flex-direction:row;flex-wrap:wrap;gap:5px;justify-content:center;padding:10px;width:100%;box-sizing:border-box;}
+.pch{cursor:pointer;touch-action:manipulation;transition:transform .12s ease,box-shadow .12s ease;}
+.pch:active{transform:scale(.94);}
+.pch.selected{outline:1px solid #fff;outline-offset:1px;box-shadow:0 0 13px currentColor!important;}
+#prowQuick{display:none;position:sticky;top:0;z-index:2;align-items:center;justify-content:space-between;gap:10px;min-height:34px;padding:7px 11px;box-sizing:border-box;background:rgba(4,8,20,.97);border-bottom:1px solid rgba(0,245,255,.2);font:8px Orbitron,sans-serif;letter-spacing:1px;}
+#prowQuick.show{display:flex;}
+#prowQuickName{color:#718da0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#prowQuickEffect{color:#e5faff;text-align:right;}
+.prowEmpty{width:100%;padding:10px;text-align:center;font:7px Orbitron,sans-serif;letter-spacing:1.5px;color:#4c6070;}
 .pch{background:rgba(10,2,20,0.9);border:1px solid rgba(155,89,255,0.4);padding:2px 7px;font-size:9px;color:var(--p);font-family:'Orbitron',sans-serif;letter-spacing:1px;border-radius:2px;}
 #galaxyBadge{position:fixed;top:54px;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:3px;pointer-events:none;z-index:10;color:#334;}
 #warpOverlay{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;transition:opacity .4s;display:flex;flex-direction:column;align-items:center;justify-content:center;}
@@ -680,7 +696,16 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
       <div class="pauseStat"><b id="pauseTimeStat">00:00</b><small>RUN TIME</small></div>
       <div class="pauseStat"><b id="pauseCrystalStat">0</b><small>CRYSTALS</small></div>
     </div>
-    <div id="prowWrap"><div id="prowLabel" style="display:none;">PERMANENT UPGRADES</div><div id="prow"></div></div>
+    <div id="prowWrap">
+      <button type="button" id="prowToggle" aria-expanded="false" aria-controls="prowBody">
+        <span>PERMANENT UPGRADES</span>
+        <span class="prowSummary"><b id="prowCount">0 ACTIVE</b><i id="prowChevron">&#8964;</i></span>
+      </button>
+      <div id="prowBody">
+        <div id="prowQuick"><span id="prowQuickName"></span><b id="prowQuickEffect"></b></div>
+        <div id="prow"></div>
+      </div>
+    </div>
     <button class="btn" id="resumeBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> RESUME RUN</button>
     <div class="pauseGrid">
       <button class="btn" id="pauseLoadoutBtn" style="border-color:#00f5ff88;color:#bdefff;">&#9632; LOADOUT</button>
@@ -1915,20 +1940,30 @@ function renderBadgePanel(){
 }
 
 // ─── GALAXIES ───
-const SECTOR_ZERO={name:'SECTOR ZERO',sky:'#00020e',nebHue:215,starTint:[80,140,255],acc:'#4488ff',diff:0.0,twist:'tutorial'};
+const MAX_BOSS_KILL_REQUIREMENT=500;
+const SECTOR_ZERO={name:'SECTOR ZERO',sky:'#00020e',nebHue:215,starTint:[80,140,255],acc:'#4488ff',diff:0.0,twist:'tutorial',requiredKillsToBoss:50,bossIcon:null};
 const GALAXIES=[
-  {name:'DRIFT SECTOR',     sky:'#01020d',nebHue:210,starTint:[0,200,255],   acc:'#00f5ff',diff:1.0,  twist:'meteor_shower'},
-  {name:'LEVIATHAN FIELD',  sky:'#04020e',nebHue:280,starTint:[130,60,255],  acc:'#8844ff',diff:1.8,  twist:'leviathan'},
-  {name:'MACHINE REMNANT',  sky:'#020208',nebHue:220,starTint:[80,120,255],  acc:'#4499ff',diff:2.2,  twist:'formation'},
-  {name:'METEOR STORM BELT',sky:'#0e0600',nebHue:20, starTint:[255,120,20],  acc:'#ff7700',diff:2.8,  twist:'meteors'},
-  {name:'BIO-NEBULA',       sky:'#030e02',nebHue:120,starTint:[80,255,100],  acc:'#44ff88',diff:5.2,  twist:'poison'},
-  {name:'CRYO RING',        sky:'#01080e',nebHue:195,starTint:[100,200,255], acc:'#88ddff',diff:3.8,  twist:'freeze'},
-  {name:'CRIMSON HUSK',     sky:'#080002',nebHue:0,  starTint:[255,60,40],   acc:'#cc2200',diff:6.5,  twist:'emp'},
-  {name:'GRAVITON ABYSS',   sky:'#000000',nebHue:260,starTint:[100,80,255],  acc:'#6655ff',diff:8.5,  twist:'gravity'},
-  {name:'MIRROR EXPANSE',   sky:'#020208',nebHue:180,starTint:[180,255,220], acc:'#aaffdd',diff:11.0, twist:'mirror'},
-  {name:'THE VOID HEART',   sky:'#000000',nebHue:0,  starTint:[255,255,255], acc:'#ffffff',diff:14.0, twist:'voidheart'},
+  {name:'DRIFT SECTOR',     sky:'#01020d',nebHue:210,starTint:[0,200,255],   acc:'#00f5ff',diff:1.0,  twist:'meteor_shower',requiredKillsToBoss:100, bossIcon:'0'},
+  {name:'LEVIATHAN FIELD',  sky:'#04020e',nebHue:280,starTint:[130,60,255],  acc:'#8844ff',diff:1.8,  twist:'leviathan',    requiredKillsToBoss:300, bossIcon:'1'},
+  {name:'MACHINE REMNANT',  sky:'#020208',nebHue:220,starTint:[80,120,255],  acc:'#4499ff',diff:2.2,  twist:'formation',    requiredKillsToBoss:500, bossIcon:'2'},
+  {name:'METEOR STORM BELT',sky:'#0e0600',nebHue:20, starTint:[255,120,20],  acc:'#ff7700',diff:2.8,  twist:'meteors',      requiredKillsToBoss:700, bossIcon:'3'},
+  {name:'BIO-NEBULA',       sky:'#030e02',nebHue:120,starTint:[80,255,100],  acc:'#44ff88',diff:5.2,  twist:'poison',       requiredKillsToBoss:500, bossIcon:'voidBloom'},
+  {name:'CRYO RING',        sky:'#01080e',nebHue:195,starTint:[100,200,255], acc:'#88ddff',diff:3.8,  twist:'freeze',       requiredKillsToBoss:500, bossIcon:'5'},
+  {name:'CRIMSON HUSK',     sky:'#080002',nebHue:0,  starTint:[255,60,40],   acc:'#cc2200',diff:6.5,  twist:'emp',          requiredKillsToBoss:800, bossIcon:'6'},
+  {name:'GRAVITON ABYSS',   sky:'#000000',nebHue:260,starTint:[100,80,255],  acc:'#6655ff',diff:8.5,  twist:'gravity',      requiredKillsToBoss:2640,bossIcon:'7'},
+  {name:'MIRROR EXPANSE',   sky:'#020208',nebHue:180,starTint:[180,255,220], acc:'#aaffdd',diff:11.0, twist:'mirror',       requiredKillsToBoss:1,   bossIcon:'8'},
+  {name:'THE VOID HEART',   sky:'#000000',nebHue:0,  starTint:[255,255,255], acc:'#ffffff',diff:14.0, twist:'voidheart',    requiredKillsToBoss:4160,bossIcon:'9'},
 ];
 let currentGalaxy=0,warpAnimating=false;
+
+function getEffectiveBossKillRequirement(galaxyOrIndex){
+  var gal=typeof galaxyOrIndex==='number'
+    ?(galaxyOrIndex===-2?SECTOR_ZERO:GALAXIES[Math.max(0,Math.min(galaxyOrIndex,GALAXIES.length-1))])
+    :galaxyOrIndex;
+  var original=gal&&Number(gal.requiredKillsToBoss);
+  if(!isFinite(original)||original<0)original=0;
+  return Math.min(original,MAX_BOSS_KILL_REQUIREMENT);
+}
 
 // Galaxy lore descriptions
 var SECTOR_ZERO_LORE="The last outpost before the frontier. Nav beacons barely reach here. Debris from a long-forgotten conflict still drifts through the dark. This is where pilots learn to survive — or don't.";
@@ -2036,6 +2071,7 @@ function drawShip(c2,skinId,x,y,angle,scale,thrust){
     // ── VIPER — Cyan interceptor, razor-delta wings, twin engines ────────
     case'viper': default:{
       var col=sk.col,acc=sk.acc;
+
       // Outer glow layer
       c2.shadowBlur=22;c2.shadowColor=col;
       // Wing panels
@@ -6977,14 +7013,34 @@ var _bossMarkerSVGs = {
 
 function updateBossEndMarker(galaxyIdx){
   var el=document.getElementById('bossEndMarker');
-  if(!el) return;
+  var voidBloom=document.getElementById('voidBloomMarker');
+  if(el){el.style.display='none';el.innerHTML='';}
+  if(voidBloom)voidBloom.style.display='none';
+  var gal=galaxyIdx===-2?SECTOR_ZERO:GALAXIES[galaxyIdx];
+  if(!gal)return;
   // G4 uses dedicated voidBloomMarker — hide bossEndMarker there
-  if(galaxyIdx===4){ el.style.display='none'; return; }
-  var key=String(galaxyIdx);
+  var key=gal.bossIcon;
+  if(key==='voidBloom'){
+    if(voidBloom)voidBloom.style.display='block';
+    return;
+  }
+  if(!el)return;
   var fn=_bossMarkerSVGs[key];
-  if(!fn){ el.style.display='none'; return; }
+  if(!fn)return;
   el.innerHTML=fn();
   el.style.display='block';
+}
+
+function refreshBossProgressMeter(galaxyIdx,resetProgress){
+  updateBossEndMarker(galaxyIdx);
+  var smf=document.getElementById('sectorMeterFill');
+  var smc=document.getElementById('sectorMeterCount');
+  var gm=document.getElementById('germinalMarker');
+  if(gm)gm.style.display='none';
+  var required=getEffectiveBossKillRequirement(galaxyIdx);
+  var kills=(!resetProgress&&G&&G.galaxy===galaxyIdx)?Math.max(0,G.killsForBoss||0):0;
+  if(smf)smf.style.width=(required?Math.min(100,kills/required*100):0)+'%';
+  if(smc)smc.textContent=kills+'/'+required;
 }
 
 function warpToGalaxy(gIdx){
@@ -7005,6 +7061,7 @@ function warpToGalaxy(gIdx){
   warpAnimating=true;
   var _prevGalaxy=currentGalaxy;
   currentGalaxy=Math.min(gIdx,GALAXIES.length-1);
+  refreshBossProgressMeter(currentGalaxy,true);
   // Checkpoints belong to one galaxy encounter only. Crossing into another
   // galaxy invalidates the previous boss snapshot before the new one is made.
   if(_prevGalaxy!==currentGalaxy)window._runBossCheckpoint=null;
@@ -7095,7 +7152,7 @@ function warpToGalaxy(gIdx){
           document.getElementById('hud').style.display='block';
           var _ab2=document.getElementById('ab');if(_ab2)_ab2.style.display='block';
           var _sm2=document.getElementById('sectorMeter');if(_sm2)_sm2.style.display='block';
-          updateBossEndMarker(currentGalaxy);
+          refreshBossProgressMeter(currentGalaxy,false);
           var _gba=document.getElementById('galaxyBadge');if(_gba)_gba.style.display='block';
           if(G){G.paused=false;if(!loopRunning){last=0;safeRAF();}}
           stopMusic();stopGrMusic();
@@ -9786,12 +9843,33 @@ var ARCHITECT_FORMS=[
   {name:'THE COLLAPSE',color:'#ff3d88',r:92,spd:72,cd:0.64},
   {name:'THE TRUTH',color:'#bfe8ff',r:34,spd:28,cd:1.36}
 ];
+var ARCHITECT_PHASE1_ANTI_KITE={
+  MAX_RANGE:460,
+  OUT_OF_RANGE_TIME:2.35,
+  PREDICTION_DISTANCE:320,
+  TELEGRAPH_DURATION:.68,
+  SAFE_SPAWN_DISTANCE:220,
+  TELEPORT_COOLDOWN:4.25,
+  FOLLOWUP_ATTACK_DELAY:.4,
+  DESTINATION_SIDE_OFFSET:115,
+  COOLDOWN_PURSUIT_MULT:2.5,
+  BULLET_SPEED_MULT:1.3,
+  FIELD_RADIUS:460,
+  FIELD_DAMAGE_GRACE:.55,
+  FIELD_PULL_DELAY:.9,
+  FIELD_PULL_STRENGTH:980,
+  FIELD_PULL_MAX_STRENGTH:1550,
+  FIELD_PULL_COOLDOWN:.6,
+  FIELD_RETURN_PADDING:38
+};
+window.ARCHITECT_ANTI_KITE_DEBUG=false;
 var architectPhase1Sprite=new Image();
 architectPhase1Sprite.src='assests/images/architect-phase1-design.png';
 // Four complete boss lives. Each form owns an entire health bar.
 // "The Truth" remains the ending cinematic, never a damage phase.
 function architectPhase(e){return e._architectPhase===undefined?0:Math.max(0,Math.min(3,e._architectPhase));}
 function architectBullet(g,e,a,spd,dmg,size,color,life,extra){
+  if((e._architectPhase===undefined?architectPhase(e):e._architectPhase)===0)spd*=ARCHITECT_PHASE1_ANTI_KITE.BULLET_SPEED_MULT;
   var b={x:e.x,y:e.y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,dmg:dmg,size:size,pierce:0,pc:0,color:color,life:life||3,isEnemy:true,homing:false};
   if(extra)for(var k in extra)b[k]=extra[k];g.bullets.push(b);
 }
@@ -9801,6 +9879,14 @@ function architectSetBackground(idx){
   window._g9PhaseIdx=idx;window._g9NextPhaseIdx=idx;window._g9FadingIn=false;
   window._g9FadeProgress=1;window._g9PhaseTimer=0;window._g9PhaseChangedAt=(typeof gtime!=='undefined'?gtime:0);
   bgC=window._g9Phases[idx];
+}
+function resetArchitectAntiKite(e){
+  e._architectAKState=null;e._architectAKOutTimer=0;e._architectAKCooldown=0;
+  e._architectAKTimer=0;e._architectAKX=null;e._architectAKY=null;
+  e._architectAKPursuit=false;e._designForceLongRange=false;
+  e._architectAKLastPX=null;e._architectAKLastPY=null;e._architectAKPVX=0;e._architectAKPVY=0;
+  e._architectFieldOutside=0;e._architectFieldDamageLocked=false;
+  e._architectFieldPulling=false;e._architectFieldPullCooldown=0;e._architectFieldBlockFx=0;
 }
 function architectEnterPhase(g,e,phase){
   var f=ARCHITECT_FORMS[phase];
@@ -9813,6 +9899,7 @@ function architectEnterPhase(g,e,phase){
   e.name='THE ARCHITECT — '+f.name;e.color=f.color;e.r=f.r;e.spd=f.spd*((GALAXIES[9]||GALAXIES[0]).diff);
   e.shootCd=phase===0?999:f.cd;e.shootTimer=0;e.enraged=phase>=3;architectSetBackground(phase);
   e._kbVx=0;e._kbVy=0;e._kbTimer=0;
+  resetArchitectAntiKite(e);
   if(phase===0){
     e._architectAnchorX=Math.max(180,Math.min(WORLD-180,e.x));
     e._architectAnchorY=Math.max(180,Math.min(WORLD-180,e.y));
@@ -9826,6 +9913,132 @@ function architectEnterPhase(g,e,phase){
   else startArchitectPhaseCinematic(g,e,phase);
   var bbl=document.getElementById('bbl');if(bbl)bbl.innerHTML='PHASE '+(phase+1)+'/4 · '+e.name+' | '+Math.ceil(Math.max(0,e.hp)).toLocaleString()+' / '+e.maxHp.toLocaleString();
 }
+function selectArchitectAntiKiteDestination(e,p){
+  var cfg=ARCHITECT_PHASE1_ANTI_KITE;
+  var vx=e._architectAKPVX||0,vy=e._architectAKPVY||0;
+  var speed=Math.sqrt(vx*vx+vy*vy),ux,uy;
+  if(speed>25){ux=vx/speed;uy=vy/speed;}
+  else if(p._isMoving){ux=Math.cos(p._moveAngle||0);uy=Math.sin(p._moveAngle||0);}
+  else{
+    var awayX=p.x-e.x,awayY=p.y-e.y,awayLen=Math.sqrt(awayX*awayX+awayY*awayY)||1;
+    ux=awayX/awayLen;uy=awayY/awayLen;
+  }
+  var side=(Math.random()<.5?-1:1)*cfg.DESTINATION_SIDE_OFFSET;
+  var tx=p.x+ux*cfg.PREDICTION_DISTANCE-uy*side;
+  var ty=p.y+uy*cfg.PREDICTION_DISTANCE+ux*side;
+  var margin=150;
+  tx=Math.max(margin,Math.min(WORLD-margin,tx));
+  ty=Math.max(margin,Math.min(WORLD-margin,ty));
+  var fromPX=tx-p.x,fromPY=ty-p.y,fromPLen=Math.sqrt(fromPX*fromPX+fromPY*fromPY);
+  if(fromPLen<cfg.SAFE_SPAWN_DISTANCE){
+    var safeUx=fromPLen>1?fromPX/fromPLen:ux,safeUy=fromPLen>1?fromPY/fromPLen:uy;
+    tx=Math.max(margin,Math.min(WORLD-margin,p.x+safeUx*cfg.SAFE_SPAWN_DISTANCE));
+    ty=Math.max(margin,Math.min(WORLD-margin,p.y+safeUy*cfg.SAFE_SPAWN_DISTANCE));
+  }
+  return{x:tx,y:ty};
+}
+function updateArchitectAntiKite(g,e,p,dt,dist){
+  var cfg=ARCHITECT_PHASE1_ANTI_KITE;
+  if(e._architectAKLastPX!==null&&dt>0){
+    var rawVX=(p.x-e._architectAKLastPX)/dt,rawVY=(p.y-e._architectAKLastPY)/dt;
+    var rawSpeed=Math.sqrt(rawVX*rawVX+rawVY*rawVY),maxTracked=Math.max(900,p.spd*3);
+    if(rawSpeed>maxTracked){rawVX=rawVX/rawSpeed*maxTracked;rawVY=rawVY/rawSpeed*maxTracked;}
+    e._architectAKPVX+=(rawVX-e._architectAKPVX)*Math.min(1,dt*8);
+    e._architectAKPVY+=(rawVY-e._architectAKPVY)*Math.min(1,dt*8);
+  }
+  e._architectAKLastPX=p.x;e._architectAKLastPY=p.y;e._architectAKDistance=dist;
+  e._architectAKCooldown=Math.max(0,(e._architectAKCooldown||0)-dt);
+  e._architectAKPursuit=false;e._designForceLongRange=false;
+
+  // THE DESIGN FIELD: distance is allowed briefly for dodging, but sustained
+  // retreat closes the core and then pulls the runner back to the boundary.
+  e._architectFieldPullCooldown=Math.max(0,(e._architectFieldPullCooldown||0)-dt);
+  e._architectFieldBlockFx=Math.max(0,(e._architectFieldBlockFx||0)-dt);
+  if(dist<=cfg.FIELD_RADIUS){
+    e._architectFieldOutside=0;e._architectFieldDamageLocked=false;
+    if(e._architectFieldPulling){
+      e._architectFieldPulling=false;
+      e._architectFieldPullCooldown=cfg.FIELD_PULL_COOLDOWN;
+    }
+  }else{
+    e._architectFieldOutside=(e._architectFieldOutside||0)+dt;
+    e._architectFieldDamageLocked=e._architectFieldOutside>=cfg.FIELD_DAMAGE_GRACE;
+    if(e._architectFieldOutside>=cfg.FIELD_PULL_DELAY&&e._architectFieldPullCooldown<=0){
+      if(!e._architectFieldPulling)fmsg('THE DESIGN RECLAIMS YOU','#b968ff');
+      e._architectFieldPulling=true;
+    }
+    if(e._architectFieldPulling){
+      var pullDX=e.x-p.x,pullDY=e.y-p.y,pullDist=Math.sqrt(pullDX*pullDX+pullDY*pullDY)||1;
+      var returnRadius=cfg.FIELD_RADIUS-cfg.FIELD_RETURN_PADDING;
+      var excess=Math.max(0,pullDist-returnRadius);
+      // A radial tether cannot be overpowered by movement upgrades. It retracts
+      // toward the field edge while leaving tangential steering fully intact.
+      var pullForce=Math.min(cfg.FIELD_PULL_MAX_STRENGTH,cfg.FIELD_PULL_STRENGTH+excess*1.35);
+      var retract=Math.min(excess,pullForce*dt);
+      var nextDist=pullDist-retract;
+      p.x=Math.max(30,Math.min(WORLD-30,e.x-pullDX/pullDist*nextDist));
+      p.y=Math.max(30,Math.min(WORLD-30,e.y-pullDY/pullDist*nextDist));
+      e._architectFieldPullAngle=Math.atan2(p.y-e.y,p.x-e.x);
+      e._architectFieldPlayerX=p.x;e._architectFieldPlayerY=p.y;
+      e._architectFieldTetherT=(e._architectFieldTetherT||0)+dt;
+    }
+  }
+
+  if(e._architectAKState==='telegraph'){
+    e._architectAKTimer-=dt;e._architectAKOutTimer=0;e.phaseShield=true;
+    if(e._architectAKTimer<=0){
+      burst(g,e.x,e.y,'#b968ff',22,180);
+      e.x=e._architectAKX;e.y=e._architectAKY;
+      e._architectAnchorX=e.x;e._architectAnchorY=e.y;
+      burst(g,e.x,e.y,'#ffffff',18,130);burst(g,e.x,e.y,'#b968ff',30,230);
+      g.particles.push({type:'ring',x:e.x,y:e.y,radius:0,maxR:145,life:.7,maxLife:.7,color:'#b968ff'});
+      e._architectAKState='followup';e._architectAKTimer=cfg.FOLLOWUP_ATTACK_DELAY;
+    }
+    return true;
+  }
+  if(e._architectAKState==='followup'){
+    e._architectAKTimer-=dt;e._architectAKOutTimer=0;e.phaseShield=true;
+    if(e._architectAKTimer<=0){
+      var aim=Math.atan2(p.y-e.y,p.x-e.x);
+      for(var i=-4;i<=4;i++)architectBullet(g,e,aim+i*.115,640,e.dmg,9,i===0?'#ffffff':'#b968ff',2.6);
+      burst(g,e.x,e.y,'#b968ff',14,115);
+      fmsg('PREDICTIVE CUT','#d8f7ff');
+      e._architectAKState=null;e.phaseShield=false;e._designClock=Math.max(e._designClock||0,.35);
+    }
+    return true;
+  }
+
+  if(dist<=cfg.MAX_RANGE){
+    e._architectAKOutTimer=0;
+    return false;
+  }
+  e._architectAKOutTimer=(e._architectAKOutTimer||0)+dt;
+  if(e._architectAKCooldown<=0&&e._architectAKOutTimer>=cfg.OUT_OF_RANGE_TIME){
+    var dest=selectArchitectAntiKiteDestination(e,p);
+    e._architectAKX=dest.x;e._architectAKY=dest.y;
+    e._architectAKState='telegraph';e._architectAKTimer=cfg.TELEGRAPH_DURATION;
+    e._architectAKCooldown=cfg.TELEPORT_COOLDOWN;e._architectAKOutTimer=0;
+    e._designAttack=null;e._designDashing=false;e.phaseShield=true;
+    fmsg('SPACE FOLDS AHEAD','#b968ff');
+    if(window.ARCHITECT_ANTI_KITE_DEBUG)console.log('[ARCHITECT ANTI-KITE] destination',Math.round(dest.x),Math.round(dest.y),'distance',Math.round(dist));
+    return true;
+  }
+  if(e._architectAKCooldown>0){
+    e._architectAKPursuit=true;e._designForceLongRange=true;
+    if(!e._designAttack)e._designClock=Math.min(e._designClock||.25,.25);
+    var chaseAngle=Math.atan2(p.y-e.y,p.x-e.x);
+    e._architectAnchorX=Math.max(150,Math.min(WORLD-150,p.x-Math.cos(chaseAngle)*330));
+    e._architectAnchorY=Math.max(150,Math.min(WORLD-150,p.y-Math.sin(chaseAngle)*330));
+  }
+  if(window.ARCHITECT_ANTI_KITE_DEBUG){
+    e._architectAKDebugClock=(e._architectAKDebugClock||0)-dt;
+    if(e._architectAKDebugClock<=0){
+      e._architectAKDebugClock=.5;
+      console.log('[ARCHITECT ANTI-KITE] dist='+Math.round(dist)+' out='+e._architectAKOutTimer.toFixed(2)+' cd='+e._architectAKCooldown.toFixed(2));
+    }
+  }
+  return false;
+}
 function updateArchitect(g,e,p,dt){
   var phase=architectPhase(e);
   if(e._architectPhase===undefined||phase!==e._architectPhase)architectEnterPhase(g,e,phase);
@@ -9837,7 +10050,8 @@ function updateArchitect(g,e,p,dt){
   var orbit=[.42,-.55,.9,1.2,.18][phase];if(dist<desired-55)dir+=Math.PI;else if(dist<desired+70)dir+=Math.PI*.5*orbit;
   e._architectMoveAngle=dir;
   if(phase===0){
-    updateArchitectDesign(g,e,p,dt);
+    var antiKiteLocked=updateArchitectAntiKite(g,e,p,dt,dist);
+    if(!antiKiteLocked)updateArchitectDesign(g,e,p,dt);
     e._architectMoveAngle=0;e.spd=0;
   }
   if(phase===3){
@@ -9848,7 +10062,7 @@ function updateArchitect(g,e,p,dt){
   }
 }
 
-function fireDesignPattern(g,e,p,type,ang){
+function fireDesignPattern(g,e,p,type,ang,targetX,targetY){
   var d=e.dmg,i,a,fury=1+(1-Math.max(0,e.hp/e.maxHp))*.45;
   if(type===0){
     // Five clearly separated projectile lanes.
@@ -9858,18 +10072,50 @@ function fireDesignPattern(g,e,p,type,ang){
     // Compass burst with a generous opening centered on the runner.
     for(i=0;i<34;i++){a=i/34*Math.PI*2;if(Math.abs(Math.atan2(Math.sin(a-ang),Math.cos(a-ang)))>.24)architectBullet(g,e,a,455*fury,d*1.05,8,'#9d62ff',3.6);}
   }else if(type===2){
-    // Construction grid: two crossing bullet walls, each with a player-sized gap.
-    for(i=-9;i<=9;i++)if(Math.abs(i)>1){
-      architectBullet(g,e,ang+Math.PI*.5+i*.03,510*fury,d*1.0,8,'#b968ff',3.2);
-      architectBullet(g,e,ang-Math.PI*.5+i*.03,510*fury,d*1.0,8,'#b968ff',3.2);
+    // Construction Grid: four walls travel along the exact locked warning grid.
+    // The missing center lane matches the highlighted dodge opening.
+    var gridX=targetX===undefined?p.x:targetX;
+    var gridY=targetY===undefined?p.y:targetY;
+    var gridCell=58,gridStart=gridCell*4.7,gridSpeed=560*fury;
+    for(var gridLane=-3;gridLane<=3;gridLane++){
+      if(gridLane===0)continue;
+      for(var gridTrail=0;gridTrail<2;gridTrail++){
+        var gridLag=gridTrail*34;
+        architectBullet(g,e,Math.PI*.5,gridSpeed,d*1.0,8,'#b968ff',2.4,{
+          x:gridX+gridLane*gridCell,y:gridY-gridStart-gridLag
+        });
+        architectBullet(g,e,-Math.PI*.5,gridSpeed,d*1.0,8,'#b968ff',2.4,{
+          x:gridX+gridLane*gridCell,y:gridY+gridStart+gridLag
+        });
+        architectBullet(g,e,0,gridSpeed,d*1.0,8,'#d8f7ff',2.4,{
+          x:gridX-gridStart-gridLag,y:gridY+gridLane*gridCell
+        });
+        architectBullet(g,e,Math.PI,gridSpeed,d*1.0,8,'#d8f7ff',2.4,{
+          x:gridX+gridStart+gridLag,y:gridY+gridLane*gridCell
+        });
+      }
     }
   }else if(type===3){
     // Locked coordinates: the warning stops tracking before these arrive.
     for(i=-2;i<=2;i++)architectBullet(g,e,ang+i*.052,930*fury,d*1.35,9,'#ffffff',1.9);
-  }else{
+  }else if(type===4){
     // Two blueprint rings; omitted spokes create a readable doorway.
     for(i=0;i<30;i++){a=i/30*Math.PI*2;if(Math.abs(Math.atan2(Math.sin(a-ang),Math.cos(a-ang)))>.27)architectBullet(g,e,a,390*fury,d*1.0,8,'#78dfff',3.8);}
     for(i=0;i<24;i++){a=i/24*Math.PI*2+.13;if(Math.abs(Math.atan2(Math.sin(a-ang),Math.cos(a-ang)))>.32)architectBullet(g,e,a,535*fury,d*1.1,8,'#d8f7ff',3.0);}
+  }else{
+    // Blueprint Rain: four staggered descending rows with alternating dodge lanes.
+    var rainX=targetX===undefined?p.x:targetX,rainY=targetY===undefined?p.y:targetY;
+    for(var row=0;row<4;row++){
+      var gap=row%2===0?-2:2;
+      for(var lane=-7;lane<=7;lane++){
+        if(lane===gap||lane===gap+1)continue;
+        architectBullet(g,e,Math.PI*.5,620*fury,d*.92,9,row%2?'#d8f7ff':'#b968ff',3.2,{
+          x:rainX+lane*68+(row%2?28:0),
+          y:rainY-480-row*135
+        });
+      }
+    }
+    fmsg('BLUEPRINT RAIN','#b968ff');
   }
   burst(g,e.x,e.y,'#b968ff',12,95);
 }
@@ -9877,7 +10123,7 @@ function fireDesignPattern(g,e,p,type,ang){
 function updateArchitectDesign(g,e,p,dt){
   var drain=1-Math.max(0,e.hp/e.maxHp);
   // Reposition speed climbs continuously from 6× to 24× as the bar empties.
-  var oldX=e.x,oldY=e.y,moveRate=6+drain*18;
+  var oldX=e.x,oldY=e.y,moveRate=(10+drain*26)*(e._architectAKPursuit?ARCHITECT_PHASE1_ANTI_KITE.COOLDOWN_PURSUIT_MULT:1);
   e.x+=(e._architectAnchorX-e.x)*Math.min(1,dt*moveRate);
   e.y+=(e._architectAnchorY-e.y)*Math.min(1,dt*moveRate);
   if(e._designDashHitCd>0)e._designDashHitCd-=dt;
@@ -9900,21 +10146,26 @@ function updateArchitectDesign(g,e,p,dt){
   if(!e._designAttack){
     e._designClock=(e._designClock||0)-dt*(1+drain*.85);
     if(e._designClock<=0){
-      var type=Math.floor(Math.random()*5);if(type===e._designLast)type=(type+1+Math.floor(Math.random()*4))%5;e._designLast=type;
-      var tell=(type===2?1.05:type===3?.72:.86)*(1-drain*.36);
+      var type;
+      if(e._designForceLongRange){
+        var longRangeTypes=[0,3,4,5];
+        type=longRangeTypes[Math.floor(Math.random()*longRangeTypes.length)];
+      }else type=Math.floor(Math.random()*6);
+      if(type===e._designLast)type=e._designForceLongRange?(type===0?3:type===3?4:type===4?5:0):(type+1+Math.floor(Math.random()*5))%6;e._designLast=type;
+      var tell=(type===2?1.05:type===3?.72:type===5?.9:.86)*(1-drain*.36);
       tell=Math.max(.48,tell);
       e._designAttack={type:type,t:0,dur:tell,angle:Math.atan2(p.y-e.y,p.x-e.x),px:p.x,py:p.y};
-      fmsg(['BLUEPRINT LANES','COMPASS ARRAY','CONSTRUCTION GRID','PRECISION TEST','BLUEPRINT RINGS'][type],'#d8f7ff');
+      fmsg(['BLUEPRINT LANES','COMPASS ARRAY','CONSTRUCTION GRID','PRECISION TEST','BLUEPRINT RINGS','BLUEPRINT RAIN'][type],'#d8f7ff');
     }
     return;
   }
   var at=e._designAttack;at.t+=dt;
   // Precision lines track early, then visibly lock for the final half-second.
   if(at.type===3&&at.t<at.dur-.5)at.angle=Math.atan2(p.y-e.y,p.x-e.x);
-  if(at.type===2&&at.t<.42){at.px=p.x;at.py=p.y;at.angle=Math.atan2(p.y-e.y,p.x-e.x);}
+  if((at.type===2||at.type===5)&&at.t<.42){at.px=p.x;at.py=p.y;at.angle=Math.atan2(p.y-e.y,p.x-e.x);}
   if(at.t>=at.dur){
-    fireDesignPattern(g,e,p,at.type,at.type===4?Math.atan2(p.y-e.y,p.x-e.x):at.angle);
-    var ra=Math.random()*Math.PI*2,rr=260+Math.random()*260;
+    fireDesignPattern(g,e,p,at.type,at.type===4?Math.atan2(p.y-e.y,p.x-e.x):at.angle,at.px,at.py);
+    var ra=Math.random()*Math.PI*2,rr=140+Math.random()*170;
     e._architectAnchorX=Math.max(150,Math.min(WORLD-150,p.x+Math.cos(ra)*rr));
     e._architectAnchorY=Math.max(150,Math.min(WORLD-150,p.y+Math.sin(ra)*rr));
     e._designDashing=true;burst(g,e.x,e.y,'#d8f7ff',16,130);
@@ -9922,7 +10173,49 @@ function updateArchitectDesign(g,e,p,dt){
   }
 }
 
+function drawArchitectDesignField(ctx,e,t){
+  if((e._architectPhase===undefined?architectPhase(e):e._architectPhase)!==0)return;
+  var cfg=ARCHITECT_PHASE1_ANTI_KITE,r=cfg.FIELD_RADIUS;
+  var locked=!!e._architectFieldDamageLocked,pulling=!!e._architectFieldPulling;
+  ctx.save();
+  ctx.strokeStyle=locked?'rgba(255,61,136,.9)':'rgba(185,104,255,.62)';
+  ctx.shadowColor=locked?'#ff3d88':'#b968ff';ctx.shadowBlur=_isMobile?7:22;
+  ctx.lineWidth=locked?4:2.5;ctx.setLineDash([18,11]);
+  ctx.rotate(t*.12);ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();
+  ctx.rotate(-t*.24);ctx.globalAlpha=.45;ctx.setLineDash([5,13]);
+  ctx.beginPath();ctx.arc(0,0,r-12,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  ctx.globalAlpha=.08+(locked?.08:0);ctx.fillStyle=locked?'#ff3d88':'#b968ff';
+  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
+  if(pulling&&e._architectFieldPlayerX!==undefined){
+    var px=e._architectFieldPlayerX-e.x,py=e._architectFieldPlayerY-e.y;
+    ctx.globalAlpha=.72;ctx.lineWidth=5;ctx.strokeStyle='#b968ff';ctx.shadowBlur=_isMobile?9:28;
+    for(var hand=-1;hand<=1;hand++){
+      var bend=hand*38+Math.sin(t*7+hand)*18;
+      ctx.beginPath();ctx.moveTo(0,0);
+      ctx.quadraticCurveTo(px*.48-py/Math.max(1,Math.abs(py))*bend,py*.48+bend,px,py);
+      ctx.stroke();
+    }
+    ctx.fillStyle='rgba(216,247,255,.22)';ctx.beginPath();ctx.arc(px,py,28+Math.sin(t*11)*5,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawArchitectDesignTelegraph(ctx,e,t){
+  ctx.save();
+  if(e._architectAKState==='telegraph'&&e._architectAKX!==null){
+    var tx=e._architectAKX-e.x,ty=e._architectAKY-e.y;
+    var remain=Math.max(0,e._architectAKTimer/ARCHITECT_PHASE1_ANTI_KITE.TELEGRAPH_DURATION);
+    ctx.strokeStyle='rgba(185,104,255,'+(.45+(1-remain)*.45)+')';ctx.fillStyle='rgba(155,70,255,.12)';
+    ctx.shadowColor='#b968ff';ctx.shadowBlur=_isMobile?7:24;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.arc(tx,ty,ARCHITECT_PHASE1_ANTI_KITE.SAFE_SPAWN_DISTANCE*.42*(1+remain*.28),0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.setLineDash([9,7]);ctx.beginPath();ctx.arc(tx,ty,ARCHITECT_PHASE1_ANTI_KITE.SAFE_SPAWN_DISTANCE*.58,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    for(var pi=0;pi<4;pi++){var pa=t*2.8+pi*Math.PI*.5;ctx.beginPath();ctx.moveTo(tx+Math.cos(pa)*34,ty+Math.sin(pa)*34);ctx.lineTo(tx+Math.cos(pa)*72,ty+Math.sin(pa)*72);ctx.stroke();}
+  }
+  if(window.ARCHITECT_ANTI_KITE_DEBUG){
+    ctx.shadowBlur=0;ctx.fillStyle='#ffffff';ctx.font='10px monospace';ctx.textAlign='center';
+    ctx.fillText('DIST '+Math.round(e._architectAKDistance||0)+'  OUT '+(e._architectAKOutTimer||0).toFixed(1)+'  CD '+(e._architectAKCooldown||0).toFixed(1),0,-e.r-42);
+  }
+  ctx.restore();
   var at=e._designAttack;if(!at)return;
   var pct=Math.min(1,at.t/at.dur),blink=.28+.35*Math.sin(t*18),L=Math.max(W,H)*1.6;
   ctx.save();ctx.lineWidth=1.5+pct*2;ctx.strokeStyle='rgba(210,160,255,'+(blink+pct*.25)+')';ctx.shadowColor='#b968ff';ctx.shadowBlur=_isMobile?4:16;
@@ -9937,12 +10230,32 @@ function drawArchitectDesignTelegraph(ctx,e,t){
     for(var gx=-3;gx<=3;gx++){ctx.beginPath();ctx.moveTo(rx+gx*cell,ry-3*cell);ctx.lineTo(rx+gx*cell,ry+3*cell);ctx.stroke();}
     for(var gy=-3;gy<=3;gy++){ctx.beginPath();ctx.moveTo(rx-3*cell,ry+gy*cell);ctx.lineTo(rx+3*cell,ry+gy*cell);ctx.stroke();}
     ctx.fillStyle='rgba(110,255,245,.15)';ctx.fillRect(rx-cell,ry-cell,cell*2,cell*2);
+    // Direction markers show the four walls entering along the displayed grid.
+    ctx.fillStyle='rgba(216,247,255,'+(.55+pct*.4)+')';
+    var marker=cell*3.65,arrowSize=10;
+    ctx.beginPath();ctx.moveTo(rx,ry-marker+arrowSize);ctx.lineTo(rx-arrowSize,ry-marker-arrowSize);ctx.lineTo(rx+arrowSize,ry-marker-arrowSize);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(rx,ry+marker-arrowSize);ctx.lineTo(rx-arrowSize,ry+marker+arrowSize);ctx.lineTo(rx+arrowSize,ry+marker+arrowSize);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(rx-marker+arrowSize,ry);ctx.lineTo(rx-marker-arrowSize,ry-arrowSize);ctx.lineTo(rx-marker-arrowSize,ry+arrowSize);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(rx+marker-arrowSize,ry);ctx.lineTo(rx+marker+arrowSize,ry-arrowSize);ctx.lineTo(rx+marker+arrowSize,ry+arrowSize);ctx.closePath();ctx.fill();
   }else if(at.type===3){
     if(at.t>=at.dur-.5){ctx.strokeStyle='#ffffff';ctx.lineWidth=3;ctx.globalAlpha=.8;}
     for(var k=-1;k<=1;k++){var pa=at.angle+k*.065;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(pa)*L,Math.sin(pa)*L);ctx.stroke();}
-  }else{
+  }else if(at.type===4){
     ctx.setLineDash([18,10]);ctx.beginPath();ctx.arc(0,0,e.r*(1.8+pct*3.2),at.angle+.38,at.angle+Math.PI*2-.38);ctx.stroke();
     ctx.beginPath();ctx.arc(0,0,e.r*(2.6+pct*4),at.angle+.46,at.angle+Math.PI*2-.46);ctx.stroke();ctx.setLineDash([]);
+  }else{
+    var rainRX=at.px-e.x,rainRY=at.py-e.y;
+    ctx.globalAlpha=.35+pct*.5;ctx.setLineDash([12,8]);
+    for(var rainLane=-7;rainLane<=7;rainLane++){
+      var rainLX=rainRX+rainLane*68;
+      ctx.beginPath();ctx.moveTo(rainLX,rainRY-520);ctx.lineTo(rainLX,rainRY+300);ctx.stroke();
+    }
+    ctx.setLineDash([]);ctx.fillStyle='rgba(185,104,255,.12)';
+    ctx.fillRect(rainRX-510,rainRY-520,1020,820);
+    ctx.fillStyle='rgba(255,255,255,.75)';
+    for(var arrow=-5;arrow<=5;arrow+=2){
+      ctx.beginPath();ctx.moveTo(rainRX+arrow*68-8,rainRY-150);ctx.lineTo(rainRX+arrow*68+8,rainRY-150);ctx.lineTo(rainRX+arrow*68,rainRY-132);ctx.closePath();ctx.fill();
+    }
   }
   ctx.restore();
 }
@@ -9976,6 +10289,10 @@ function architectShoot(g,e,p){
 function drawArchitectFivePhase(ctx,e,t){
   var ph=e._architectPhase===undefined?architectPhase(e):e._architectPhase,r=e.r,pulse=.5+.5*Math.sin(t*(ph+2));
   ctx.save();ctx.shadowColor=e.color;ctx.shadowBlur=_isMobile?8:26;ctx.lineJoin='round';
+  if(ph===0&&e._architectAKState==='telegraph'){
+    var phasePulse=.2+.55*Math.abs(Math.sin(t*24));
+    ctx.globalAlpha=phasePulse;
+  }
   if(ph===0){
     if(architectPhase1Sprite.complete&&architectPhase1Sprite.naturalWidth){
       // The Design: full painted sprite, with the collision body intentionally
@@ -16388,6 +16705,16 @@ var gtime=0;
 function hitE(g,e,dmg){
   var p=g.player;
   if(g.enemies.indexOf(e)<0){return;}
+  // The Architect's Phase 1 core rejects every player damage source while
+  // the runner remains outside the Design Field grace period.
+  if(e.isBoss&&e.galaxy===9&&(e._architectPhase===undefined?architectPhase(e):e._architectPhase)===0&&e._architectFieldDamageLocked){
+    if((e._architectFieldBlockFx||0)<=0){
+      e._architectFieldBlockFx=.12;
+      burst(g,e.x+(Math.random()-.5)*e.r,e.y+(Math.random()-.5)*e.r,'#b968ff',4,55);
+      g.particles.push({type:'oreText',x:e.x,y:e.y-e.r*.5,text:'NULL',life:.65,maxLife:.65,color:'#d8f7ff',vy:-24});
+    }
+    return;
+  }
   // ── G3 Void Tank: reflect damage back at player when shield active ──
   // Volt node AoE energy cannot be physically reflected — only targeted projectiles
   // ── Amplifier: Crit chance ──
@@ -17073,21 +17400,22 @@ function update(dt){
     // ── SECTOR ZERO ──
     else if(g.galaxy===-2){
       var kw0=g.killsForBoss||0;
+      var _szRequired=getEffectiveBossKillRequirement(SECTOR_ZERO);
       var sm0=document.getElementById('sectorMeter');
       var smf0=document.getElementById('sectorMeterFill');
       var smc0=document.getElementById('sectorMeterCount');
       if(sm0) sm0.style.display='block';
       // Meter fills to 50 then locks at 100%
-      var _szPct=Math.min(1,kw0/50);
+      var _szPct=Math.min(1,kw0/_szRequired);
       if(smf0){smf0.style.width=(_szPct*100)+'%';smf0.style.background='linear-gradient(90deg,#4488ff,#88aaff)';}
-      if(smc0) smc0.textContent=kw0<50?(kw0+'/50'):'BOSS';
+      if(smc0) smc0.textContent=kw0<_szRequired?(kw0+'/'+_szRequired):'BOSS';
       // At 25 kills — fire kill meter tooltip once
       if(kw0>=25 && !g._szKmTutDone){
         g._szKmTutDone=true;
         tutCheckKillMeter();
       }
       // At 50 kills — spawn S0 boss once
-      if(kw0>=50 && !g._szBossSpawned){
+      if(kw0>=_szRequired && !g._szBossSpawned){
         g._szBossSpawned=true;
         // Clear regular enemies
         for(var _sbi=g.enemies.length-1;_sbi>=0;_sbi--){
@@ -17109,12 +17437,11 @@ function update(dt){
         });
         // Trigger cinematic — pauses game, pans to boss, dialogue, then resumes with boss music
         var _szBossRef=g.enemies[g.enemies.length-1];
-        setBossCheckpoint('main',50);
+        setBossCheckpoint('main',_szRequired);
         startSentinelCinematic(_szBossRef, g);
       }
     } else {
-    var _kThresh=[100,300,500,700,500,500,800,2640,1,4160];
-    var thresh=_kThresh[Math.min(g.galaxy||0,9)];
+    var thresh=getEffectiveBossKillRequirement(g.galaxy||0);
     var kw=g.killsForBoss||0;
     var sm=document.getElementById('sectorMeter');
     var smf=document.getElementById('sectorMeterFill');
@@ -17123,8 +17450,6 @@ function update(dt){
     var _gmEl=document.getElementById('germinalMarker');
     var _hasHerald=(g.galaxy||0)>=4&&(g.galaxy||0)!==5&&(g.galaxy||0)!==6&&(g.galaxy||0)!==7&&(g.galaxy||0)!==8&&(g.galaxy||0)!==9;
     if(_gmEl) _gmEl.style.display=(_hasHerald&&!g._heraldFought&&!g._heraldAlive&&!g.bossAlive)?'block':'none';
-    var _vbEl=document.getElementById('voidBloomMarker');
-    if(_vbEl) _vbEl.style.display=((g.galaxy||0)===3&&!g.bossAlive&&!g.bossFought)?'block':'none';
     if(sm){
 
       sm.style.display='block';
@@ -21898,14 +22223,17 @@ function renderPHud(){
   var row=document.getElementById('prow');
   if(!row)return;
   row.innerHTML='';
+  var activeCount=0;
   var all=[].concat(PERM_DEFS.SHIP,PERM_DEFS.WEAPONS,PERM_DEFS.ABILITIES);
   for(var i=0;i<all.length;i++){
     var def=all[i], r=pRank(def.id);
     if(!r)continue;
+    activeCount++;
     var maxed=r>=def.maxRank;
     var d=document.createElement('div');
     var _isUlt=maxed&&def.ult;
     d.className='pch';
+    d.dataset.permId=def.id;
     d.style.cssText='display:inline-flex;flex-direction:column;align-items:center;gap:2px;border-radius:6px;padding:6px 8px;font-size:9px;min-width:48px;text-align:center;'
       +(_isUlt
         ?'background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(155,89,255,0.12));border:1px solid rgba(255,215,0,0.6);color:#ffd700;box-shadow:0 0 8px rgba(255,215,0,0.2);'
@@ -21919,10 +22247,71 @@ function renderPHud(){
     lbl.style.cssText='font-family:Orbitron,sans-serif;font-size:8px;letter-spacing:1px;color:'+(_isUlt?'#ffd700':maxed?'#00f5ff':'#9b59ff')+';';
     lbl.textContent=_isUlt?'★ ULT':maxed?'MAX':r+'/'+def.maxRank;
     d.appendChild(ico);d.appendChild(lbl);
+    (function(card,cardDef,cardRank){
+      card.addEventListener('pointerdown',function(e){
+        e.stopPropagation();
+        SFX.click&&SFX.click();
+        showPauseUpgradeQuick(card,cardDef,cardRank);
+      });
+    })(d,def,r);
     row.appendChild(d);
   }
-  var prowLbl=document.getElementById('prowLabel');
-  if(prowLbl) prowLbl.style.display=row.children.length>0?'block':'none';
+  if(!activeCount){
+    var empty=document.createElement('div');
+    empty.className='prowEmpty';
+    empty.textContent='NO PERMANENT UPGRADES INSTALLED';
+    row.appendChild(empty);
+  }
+  var count=document.getElementById('prowCount');
+  if(count)count.textContent=activeCount+' ACTIVE';
+}
+function permQuickEffect(def,r){
+  function gain(mult){return Math.round((Math.pow(mult,r)-1)*100);}
+  function reduction(mult){return Math.round((1-Math.pow(mult,r))*100);}
+  switch(def.id){
+    case 'p_hull':return 'MAX HULL +'+(25*r);
+    case 'p_spd':return 'MOVE SPEED +'+gain(1.05)+'%';
+    case 'p_regen':return 'HULL REGEN +'+r+'/SEC';
+    case 'p_magnet':return 'PICKUP RANGE +'+gain(1.20)+'%';
+    case 'p_xp':return 'XP GAIN +'+gain(1.05)+'%';
+    case 'p_pickdur':return 'PICKUP DURATION +'+(2*r)+' SEC';
+    case 'p_dmg':return 'WEAPON DAMAGE +'+gain(1.08)+'%';
+    case 'p_cd':return 'FIRE COOLDOWN -'+reduction(.94)+'%';
+    case 'p_pierce':return 'SHOT PIERCE +'+r;
+    case 'p_abcd':return 'ABILITY COOLDOWN -'+reduction(.94)+'%';
+    default:return def.abilityStats?def.abilityStats(r).toUpperCase():(def.desc||'ACTIVE').toUpperCase();
+  }
+}
+function showPauseUpgradeQuick(card,def,r){
+  var quick=document.getElementById('prowQuick');
+  var name=document.getElementById('prowQuickName');
+  var effect=document.getElementById('prowQuickEffect');
+  if(!quick||!name||!effect)return;
+  var wasSelected=card.classList.contains('selected');
+  var cards=document.querySelectorAll('#prow .pch');
+  for(var i=0;i<cards.length;i++)cards[i].classList.remove('selected');
+  if(wasSelected){
+    quick.classList.remove('show');
+    return;
+  }
+  card.classList.add('selected');
+  name.textContent=def.name;
+  effect.textContent=permQuickEffect(def,r);
+  quick.classList.add('show');
+}
+function resetPauseUpgradeQuick(){
+  var quick=document.getElementById('prowQuick');
+  if(quick)quick.classList.remove('show');
+  var cards=document.querySelectorAll('#prow .pch');
+  for(var i=0;i<cards.length;i++)cards[i].classList.remove('selected');
+}
+function setPauseUpgradeDrawer(open){
+  var wrap=document.getElementById('prowWrap');
+  var toggle=document.getElementById('prowToggle');
+  if(!wrap||!toggle)return;
+  wrap.classList.toggle('open',!!open);
+  toggle.setAttribute('aria-expanded',open?'true':'false');
+  if(!open)resetPauseUpgradeQuick();
 }
 
 // ─── RENDER ───
@@ -29516,6 +29905,7 @@ function drawBossShape(ctx,e,col,t){
   // ── G9 THE ARCHITECT ─────────────────────────────────────────────────
   // Matches G9 void heart hybrid theme: all prior shapes merged into one entity
   case 9: default:{
+    drawArchitectDesignField(ctx,e,t);
     drawArchitectFivePhase(ctx,e,t);
     break;
     // Enraged pulse rate
@@ -32012,6 +32402,9 @@ function _checkpointClone(value){
 }
 function setBossCheckpoint(kind,threshold){
   if(!G||!G.player)return;
+  var effectiveRequirement=getEffectiveBossKillRequirement(G.galaxy||0);
+  if(kind==='main')threshold=effectiveRequirement;
+  else threshold=Math.min(threshold||0,Math.floor(effectiveRequirement*0.5));
   var old=window._runBossCheckpoint;
   var checkpointGalaxy=G.galaxy||0;
   // A main checkpoint only blocks weaker/repeated snapshots in the same galaxy.
@@ -32056,9 +32449,9 @@ function restoreBossCheckpoint(){
   G._freezePlayerTimer=0;G._playerFrozenTimer=0;
   G._heraldAlive=false;G.bossAlive=false;G.bossFought=false;G.portal=null;
   if(cp.kind==='mini'){
-    G._heraldFought=false;G.killsForBoss=cp.threshold;
+    G._heraldFought=false;G.killsForBoss=Math.min(cp.threshold||0,Math.floor(getEffectiveBossKillRequirement(G.galaxy||0)*0.5));
   }else{
-    G._heraldFought=true;G.killsForBoss=cp.threshold;
+    G._heraldFought=true;G.killsForBoss=getEffectiveBossKillRequirement(G.galaxy||0);
     if((G.galaxy||0)===-2)G._szBossSpawned=false;
   }
   window._resurrectForfeited=false;window._vhBgActive=false;
@@ -32075,6 +32468,7 @@ function restoreBossCheckpoint(){
   var bossBarEl=document.getElementById('bb');if(bossBarEl)bossBarEl.style.display='none';
   var sectorEl=document.getElementById('sectorMeter');
   if(sectorEl)sectorEl.style.display=(G.galaxy||0)===7?'none':'block';
+  refreshBossProgressMeter(G.galaxy||0,false);
   var pauseEl=document.getElementById('pauseBtn');if(pauseEl){pauseEl.style.display='flex';pauseEl.innerHTML=svgIcon('pause');}
   G.camera=G.camera||{x:0,y:0};
   G.camera.x=Math.max(0,Math.min(WORLD-W,G.player.x-W/2));
@@ -32298,7 +32692,7 @@ function gameOver(){
   var _el_jz=document.getElementById('jz');if(_el_jz)_el_jz.style.display='none';
   var _el_jbase=document.getElementById('jbase');if(_el_jbase)_el_jbase.style.display='none';
   var _el_singBtn=document.getElementById('singBtn');if(_el_singBtn)_el_singBtn.style.display='none';
-  var prow=document.getElementById('prow');if(prow)prow.style.display='none';var prowLbl=document.getElementById('prowLabel');if(prowLbl)prowLbl.style.display='none';
+  setPauseUpgradeDrawer(false);
   if(!G._deathCounted){
     G._deathCounted=true;
     _runStats.onDeath();
@@ -33245,6 +33639,7 @@ function startGame(){
   document.getElementById('pauseBtn').innerHTML=svgIcon('pause');
   try{
     newGame();startMusic();safeRAF();
+    refreshBossProgressMeter(currentGalaxy,false);
     var _slvl=document.getElementById('lvl');if(_slvl)_slvl.textContent=G.player.level;
   }catch(e){
     var dbg=document.getElementById('dbgErr');
@@ -34120,8 +34515,7 @@ function _openDevPanelInner(panel, content){
           setBossCheckpoint('main',50);
           fmsg('DEV: SENTINEL PRIME INCOMING','#4488ff');
         } else {
-          var _kThreshDev=[100,300,500,700,500,500,2080,2640,3360,4160];
-          var _thresh=_kThreshDev[Math.min(G.galaxy||0,9)];
+          var _thresh=getEffectiveBossKillRequirement(G.galaxy||0);
           G.killsForBoss=_thresh+1;
           G.bossAlive=false; G.bossFought=false;
           // The normal spawn path will replace this with a snapshot taken at
@@ -35442,6 +35836,9 @@ var JUKEBOX_TRACKS=[
   {id:'g6boss', name:'THE PULSE',           galaxy:6,  type:'boss',
    url:'https://cdn.jsdelivr.net/gh/iamabel212-byte/VoidRunners@main/assests/audio/G7Boss.mp3',
    col:'#ff2200', unlock:function(){return lsG('vr_cdx_crimson_boss',false);}},
+  {id:'g9boss', name:'EVENT HORIZON',       galaxy:9,  type:'boss',
+   url:'assests/audio/EventHorizon.mp3',
+   col:'#b968ff', unlock:function(){return visitedGalaxies.indexOf(9)>=0||lsG('vr_architectResting',false);}},
   {id:'gemrush',name:'GEM RUSH',            galaxy:-1, type:'menu',
    url:'https://cdn.jsdelivr.net/gh/iamabel212-byte/VoidRunners@main/assests/audio/GemRush.mp3',
    col:'#ffd700', unlock:function(){return true;}},
@@ -36404,7 +36801,7 @@ function togglePause(){
     document.getElementById('pauseMenu').style.display='flex';updatePrestigeUI();
     var _plm=document.getElementById('pauseLockMsg');if(_plm){_plm.style.display='none';_plm.style.opacity='0';}
     document.getElementById('pauseBtn').innerHTML=svgIcon('play');
-    renderPHud();var prow=document.getElementById('prow');if(prow)prow.style.display='flex';
+    renderPHud();setPauseUpgradeDrawer(false);
   }
 }
 
@@ -36609,6 +37006,11 @@ document.getElementById('pauseBtn').addEventListener('pointerdown',function(e){
 
 });
 document.getElementById('resumeBtn').addEventListener('pointerdown',function(){SFX.click();resumeGame();});
+document.getElementById('prowToggle').addEventListener('pointerdown',function(e){
+  e.stopPropagation();
+  SFX.click&&SFX.click();
+  setPauseUpgradeDrawer(!document.getElementById('prowWrap').classList.contains('open'));
+});
 
 // ── PRESTIGE / VOID PANEL WIRING ─────────────────────────────────────────────
 var _vc=document.getElementById('voidClose');if(_vc)_vc.addEventListener('pointerdown',function(){
@@ -36677,7 +37079,8 @@ var bossTracks = {
   3: new Audio('https://cdn.jsdelivr.net/gh/iamabel212-byte/VoidRunners@main/assests/audio/RockBoss%20.mp3'),
   4: new Audio('https://cdn.jsdelivr.net/gh/iamabel212-byte/VoidRunners@main/assests/audio/G5Boss.mp3'),
   5: new Audio('https://cdn.jsdelivr.net/gh/iamabel212-byte/VoidRunners@main/assests/audio/G6Boss.mp3'),
-  6: new Audio('https://cdn.jsdelivr.net/gh/iamabel212-byte/VoidRunners@main/assests/audio/G7Boss.mp3')
+  6: new Audio('https://cdn.jsdelivr.net/gh/iamabel212-byte/VoidRunners@main/assests/audio/G7Boss.mp3'),
+  9: new Audio('assests/audio/EventHorizon.mp3')
 };
 (function(){ for(var k in galaxyTracks){ var a=galaxyTracks[k]; a.loop=true; a.volume=musicVol/200; } for(var k in bossTracks){ var a=bossTracks[k]; a.loop=true; a.volume=musicVol/200; } })();
 function stopBossMusic(){ for(var k in bossTracks){ try{ bossTracks[k].pause(); bossTracks[k].currentTime=0; }catch(e){} } }
