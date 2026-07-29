@@ -198,8 +198,44 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 #resBtn,#resSkipBtn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 #pauseBtn:active{background:rgba(0,245,255,0.15);}
 #miningRing{position:fixed;border-radius:50%;border:2px solid #00f5ff;pointer-events:none;z-index:8;display:none;}
-#pauseMenu{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(2,2,10,0.92);z-index:35;pointer-events:all;}
-#pauseMenu h2{font-family:'Orbitron',sans-serif;font-size:28px;color:var(--c);letter-spacing:6px;text-shadow:0 0 20px var(--c);margin-bottom:24px;}
+#pauseMenu{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:flex-start;background:radial-gradient(circle at 50% 18%,rgba(0,245,255,.1),transparent 34%),rgba(1,3,13,.96);z-index:35;pointer-events:all;padding:clamp(22px,6vh,58px) 18px 24px;box-sizing:border-box;overflow-y:auto;}
+#pauseMenu:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.2;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,245,255,.08) 4px);mix-blend-mode:screen;}
+#pauseMenu h2{font-family:'Orbitron',sans-serif;font-size:clamp(26px,8vw,38px);color:var(--c);letter-spacing:8px;text-shadow:0 0 24px var(--c);margin:8px 0 4px;}
+.pauseShell{position:relative;width:min(92vw,480px);display:flex;flex-direction:column;align-items:center;z-index:1;}
+.pauseKicker{font-family:Orbitron,sans-serif;font-size:9px;letter-spacing:4px;color:#557b91;}
+.pauseRule{width:92px;height:2px;margin:7px 0 12px;background:linear-gradient(90deg,transparent,#00f5ff,transparent);box-shadow:0 0 10px #00f5ff;}
+.pauseStats,.debriefStats{display:grid;grid-template-columns:repeat(4,1fr);width:100%;border:1px solid rgba(0,245,255,.22);background:rgba(3,17,29,.76);margin-bottom:14px;box-shadow:inset 0 0 22px rgba(0,245,255,.04);}
+.pauseStat,.debriefStat{padding:10px 3px;text-align:center;border-right:1px solid rgba(0,245,255,.14);min-width:0;}
+.pauseStat:last-child,.debriefStat:last-child{border-right:0;}
+.pauseStat b,.debriefStat b{display:block;font:10px Orbitron,sans-serif;color:#c8faff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pauseStat small,.debriefStat small{display:block;font:7px Orbitron,sans-serif;letter-spacing:1px;color:#486274;margin-top:4px;}
+#pauseMenu .btn{width:100%;max-width:none;min-height:52px;margin:0 0 9px;border-radius:3px;background:linear-gradient(180deg,rgba(13,70,92,.78),rgba(2,27,48,.9));}
+#pauseMenu #resumeBtn{min-height:66px;font-size:17px;border-color:#00f5ff;color:#d9ffff;box-shadow:0 0 22px rgba(0,245,255,.12),inset 0 0 18px rgba(0,245,255,.1);}
+.pauseGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;}
+.pauseGrid .btn{font-size:10px!important;letter-spacing:1px!important;}
+.pauseUtility{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;width:100%;margin-top:3px;}
+.pauseUtility .btn{min-height:40px!important;padding:8px 2px!important;font-size:8px!important;letter-spacing:1px!important;color:#66889b!important;}
+.pauseK0{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;margin:5px 0 10px;padding:9px 11px;border-left:2px solid #00f5ff;background:rgba(0,245,255,.045);text-align:left;}
+.pauseK0 img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 7px #00f5ff);}
+.pauseK0 div{font:8px Orbitron,sans-serif;letter-spacing:1px;color:#7396a8;line-height:1.55}.pauseK0 b{color:#00f5ff;}
+.stateScreen{position:relative;width:min(92vw,470px);margin:auto;display:flex;flex-direction:column;align-items:center;z-index:2;}
+.stateKicker{font:9px Orbitron,sans-serif;letter-spacing:3px;color:#8768b8;margin-bottom:7px;}
+.stateTitle{font:700 clamp(28px,9vw,42px) Orbitron,sans-serif;letter-spacing:4px;margin:0;text-align:center;}
+.stateSub{font:9px Orbitron,sans-serif;letter-spacing:2px;color:#6d7f91;margin:7px 0 18px;text-align:center;}
+.resRitual{width:190px;height:190px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;background:radial-gradient(circle,rgba(155,89,255,.17),rgba(1,3,13,.2) 58%,transparent 60%);border:1px solid rgba(155,89,255,.35);box-shadow:0 0 34px rgba(155,89,255,.15),inset 0 0 30px rgba(155,89,255,.1);}
+.resRitual:before,.resRitual:after{content:"";position:absolute;border-radius:50%;border:1px dashed rgba(255,215,0,.35);inset:13px;animation:resOrbit 12s linear infinite}.resRitual:after{inset:30px;border-color:rgba(155,89,255,.45);animation-direction:reverse;animation-duration:8s}
+@keyframes resOrbit{to{transform:rotate(360deg)}}
+.resGlyph{font:700 52px Orbitron,sans-serif;color:#ffd700;text-shadow:0 0 22px #ffd700;transform:rotate(-12deg);}
+.resCostCard{width:100%;box-sizing:border-box;display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(255,215,0,.24);background:rgba(24,18,2,.55);margin-bottom:10px;}
+.resCostCell{padding:10px;text-align:center;border-right:1px solid rgba(255,215,0,.15)}.resCostCell:last-child{border:0}
+.resCostCell b{display:block;font:12px Orbitron,sans-serif;color:#ffd700}.resCostCell small{font:7px Orbitron,sans-serif;letter-spacing:1px;color:#786d42}
+.resK0,.debriefK0{width:100%;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:9px 12px;margin:4px 0 12px;border:1px solid rgba(0,245,255,.18);background:rgba(0,245,255,.04);text-align:left;}
+.resK0 img,.debriefK0 img{width:40px;height:40px;object-fit:contain;image-rendering:pixelated}.resK0 div,.debriefK0 div{font:8px Orbitron,sans-serif;color:#7893a5;line-height:1.5;letter-spacing:.7px}.resK0 b,.debriefK0 b{color:#00f5ff}
+.stateScreen .btn{width:100%;max-width:none}.stateScreen #resBtn{min-height:58px}.stateScreen #resSkipBtn{background:transparent!important;margin-top:4px;}
+.debriefGrade{position:absolute;right:5px;top:47px;width:64px;height:64px;border:2px solid #ffd700;display:flex;align-items:center;justify-content:center;transform:rotate(5deg);font:700 31px Orbitron,sans-serif;color:#ffd700;text-shadow:0 0 13px #ffd700;box-shadow:0 0 16px rgba(255,215,0,.2),inset 0 0 14px rgba(255,215,0,.1)}
+.debriefCards{width:100%;display:grid;gap:8px;margin-bottom:10px}.debriefCard{box-sizing:border-box;width:100%;padding:11px 13px;border:1px solid rgba(0,245,255,.22);background:linear-gradient(90deg,rgba(0,245,255,.07),rgba(4,9,20,.7));text-align:left}.debriefCard b{display:block;font:9px Orbitron,sans-serif;color:#00f5ff;letter-spacing:1.5px;margin-bottom:5px}.debriefCard span{font-size:10px;color:#7893a5;line-height:1.45}.debriefCard.gift{border-color:rgba(155,89,255,.4);background:rgba(155,89,255,.08)}.debriefCard.gift b{color:#bb87ff}
+.debriefActions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}.debriefActions #goRBtn{grid-column:1/-1;min-height:62px;font-size:16px}.debriefActions .btn{width:100%;max-width:none;margin:0;font-size:10px}
+@media(max-height:680px){#pauseMenu{padding-top:16px}.pauseStats{margin-bottom:9px}.pauseStat{padding:7px 2px}.pauseK0{display:none}.stateScreen{transform:scale(.9);transform-origin:center}.resRitual{width:145px;height:145px}.debriefGrade{width:50px;height:50px;font-size:24px}}
 #settingsPanel input[type="range"]{touch-action:none;}
 #settingsPanel input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:28px;height:28px;border-radius:50%;background:#00f5ff;box-shadow:0 0 10px #00f5ff;cursor:pointer;border:2px solid #002233;}
 #settingsPanel input[type="range"]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:#00f5ff;box-shadow:0 0 10px #00f5ff;cursor:pointer;border:2px solid #002233;}
@@ -588,19 +624,30 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 </div>
 
 <div id="pauseMenu">
-  <div id="prowWrap">
-  <div id="prowLabel" style="font-family:Orbitron,sans-serif;font-size:9px;letter-spacing:2px;color:#6688aa;margin-bottom:6px;display:none;">PERMANENT UPGRADES</div>
-  <div id="prow"></div>
+  <div class="pauseShell">
+    <div class="pauseKicker">TACTICAL SYSTEMS SUSPENDED</div>
+    <h2>PAUSED</h2><div class="pauseRule"></div>
+    <div class="pauseStats">
+      <div class="pauseStat"><b id="pauseSectorStat">G1 · S1</b><small>LOCATION</small></div>
+      <div class="pauseStat"><b id="pauseHullStat">100%</b><small>HULL</small></div>
+      <div class="pauseStat"><b id="pauseTimeStat">00:00</b><small>RUN TIME</small></div>
+      <div class="pauseStat"><b id="pauseCrystalStat">0</b><small>CRYSTALS</small></div>
+    </div>
+    <div id="prowWrap"><div id="prowLabel" style="display:none;">PERMANENT UPGRADES</div><div id="prow"></div></div>
+    <button class="btn" id="resumeBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> RESUME RUN</button>
+    <div class="pauseGrid">
+      <button class="btn" id="pauseLoadoutBtn" style="border-color:#00f5ff88;color:#bdefff;">&#9632; LOADOUT</button>
+      <button class="btn" id="pauseGalaxyBtn" style="border-color:#9b59ff;color:#c695ff;">&#9672; GALAXY WARP</button>
+    </div>
+    <div id="pauseLockMsg" style="display:none;font-family:Orbitron,sans-serif;font-size:9px;color:#ff4466;letter-spacing:1px;text-align:center;line-height:1.5;margin:0 0 8px;"></div>
+    <button class="btn" id="pausePrestigeBtn" style="display:none;border-color:#9b59ff;color:#9b59ff;">&#9670; VOID ASCENSION</button>
+    <div class="pauseK0"><img src="assests/images/nav-unit-k0.png" alt="K-0"><div><b>K-0 // STANDBY</b><br><span id="pauseK0Line">Take a breath, pilot. The void can wait six seconds.</span></div></div>
+    <div class="pauseUtility">
+      <button class="btn" id="pauseSettingsBtn">&#9881; SETTINGS</button>
+      <button class="btn" id="pauseMMBtn">&#9651; MAIN MENU</button>
+      <button class="btn" id="pauseDevBtn">&#9673; DEV</button>
+    </div>
   </div>
-  <h2>PAUSED</h2>
-  <button class="btn" id="resumeBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> RESUME</button>
-  <button class="btn" id="pauseLoadoutBtn" style="border-color:#334;color:#556;"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><rect x="6" y="10" width="8" height="7" rx="1" stroke="currentColor" stroke-width="1.3" fill="rgba(80,80,120,0.15)"/><path d="M8 10V7a2 2 0 0 1 4 0v3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg> LOADOUT</button>
-  <div id="pauseLockMsg" style="display:none;font-family:Orbitron,sans-serif;font-size:9px;color:#ff4466;letter-spacing:1px;text-align:center;max-width:240px;line-height:1.5;margin-top:-4px;margin-bottom:8px;text-shadow:0 0 10px rgba(255,68,102,0.4);transition:opacity 0.4s;"></div>
-  <button class="btn" id="pauseGalaxyBtn" style="border-color:#9b59ff;color:#9b59ff;"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><ellipse cx="10" cy="10" rx="8" ry="3.5" stroke="currentColor" stroke-width="1.2" transform="rotate(-30 10 10)"/><ellipse cx="10" cy="10" rx="8" ry="3.5" stroke="currentColor" stroke-width="1.2" transform="rotate(30 10 10)" opacity="0.6"/><circle cx="10" cy="10" r="2" fill="currentColor"/></svg> GALAXY WARP</button>
-  <button class="btn" id="pausePrestigeBtn" style="display:none;border-color:#9b59ff;color:#9b59ff;font-size:13px;">&#9670; VOID ASCENSION</button>
-  <button class="btn" id="pauseMMBtn" style="border-color:#446;color:#aaa;font-size:12px;margin-top:8px;"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><polygon points="2,15 10,3 18,15" stroke="currentColor" stroke-width="1.5" fill="rgba(255,255,255,0.05)"/></svg> MAIN MENU</button>
-  <button class="btn" id="pauseSettingsBtn" style="border-color:#00f5ff44;color:#6688aa;font-size:11px;margin-top:4px;"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> SETTINGS</button>
-  <button class="btn" id="pauseDevBtn" style="border-color:#334;color:#334;font-size:11px;margin-top:4px;"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> DEV</button>
 </div>
 
 <div id="launchFlash"></div>
@@ -31855,6 +31902,16 @@ function tryResurrect(){
     + (canAfford?'NEXT RESURRECTION: '+nextCost+' KEY'+(nextCost!==1?'S':''):'MISSING: '+missingKeys+' KEY'+(missingKeys!==1?'S':''))+'</div>'
     + '<button class="btn" id="resBtn" style="border-color:'+(canAfford?'#ffd700':'#334')+';color:'+(canAfford?'#ffd700':'#556')+';font-size:16px;padding:16px 0;margin-bottom:12px;opacity:'+(canAfford?'1':'0.4')+';">⬡ RESURRECT · '+cost+' KEY'+(cost!==1?'S':'')+'</button>'
     + '<button class="btn" id="resSkipBtn" style="border-color:#334;color:#446;font-size:13px;">ACCEPT DEATH</button>';
+  ov.innerHTML = '<div class="stateScreen resurrectionScreen">'
+    + '<div class="stateKicker">INTERCEPTOR SIGNAL LOST</div>'
+    + '<h1 class="stateTitle" style="color:#ff3366;text-shadow:0 0 24px rgba(255,51,102,.65)">RESURRECTION</h1>'
+    + '<div class="stateSub">THE VOID OFFERS ONE MORE BREATH</div>'
+    + '<div class="resRitual"><div class="resGlyph">◇</div></div>'
+    + '<div class="resCostCard"><div class="resCostCell"><b>'+cost+' KEY'+(cost!==1?'S':'')+'</b><small>RITUAL COST</small></div>'
+    + '<div class="resCostCell"><b style="color:'+(canAfford?'#00f5ff':'#ff5577')+'">'+voidKeys+' OWNED</b><small>'+(canAfford?'NEXT COST '+nextCost:'MISSING '+missingKeys)+'</small></div></div>'
+    + '<div class="resK0"><img src="assests/images/nav-unit-k0.png" alt="K-0"><div><b>K-0 // EMERGENCY LINK</b><br>'+(canAfford?'I can pull you back—but you have to hold the signal steady.':'No keys left, pilot. I cannot anchor the signal.')+'</div></div>'
+    + '<button class="btn" id="resBtn" style="border-color:'+(canAfford?'#ffd700':'#334')+';color:'+(canAfford?'#ffd700':'#556')+';opacity:'+(canAfford?'1':'.42')+';">HOLD TO RESURRECT · '+cost+' KEY'+(cost!==1?'S':'')+'</button>'
+    + '<button class="btn" id="resSkipBtn" style="border-color:#ff336655;color:#8a4357;">HOLD TO ACCEPT DEATH</button></div>';
   ov.style.display = 'flex';
   ov.classList.remove('death-fadein'); void ov.offsetWidth; ov.classList.add('death-fadein');
   showMainMenu();
@@ -31987,6 +32044,21 @@ function _getDeathMotivation(count){
   var msg=_deathMotiveMsgs[(count-2)%_deathMotiveMsgs.length];
   return '<div style="font-family:Orbitron,sans-serif;font-size:11px;color:#9b59ff;letter-spacing:1.5px;margin-bottom:18px;font-style:italic;opacity:0.9;">"'+msg+'"</div>';
 }
+function _getRunGrade(){
+  var score=(G.wave||0)*7+(G.kills||0)*.32+Math.min(24,(G.time||0)/25);
+  if(score>=105)return 'S';
+  if(score>=72)return 'A';
+  if(score>=44)return 'B';
+  if(score>=22)return 'C';
+  return 'D';
+}
+function _getRunRecommendation(){
+  var p=G.player||{},hpRatio=p.maxHp?Math.max(0,p.hp)/p.maxHp:0;
+  if((G.wave||0)<4)return {title:'HULL INTEGRITY',body:'Early impact damage ended this run. Reinforce hull or shields before adding more firepower.'};
+  if((G.kills||0)<(G.wave||1)*5)return {title:'WEAPON OUTPUT',body:'Enemies stayed alive too long. Invest in beam damage or attack speed for the next launch.'};
+  if(hpRatio<=.15)return {title:'SURVIVAL SYSTEMS',body:'That run went deep. Regeneration or shield capacity should buy the last few seconds you need.'};
+  return {title:'MOBILITY DRIVE',body:'Your output held. More movement speed will make late-sector patterns easier to thread.'};
+}
 function gameOver(){
   incLS('totalDeaths');
   _resurrectCount=0;
@@ -32052,6 +32124,22 @@ function gameOver(){
     +'<svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><path d="M10 2L3 5v6c0 4 3.5 7 7 8 3.5-1 7-4 7-8V5z" stroke="currentColor" stroke-width="1.5" fill="rgba(0,245,255,0.15)"/></svg> LOADOUT</button>'
     +'<button class="btn" id="goMMBtn" style="border-color:#446;color:#aaa;">'
     +'<svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><polygon points="2,15 10,3 18,15" stroke="currentColor" stroke-width="1.5" fill="rgba(255,255,255,0.05)"/></svg> MAIN MENU</button>';
+  var _runGrade=_getRunGrade(),_runRec=_getRunRecommendation();
+  ov.innerHTML='<div class="stateScreen debriefScreen">'
+    +'<div class="stateKicker">RUN TERMINATED // RECOVERY COMPLETE</div>'
+    +'<h1 class="stateTitle" style="color:var(--r);text-shadow:0 0 25px rgba(255,51,102,.6)">DESTROYED</h1>'
+    +'<div class="stateSub">RUN DEBRIEF</div><div class="debriefGrade">'+_runGrade+'</div>'
+    +'<div class="debriefStats"><div class="debriefStat"><b>'+G.wave+'</b><small>SECTOR</small></div>'
+    +'<div class="debriefStat"><b>'+G.kills+'</b><small>KILLS</small></div>'
+    +'<div class="debriefStat"><b>'+m+':'+s+'</b><small>SURVIVED</small></div>'
+    +'<div class="debriefStat"><b style="color:#ffd700">+'+(G._deathEarned||0)+'</b><small>CRYSTALS</small></div></div>'
+    +'<div class="debriefCards">'
+    +(G._voidGift>0?'<div class="debriefCard gift"><b>◇ VOID GIFT // +'+G._voidGift+'</b><span>The void refuses to let your journey end empty-handed.</span></div>':'')
+    +'<div class="debriefCard"><b>RECOMMENDED UPGRADE // '+_runRec.title+'</b><span>'+_runRec.body+'</span></div></div>'
+    +'<div class="debriefK0"><img src="assests/images/nav-unit-k0.png" alt="K-0"><div><b>K-0 // RECOVERY LOG '+String(_deathCount).padStart(2,'0')+'</b><br>'+(_deathCount===1?'I have marked that maneuver as educational. Let us make the next one less educational.':'Ship lost. Pilot recovered. Pride status: probably repairable.')+'</div></div>'
+    +'<div class="debriefActions"><button class="btn" id="goRBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> RETRY RUN</button>'
+    +'<button class="btn" id="goLBtn" style="border-color:#00f5ff;color:#00f5ff;">LOADOUT</button>'
+    +'<button class="btn" id="goMMBtn" style="border-color:#446;color:#8999aa;">MAIN MENU</button></div></div>';
   ov.style.display='flex';
   ov.classList.remove('death-fadein'); void ov.offsetWidth; ov.classList.add('death-fadein');
   showMainMenu();
@@ -35991,6 +36079,33 @@ safeTap(document.getElementById('badgesBack'),function(){
 });
 document.getElementById('mCLBtn').addEventListener('pointerdown',function(){SFX.click&&SFX.click();openChannelLog();});
 
+function refreshPauseCommandDeck(){
+  if(!G)return;
+  var p=G.player||{},time=Math.max(0,G.time||0);
+  var mm=Math.floor(time/60).toString().padStart(2,'0'),ss=Math.floor(time%60).toString().padStart(2,'0');
+  var hull=p.maxHp?Math.max(0,Math.round((p.hp||0)/p.maxHp*100)):0;
+  var values={
+    pauseSectorStat:'G'+((G.galaxy||0)+1)+' · S'+(G.wave||1),
+    pauseHullStat:hull+'%',
+    pauseTimeStat:mm+':'+ss,
+    pauseCrystalStat:String(G.crystalsRun||0)
+  };
+  Object.keys(values).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=values[id];});
+  var line=document.getElementById('pauseK0Line');
+  if(line){
+    var tips=hull<35?[
+      'Hull is making a concerning noise. Let us call it character.',
+      'Recommend shields, distance, and considerably less exploding.'
+    ]:[
+      'Take a breath, pilot. The void can wait six seconds.',
+      'Systems frozen. Snacks remain regrettably unavailable.',
+      'Route stable. Your decision-making remains under observation.',
+      'I paused the danger. You are welcome.'
+    ];
+    line.textContent=tips[Math.floor(Math.random()*tips.length)];
+  }
+}
+
 function togglePause(){
   if(!G||!G.running||warpAnimating)return;
 
@@ -36003,6 +36118,7 @@ function togglePause(){
       _pm.style.display='flex';
       _pm.style.pointerEvents='none'; // block all input
     }
+    refreshPauseCommandDeck();
     updatePrestigeUI();
     document.getElementById('pauseBtn').innerHTML=svgIcon('play');
     // 5 second timer then crack + shatter + resume
@@ -36016,6 +36132,7 @@ function togglePause(){
     resumeGame();
   } else if(!G.paused){
     G.paused=true;SFX.pause();
+    refreshPauseCommandDeck();
     document.getElementById('pauseMenu').style.display='flex';updatePrestigeUI();
     var _plm=document.getElementById('pauseLockMsg');if(_plm){_plm.style.display='none';_plm.style.opacity='0';}
     document.getElementById('pauseBtn').innerHTML=svgIcon('play');
