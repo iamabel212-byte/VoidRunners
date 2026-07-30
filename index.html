@@ -9190,37 +9190,51 @@ var GALAXY_BOSSES=[
   // G1 ── VOID LEVIATHAN (Leviathan Field)
   // Design: massive eel head with phasing body
   // Mechanics: phase-charge dash, homing slime trail, tail whip burst
-  {name:'LEVIATHAN WYRM',color:'#ff6600',r:65,baseHp:120000,dmg:22,baseSpd:55,xpVal:160,coins:50,shootCd:2.2,
+  {name:'LEVIATHAN WYRM',color:'#ff6600',r:65,baseHp:65000,dmg:22,baseSpd:62,xpVal:160,coins:500,shootCd:1.55,
    shoot:function(g,e,p){
-     e._wyrmPhase=(e._wyrmPhase||0)%3;
+     e._wyrmPhase=(e._wyrmPhase||0)%4;
      if(e._wyrmPhase===0){
        // Fang volley — 3 curved fang-shaped projectiles aimed at player
-       var a=Math.atan2(p.y-e.y,p.x-e.x);
-       for(var i=-1;i<=1;i++){
-         var fa=a+i*0.28;
-         g.bullets.push({x:e.x,y:e.y,vx:Math.cos(fa)*260,vy:Math.sin(fa)*260,
+       var _wpLead=e.enraged?0.55:(e.hp/e.maxHp<0.68?0.4:0.25);
+       var _wpVx=p.vx||((g.joystick&&g.joystick.dx)||0)*p.spd;
+       var _wpVy=p.vy||((g.joystick&&g.joystick.dy)||0)*p.spd;
+       var a=Math.atan2((p.y+_wpVy*_wpLead)-e.y,(p.x+_wpVx*_wpLead)-e.x);
+       var _wpShots=e.enraged?7:5,_wpSpeed=e.enraged?465:(e.hp/e.maxHp<0.68?405:350);
+       for(var i=0;i<_wpShots;i++){
+         var fa=a+(i-(_wpShots-1)/2)*(e.enraged?0.16:0.19);
+         g.bullets.push({x:e.x,y:e.y,vx:Math.cos(fa)*_wpSpeed,vy:Math.sin(fa)*_wpSpeed,
            dmg:e.dmg,size:11,pierce:0,pc:0,color:'#ff8800',life:4,isEnemy:true,
-           homing:false,isFang:true,fangAngle:fa});
+           homing:false,isFang:true,fangAngle:fa,source:'wyrm predictive fang'});
        }
        fmsg('FANG VOLLEY','#ff6600');
      } else if(e._wyrmPhase===1){
        // Dash charge — telegraph then lunge
        if(!e._dashing&&!e._dashCharging){
-         e._dashTarget={x:p.x,y:p.y};
+         var _wdLead=e.enraged?0.5:0.3;
+         e._dashTarget={x:p.x+(p.vx||((g.joystick&&g.joystick.dx)||0)*p.spd)*_wdLead,y:p.y+(p.vy||((g.joystick&&g.joystick.dy)||0)*p.spd)*_wdLead};
          e._dashCharging=true;
-         e._dashChargeTimer=1.8;
+         e._dashChargeTimer=e.enraged?0.72:0.95;
          showWA('⚠ WYRM CHARGING','#ff4400');
          fmsg('⚠ DODGE!','#ff4400');
        }
-     } else {
+     } else if(e._wyrmPhase===2){
        // Phase 2 spread: fang burst in wide arc
        var a=Math.atan2(p.y-e.y,p.x-e.x);
-       for(var i=-2;i<=2;i++){
-         var fa=a+i*0.35;
-         g.bullets.push({x:e.x,y:e.y,vx:Math.cos(fa)*300,vy:Math.sin(fa)*300,
+       for(var i=-3;i<=3;i++){
+         var fa=a+i*0.27;
+         g.bullets.push({x:e.x,y:e.y,vx:Math.cos(fa)*390,vy:Math.sin(fa)*390,
            dmg:e.dmg*0.8,size:9,pierce:0,pc:0,color:'#ffaa00',life:3.5,isEnemy:true,
-           homing:false,isFang:true,fangAngle:fa});
+           homing:false,isFang:true,fangAngle:fa,source:'wyrm sweeping fangs'});
        }
+     } else {
+       var _wcCount=e.enraged?20:14,_wcOff=Math.atan2(p.y-e.y,p.x-e.x)+Math.PI/_wcCount;
+       for(var _wci=0;_wci<_wcCount;_wci++){
+         var _wca=_wcOff+_wci*Math.PI*2/_wcCount;
+         g.bullets.push({x:e.x,y:e.y,vx:Math.cos(_wca)*(e.enraged?390:330),vy:Math.sin(_wca)*(e.enraged?390:330),
+           dmg:e.dmg*0.72,size:8,pierce:0,pc:0,color:e.enraged?'#ff3366':'#ff7733',life:3.2,isEnemy:true,
+           homing:false,source:'wyrm coil burst'});
+       }
+       fmsg('COIL BURST','#ff7733');
      }
      e._wyrmPhase++;
    }},
@@ -14971,13 +14985,13 @@ function mkBoss(galaxyIdx,px,py){
     _wyrmPhaseTimer:0,
     _wyrmFireTrailT:0,
     // Ironclad phase — recurring timer
-    _wyrmIroncladTimer:0,_wyrmIroncladInterval:45,_wyrmIroncladCount:0,
+    _wyrmIroncladTimer:0,_wyrmIroncladInterval:52,_wyrmIroncladCount:0,
     _wyrmArmor:false,_wyrmArmorHP:0,_wyrmArmorMax:0,_wyrmArmorCracks:[],
     _wyrmWedgeSlots:null,_wyrmWedgeTimer:0,_wyrmWedgePhase:0,
     _wyrmArmorInRange:false,_wyrmArmorProximity:0,
     // Crystal phase
     _wyrmCrPulseTimer:0,
-    _wyrmPreSpd:0,
+    _wyrmPreSpd:0,_wyrmComboTimer:0,_wyrmRainPending:null,
     // G2 Null Arbiter — hack mini-game
     _hackActive:false,_hackTriggered:{75:false,50:false,25:false},
     _hackSeq:[],_hackInput:[],_hackStep:0,_hackPhaseNum:0,
@@ -15071,6 +15085,18 @@ var _runStats = (function(){
   }
   function endRun(unused,outcome){
     if(!_currentRun)return;if(outcome)_currentRun.outcome=outcome;_currentRun.endedAt=Date.now();_currentRun.outcome=_currentRun.outcome||'ended';
+    if(_currentRun._bossStartedAt!==undefined&&G&&G.bossAlive){
+      var activeBoss=null;
+      for(var _tbi=0;_tbi<(G.enemies||[]).length;_tbi++)if(G.enemies[_tbi].isBoss){activeBoss=G.enemies[_tbi];break;}
+      _currentRun.bossFights.push({
+        galaxy:G.galaxy||0,
+        name:activeBoss&&(activeBoss.name||activeBoss.type)||'UNKNOWN BOSS',
+        seconds:Math.max(0,(G.time||0)-_currentRun._bossStartedAt),
+        defeated:false,
+        remainingHpPct:activeBoss&&activeBoss.maxHp?Math.round(activeBoss.hp/activeBoss.maxHp*1000)/10:null,
+        phase:activeBoss&&(activeBoss._architectPhase!==undefined?activeBoss._architectPhase:(activeBoss._wyrmBossPhase||activeBoss.phase))||null
+      });
+    }
     _currentRun.walletEnd=typeof crystals!=='undefined'?crystals:_lastWallet;_currentRun.walletDelta=_currentRun.walletEnd-_currentRun.walletStart;
     _currentRun.reportedVsWallet=_currentRun.walletDelta-_currentRun.gems;
     if(_currentRun.asteroidsMined)_currentRun.avgCrystalsPerAsteroid=Math.round((_currentRun.crystalSources.asteroid||0)/_currentRun.asteroidsMined*10)/10;
@@ -19089,7 +19115,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           en._dashTimer=0.5;
           var ddx=en._dashTarget.x-en.x, ddy=en._dashTarget.y-en.y;
           var dlen=Math.sqrt(ddx*ddx+ddy*ddy)||1;
-          en._dashVx=(ddx/dlen)*900; en._dashVy=(ddy/dlen)*900;
+          en._dashVx=(ddx/dlen)*(en.enraged?1180:1020); en._dashVy=(ddy/dlen)*(en.enraged?1180:1020);
         }
       }
       if(en.galaxy===1&&en._dashing){
@@ -19124,8 +19150,8 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         var pt=en._wyrmPhaseTriggered;
 
         // ── HP-TRIGGERED PHASES ──
-        // Magma at 75%
-        if(bHpPct<=0.75&&!pt.magma&&en._wyrmBossPhase==='normal'){
+        // Magma at 68%
+        if(bHpPct<=0.68&&!pt.magma&&en._wyrmBossPhase==='normal'){
           pt.magma=true;en._wyrmBossPhase='magma';en._wyrmPhaseTimer=0;
           en._wyrmPreSpd=en.spd;en.spd*=1.4;
           fmsg('MAGMA PHASE — FIRE TRAIL!','#ff6600');
@@ -19141,12 +19167,12 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           showWA('CRYSTAL PHASE\nSHOCKWAVES + PURSUIT','#aa44ff');
           burst(g,en.x,en.y,'#aa44ff',20,150);
         }
-        // Enrage at 25%
-        if(bHpPct<=0.25&&!pt.enrage){
+        // Enrage at 28%
+        if(bHpPct<=0.28&&!pt.enrage){
           pt.enrage=true;en.enraged=true;
           en.spd=(en._wyrmPreSpd||55)*1.6;
-          en.shootCd*=0.5;
-          en._wyrmIroncladInterval=30; // faster ironclad during enrage
+          en.shootCd*=0.85;
+          en._wyrmIroncladInterval=42;
           fmsg('WYRM ENRAGED!','#ff3366');
           showWA('LEVIATHAN ENRAGED\nALL PHASES ACTIVE','#ff3366');
           burst(g,en.x,en.y,'#ff3366',30,200);
@@ -19154,16 +19180,44 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
 
         en._wyrmPhaseTimer+=dt;
 
-        // ── RECURRING IRONCLAD — every 45s (30s enraged) ──
+        // SKYFALL: predictive warning followed by a fast vertical fang rain.
         if(en._wyrmBossPhase!=='ironclad'){
+          en._wyrmComboTimer=(en._wyrmComboTimer||0)+dt;
+          var _wyrmComboCd=en.enraged?3.8:(bHpPct<0.68?5.0:6.2);
+          if(!en._wyrmRainPending&&en._wyrmComboTimer>=_wyrmComboCd){
+            en._wyrmComboTimer=0;
+            var _wrLead=en.enraged?.55:.38;
+            var _wrVx=p.vx||((g.joystick&&g.joystick.dx)||0)*p.spd;
+            var _wrVy=p.vy||((g.joystick&&g.joystick.dy)||0)*p.spd;
+            en._wyrmRainPending={x:p.x+_wrVx*_wrLead,y:p.y+_wrVy*_wrLead,t:en.enraged?.58:.72};
+            g.particles.push({type:'ring',x:en._wyrmRainPending.x,y:en._wyrmRainPending.y,radius:0,maxR:185,life:en._wyrmRainPending.t,maxLife:en._wyrmRainPending.t,color:'#ff5533'});
+            fmsg('SKYFALL — MOVE!','#ff5533');
+          }
+          if(en._wyrmRainPending){
+            en._wyrmRainPending.t-=dt;
+            if(en._wyrmRainPending.t<=0){
+              var _wr=en._wyrmRainPending;en._wyrmRainPending=null;
+              var _wrCount=en.enraged?11:9,_wrGap=Math.floor(_wrCount/2),_wrSpacing=72;
+              for(var _wri=0;_wri<_wrCount;_wri++){
+                if(_wri===_wrGap)continue;
+                var _wrx=_wr.x+(_wri-(_wrCount-1)/2)*_wrSpacing;
+                g.bullets.push({x:_wrx,y:_wr.y-520,vx:en.enraged?55:35,vy:en.enraged?610:520,dmg:en.dmg*.82,size:10,pierce:0,pc:0,color:'#ff5533',life:2.2,isEnemy:true,homing:false,source:'wyrm skyfall'});
+              }
+              burst(g,_wr.x,_wr.y-180,'#ff5533',16,160);
+            }
+          }
+        }
+
+        // ── RECURRING IRONCLAD — every 45s (30s enraged) ──
+        if(en._wyrmBossPhase!=='ironclad'&&en._wyrmIroncladCount<2){
           en._wyrmIroncladTimer=(en._wyrmIroncladTimer||0)+dt;
           if(en._wyrmIroncladTimer>=en._wyrmIroncladInterval){
             en._wyrmIroncladTimer=0;
             en._wyrmIroncladCount=(en._wyrmIroncladCount||0)+1;
             en._wyrmBossPhase='ironclad';en._wyrmPhaseTimer=0;
             en._wyrmArmor=true;
-            // Escalating taps: 22, 30, 38, ...
-            var tapReq=22+(en._wyrmIroncladCount-1)*8;
+            // Short interactive armor breaks: meaningful, but never long enough to stall the fight.
+            var tapReq=14+(en._wyrmIroncladCount-1)*4;
             en._wyrmArmorHP=tapReq;en._wyrmArmorMax=tapReq;
             en._wyrmArmorCracks=[];en._wyrmWedgeSlots=null;
             en._wyrmWedgeTimer=0;en._wyrmWedgePhase=0;
@@ -20105,7 +20159,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       }
 
       // Shoot pattern (suppress during G1 ironclad/crystal phases, G8 resurrection)
-      var _shootSuppressed=(en.galaxy===1&&(en._wyrmBossPhase==='ironclad'||en._wyrmBossPhase==='crystal'))||(en.galaxy===2&&en._hackActive)||(en.galaxy===8&&(en._ecResurrecting||en._ecHidden));
+      var _shootSuppressed=(en.galaxy===1&&en._wyrmBossPhase==='ironclad')||(en.galaxy===2&&en._hackActive)||(en.galaxy===8&&(en._ecResurrecting||en._ecHidden));
       if(!en.charging&&!_shootSuppressed){
         en.shootTimer=(en.shootTimer||0)+dt;
         var scd2=(en.shootCd||1.5)*(en.enraged?0.55:1);
@@ -26477,7 +26531,9 @@ function render(){
     if(e.isBoss){
       if(e._cinemaHidden||e._ecHidden){ ctx.restore(); continue; } // hidden during cinematic or Echo resurrection
       e._cx=cx; e._cy=cy; // pass camera to drawBossShape for segment world coords
-      drawBossShape(ctx,e,col,gtime);
+      // Sector Zero has its own Sentinel Prime renderer below. Sending galaxy -2
+      // through drawBossShape falls into its Architect default branch.
+      if(e.galaxy!==-2)drawBossShape(ctx,e,col,gtime);
       if(e.galaxy===9&&e._architectPhase===0)drawArchitectDesignTelegraph(ctx,e,gtime);
       // ── G0 TRACTOR BEAM VISUAL ──
       if(e.galaxy===0 && e._tractorActive){
@@ -32764,7 +32820,10 @@ function gameOver(){
   document.getElementById('pauseBtn').style.display='none';
   document.getElementById('pauseMenu').style.display='none';
   var _bb=document.getElementById('bb');if(_bb)_bb.style.display='none';
-  var earned=G.crystalsRun+Math.floor(G.kills/5);crystals+=earned;_runStats.addGems(earned,'end of run');lsS('vr_crystals',crystals);
+  // Deliberate progress payout. Collected crystals are already deposited live,
+  // so paying crystalsRun again silently doubled most income.
+  var earned=Math.min(1600,Math.floor((G.kills||0)/4)+Math.floor((G.wave||1)*18));
+  crystals+=earned;_runStats.addGems(earned,'progress reward');lsS('vr_crystals',crystals);
   G._deathEarned=earned;
   _runStats.endRun(G.crystalsRun);
   // Void gift — guarantee 60 crystals on first death so player can buy Pulse Laser
