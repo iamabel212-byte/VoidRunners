@@ -443,6 +443,8 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
   50%{opacity:1;text-shadow:0 0 16px rgba(255,215,0,0.8);}
 }
 @keyframes guidedPulse{0%{box-shadow:0 0 6px #00f5ff44,inset 0 0 8px #00f5ff11;}50%{box-shadow:0 0 18px #00f5ffaa,inset 0 0 20px #00f5ff33;}100%{box-shadow:0 0 6px #00f5ff44,inset 0 0 8px #00f5ff11;}}
+@keyframes upgradePromptPulse{0%,100%{box-shadow:0 0 8px rgba(0,245,255,.28),inset 0 0 8px rgba(0,245,255,.08);transform:scale(1);}50%{box-shadow:0 0 26px rgba(0,245,255,.85),0 0 42px rgba(255,215,0,.22),inset 0 0 18px rgba(0,245,255,.22);transform:scale(1.018);}}
+.upgradePrompt{animation:upgradePromptPulse 1.65s ease-in-out infinite!important;border-color:#00f5ff!important;color:#d9ffff!important;background:linear-gradient(180deg,rgba(0,245,255,.22),rgba(0,82,125,.52))!important;}
 @keyframes guidedTabPulse{0%{box-shadow:0 0 4px #ffd70044;}50%{box-shadow:0 0 16px #ffd700aa,0 0 30px #ffd70044;}100%{box-shadow:0 0 4px #ffd70044;}}
 @keyframes gemPulse{
   0%{transform:scale(1);}
@@ -728,7 +730,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="bossDeathFlash"></div>
 <div class="ov" id="menu" style="display:none;">
   <h1>VOID RUNNERS</h1>
-  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.8 · PROGRESSION</div>
+  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.9 · PREPARATION</div>
   <div class="tl" style="margin-bottom:18px;">DEEP SPACE SURVIVAL</div>
   <button class="btn" id="sBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> LAUNCH</button>
   <button class="btn" id="mBBtn" style="border-color:#00f5ff55;color:#66aacc;font-size:12px;">&#9632; LOADOUT</button>
@@ -1351,7 +1353,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="clPanel" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,0.97);z-index:80;padding:0;">
   <div style="width:min(92vw,460px);display:flex;flex-direction:column;height:100%;padding:24px 0 0;min-height:0;">
     <div style="font-family:Orbitron,sans-serif;font-size:16px;color:#00f5ff;letter-spacing:4px;text-shadow:0 0 20px #00f5ff;margin-bottom:4px;text-align:center;">&#9635; CHANNEL LOG</div>
-    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.8 · PROGRESSION — TRANSMISSION HISTORY</div>
+    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.9 · PREPARATION — TRANSMISSION HISTORY</div>
     <div id="clContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:0 4px 20px;min-height:0;"></div>
     <button class="btn" id="clClose" style="width:min(92vw,460px);margin:12px 0 24px;flex-shrink:0;">CLOSE</button>
   </div>
@@ -1393,6 +1395,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
   <div id="loadoutContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;min-height:0;will-change:scroll-position;"></div>
   <!-- Fixed footer -->
   <div style="flex-shrink:0;padding:10px 16px 24px;background:rgba(5,5,20,0.99);border-top:1px solid rgba(255,255,255,0.06);">
+    <button class="btn" id="loadoutWarpBtn" style="display:none;width:100%;font-size:14px;padding:16px 0;border-color:#9b59ff;color:#d7b6ff;box-shadow:0 0 18px rgba(155,89,255,.32);">HOLD TO WARP</button>
     <button class="btn" id="loadoutClose" style="width:100%;">CLOSE</button>
   </div>
 
@@ -13808,7 +13811,7 @@ function buildSkillTree(fromPortal){
   if(ptEl) ptEl.textContent=points;
   // Update back button label
   var _stBackBtn=document.getElementById('skillTreeBack');
-  if(_stBackBtn) _stBackBtn.textContent=fromPortal?'WARP →':'← BACK';
+  if(_stBackBtn) _stBackBtn.textContent=fromPortal?'UPGRADE →':'← BACK';
 
   var content=document.getElementById('skillTreeContent');
   if(!content) return;
@@ -13902,13 +13905,13 @@ function buildSkillTree(fromPortal){
   apexRow.appendChild(apexEl);
   content.appendChild(apexRow);
 
-  // Portal footer: WARP button + skip
+  // Portal footer: prepare the ship before committing to the next galaxy.
   if(fromPortal){
     var warpBtn=document.createElement('button');
-    warpBtn.style.cssText='width:100%;background:rgba(68,136,255,0.12);border:1.5px solid #4488ff;color:#4488ff;font-family:Orbitron,sans-serif;font-size:11px;padding:14px;border-radius:6px;letter-spacing:3px;cursor:pointer;margin-bottom:10px;';
+    warpBtn.style.cssText='width:100%;background:linear-gradient(180deg,rgba(0,245,255,.18),rgba(68,136,255,.14));border:1.5px solid #00f5ff;color:#c8fbff;font-family:Orbitron,sans-serif;font-size:12px;padding:16px;border-radius:6px;letter-spacing:3px;cursor:pointer;margin-bottom:10px;box-shadow:0 0 18px rgba(0,245,255,.25);';
     var _destName=GALAXIES[window._stPortalDest]?GALAXIES[window._stPortalDest].name:'NEXT GALAXY';
-    warpBtn.textContent='WARP TO '+_destName+' →';
-    warpBtn.addEventListener('pointerdown',function(ev){ ev.stopPropagation(); _stWarpToNext(); });
+    warpBtn.textContent='UPGRADE SHIP →';
+    warpBtn.addEventListener('pointerdown',function(ev){ ev.stopPropagation(); _stOpenPortalLoadout(); });
     content.appendChild(warpBtn);
   }
 }
@@ -14042,7 +14045,7 @@ function setupSkillTreeHandlers(){
   if(sb) sb.addEventListener('pointerdown',function(e){
     e.stopPropagation();
     if(window._stFromPortal){
-      _stWarpToNext();
+      _stOpenPortalLoadout();
     } else if(window._stFromMenu){
       window._stFromMenu=false;
       hideSkillTree();
@@ -14109,7 +14112,19 @@ function _stWarpToNext(){
   document.getElementById('skillTreePanel').style.display='none';
   window._stSelectedNode=null;
   stApplyAll();
-  if(window._stPortalDest!==undefined) startGemRush(window._stPortalDest);
+  var _dest=window._stPortalDest;
+  window._loadoutFromPortal=false;
+  window._stFromPortal=false;
+  window._stPortalDest=undefined;
+  if(_dest!==undefined) startGemRush(_dest);
+}
+
+function _stOpenPortalLoadout(){
+  document.getElementById('skillTreePanel').style.display='none';
+  window._stSelectedNode=null;
+  stApplyAll();
+  window._loadoutFromPortal=true;
+  openLoadout('upgrades',false);
 }
 
 
@@ -15053,7 +15068,7 @@ var _runStats = (function(){
   function galaxyKey(i){return i===-2?'s0':'g'+Math.max(0,i||0);}
   function snapshot(){var o={};try{for(var k in permData)o[k]=permData[k]||0;}catch(e){}return o;}
   function startRun(){
-    _currentRun={version:4,gameVersion:'v0.9.8 · PROGRESSION',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
+    _currentRun={version:4,gameVersion:'v0.9.9 · PREPARATION',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
       outcome:null,galaxiesVisited:[],gems:0,gemsByGalaxy:{},crystalSources:{},asteroidsMined:0,
       asteroidBase:0,asteroidBonus:0,walletStart:typeof crystals!=='undefined'?crystals:0,walletEnd:null,walletDelta:0,
       deaths:{},deathEvents:[],damageDealt:0,bossDamage:0,damageTaken:0,shieldDamage:0,lowestHullPct:100,
@@ -32833,6 +32848,14 @@ function _getRunRecommendation(){
   if(hpRatio<=.15)return {title:'SURVIVAL SYSTEMS',body:'That run went deep. Regeneration or shield capacity should buy the last few seconds you need.'};
   return {title:'MOBILITY DRIVE',body:'Your output held. More movement speed will make late-sector patterns easier to thread.'};
 }
+function _hasAffordableDeathUpgrade(){
+  var _defs=[].concat(PERM_DEFS.SHIP,PERM_DEFS.WEAPONS,PERM_DEFS.ABILITIES);
+  for(var _adi=0;_adi<_defs.length;_adi++){
+    if(pCost(_defs[_adi])<=crystals)return true;
+  }
+  return false;
+}
+
 function gameOver(){
   incLS('totalDeaths');
   _resurrectCount=0;
@@ -32902,6 +32925,8 @@ function gameOver(){
     +'<button class="btn" id="goMMBtn" style="border-color:#446;color:#aaa;">'
     +'<svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><polygon points="2,15 10,3 18,15" stroke="currentColor" stroke-width="1.5" fill="rgba(255,255,255,0.05)"/></svg> MAIN MENU</button>';
   var _runGrade=_getRunGrade(),_runRec=_getRunRecommendation();
+  window._deathLoadoutVisited=false;
+  var _canAffordDeathUpgrade=_hasAffordableDeathUpgrade();
   ov.innerHTML='<div class="stateScreen debriefScreen">'
     +'<div class="stateKicker">RUN TERMINATED // RECOVERY COMPLETE</div>'
     +'<h1 class="stateTitle" style="color:var(--r);text-shadow:0 0 25px rgba(255,51,102,.6)">DESTROYED</h1>'
@@ -32914,9 +32939,9 @@ function gameOver(){
     +(G._voidGift>0?'<div class="debriefCard gift"><b>◇ VOID GIFT // +'+G._voidGift+'</b><span>The void refuses to let your journey end empty-handed.</span></div>':'')
     +'<div class="debriefCard"><b>RECOMMENDED UPGRADE // '+_runRec.title+'</b><span>'+_runRec.body+'</span></div></div>'
     +'<div class="debriefK0"><img src="assests/images/nav-unit-k0.png" alt="K-0"><div><b>K-0 // RECOVERY LOG '+String(_deathCount).padStart(2,'0')+'</b><br>'+(_deathCount===1?'I have marked that maneuver as educational. Let us make the next one less educational.':'Ship lost. Pilot recovered. Pride status: probably repairable.')+'</div></div>'
-    +'<div class="debriefActions"><button class="btn" id="goRBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> RETRY RUN</button>'
+    +'<div class="debriefActions"><button class="btn '+(_canAffordDeathUpgrade?'upgradePrompt':'')+'" id="goLBtn">UPGRADE SHIP'+(_canAffordDeathUpgrade?'<span style="display:block;font-size:7px;letter-spacing:2px;color:#ffd700;margin-top:5px;">UPGRADE AVAILABLE · '+crystals.toLocaleString()+' CRYSTALS</span>':'')+'</button>'
+    +'<button class="btn" id="goRBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> RETRY RUN</button>'
     +((window._runBossCheckpoint&&window._runBossCheckpoint.galaxy===(G.galaxy||0))?'<button class="btn" id="goCPBtn">◇ LOAD '+(window._runBossCheckpoint.kind==='main'?'MAIN BOSS':'MINI-BOSS')+' CHECKPOINT</button>':'')
-    +'<button class="btn" id="goLBtn" style="border-color:#00f5ff;color:#00f5ff;">LOADOUT</button>'
     +'<button class="btn" id="goMMBtn" style="border-color:#446;color:#8999aa;">MAIN MENU</button></div></div>';
   ov.style.display='flex';
   ov.classList.remove('death-fadein'); void ov.offsetWidth; ov.classList.add('death-fadein');
@@ -32950,7 +32975,15 @@ function gameOver(){
       fmsg('CHECKPOINT RESTORE FAILED','#ff3366');
     }
   });
-  safeTap(document.getElementById('goLBtn'),function(){SFX.click&&SFX.click();ov.style.display='none';window._loadoutFromDeath=true;openLoadout('upgrades',false);});
+  safeTap(document.getElementById('goLBtn'),function(){
+    SFX.click&&SFX.click();
+    window._deathLoadoutVisited=true;
+    var _deathUpgBtn=document.getElementById('goLBtn');
+    if(_deathUpgBtn)_deathUpgBtn.classList.remove('upgradePrompt');
+    ov.style.display='none';
+    window._loadoutFromDeath=true;
+    openLoadout('upgrades',false);
+  });
   var _goMM=document.getElementById('goMMBtn');
   safeTap(_goMM,function(){SFX.click&&SFX.click();rebuildMainMenu();});
   _goMM.addEventListener('click',function(e){e.stopPropagation();SFX.click&&SFX.click();rebuildMainMenu();});
@@ -38731,10 +38764,15 @@ function tutCheckPauseTip(){ /* removed */ }
 // ══════════════════════════════════════════════════════════════════════════
 var CHANNEL_LOG = [
   {
-    version: 'v0.9.8 · PROGRESSION',
-    title: 'SYSTEMS & BALANCE',
+    version: 'v0.9.9 · PREPARATION',
+    title: 'PREPARE FOR THE VOID',
     color: '#aa88ff',
     entries: [
+      'POST-GALAXY FLOW — the Skill Tree now leads into Loadout before the next warp',
+      'NEW LOADOUT WARP CONTROL — destination-aware, full-width hold-to-confirm Warp button',
+      'DEATH FLOW — Upgrade Ship now appears above Retry and Checkpoint options',
+      'UPGRADE REMINDER — the death-screen Upgrade Ship button pulses when a permanent upgrade is affordable',
+      'RETURN ROUTING — closing Loadout returns to the correct Skill Tree or Destroyed screen',
       'PROGRESSION REBALANCE — temporary upgrades now reach their ultimate at rank 6 (five stat ranks plus one ultimate rank)',
       'DEFENSE GRID tuned — absorption now scales from 10% to 50%, with a 58% passive cap; full blocking is reserved for its active ultimate flare',
       'Late-galaxy pressure increased — regular enemies move, fire, and combine more aggressively from G2 onward',
@@ -39162,7 +39200,7 @@ function rebuildMainMenu(){
     +'<button class="btn" id="mCLBtn" style="border-color:#31586c;color:#7295a6">CHANNEL LOG</button>'
     +'<button class="btn" id="menuSettingsBtn" style="border-color:#31586c;color:#7295a6">SETTINGS</button></div>'
     +'<div class="cmdCompanion" id="k0Companion"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><span class="k0Speaker" id="k0Speaker">K-0 // NAV UNIT</span><span class="k0Line" id="k0Line">ROUTE LOCKED. SYSTEMS NOMINAL.</span><span class="k0Hint">TAP K-0 TO TALK</span></div></div>'
-    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.8 · PROGRESSION</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
+    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.9 · PREPARATION</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
   showMainMenu();playMenuMusic();
@@ -40039,6 +40077,28 @@ function openLoadout(tab, fromPause) {
   var _dp=document.getElementById('dossierPanel');if(_dp)_dp.style.display='none';
   var _ep=document.getElementById('extrasPanel');if(_ep)_ep.style.display='none';
   document.getElementById('loadoutPanel').style.display = 'flex';
+  var _portalWarpBtn=document.getElementById('loadoutWarpBtn');
+  var _loadoutCloseBtn=document.getElementById('loadoutClose');
+  if(_portalWarpBtn){
+    if(window._loadoutFromPortal){
+      // Clone on each visit because hold-to-confirm buttons intentionally fire once.
+      var _freshWarpBtn=_portalWarpBtn.cloneNode(true);
+      _portalWarpBtn.parentNode.replaceChild(_freshWarpBtn,_portalWarpBtn);
+      _portalWarpBtn=_freshWarpBtn;
+      var _portalDestName=GALAXIES[window._stPortalDest]?GALAXIES[window._stPortalDest].name:'NEXT GALAXY';
+      _portalWarpBtn.style.display='block';
+      _portalWarpBtn.textContent='HOLD TO WARP TO '+_portalDestName;
+      _holdToConfirm(_portalWarpBtn,function(){
+        SFX.click&&SFX.click();
+        document.getElementById('loadoutPanel').style.display='none';
+        _stWarpToNext();
+      },'#9b59ff',true);
+      if(_loadoutCloseBtn)_loadoutCloseBtn.textContent='BACK TO SKILL TREE';
+    }else{
+      _portalWarpBtn.style.display='none';
+      if(_loadoutCloseBtn)_loadoutCloseBtn.textContent='CLOSE';
+    }
+  }
   lRefreshCoins();
   // Guided mode: force beams tab on first visit
   if(_isGuidedMode()){
@@ -40061,6 +40121,9 @@ function closeLoadout() {
   document.getElementById('loadoutPanel').style.display = 'none';
   if(_lFromPause && G && G.running) {
     document.getElementById('pauseMenu').style.display = 'flex';
+  } else if(window._loadoutFromPortal) {
+    window._loadoutFromPortal=false;
+    showSkillTreePortal(window._stPortalDest);
   } else if(window._loadoutFromDeath) {
     window._loadoutFromDeath = false;
     // Reveal the existing new debrief; do not rebuild the obsolete menu.
