@@ -730,7 +730,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="bossDeathFlash"></div>
 <div class="ov" id="menu" style="display:none;">
   <h1>VOID RUNNERS</h1>
-  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.9 · PREPARATION</div>
+  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.11 · FLIGHT</div>
   <div class="tl" style="margin-bottom:18px;">DEEP SPACE SURVIVAL</div>
   <button class="btn" id="sBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> LAUNCH</button>
   <button class="btn" id="mBBtn" style="border-color:#00f5ff55;color:#66aacc;font-size:12px;">&#9632; LOADOUT</button>
@@ -1353,7 +1353,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="clPanel" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,0.97);z-index:80;padding:0;">
   <div style="width:min(92vw,460px);display:flex;flex-direction:column;height:100%;padding:24px 0 0;min-height:0;">
     <div style="font-family:Orbitron,sans-serif;font-size:16px;color:#00f5ff;letter-spacing:4px;text-shadow:0 0 20px #00f5ff;margin-bottom:4px;text-align:center;">&#9635; CHANNEL LOG</div>
-    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.9 · PREPARATION — TRANSMISSION HISTORY</div>
+    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.11 · FLIGHT — TRANSMISSION HISTORY</div>
     <div id="clContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:0 4px 20px;min-height:0;"></div>
     <button class="btn" id="clClose" style="width:min(92vw,460px);margin:12px 0 24px;flex-shrink:0;">CLOSE</button>
   </div>
@@ -2094,6 +2094,27 @@ function _core(c2,col,acc,cx,cy,r,t,phase){
   c2.save();c2.shadowColor=col;c2.shadowBlur=20;
   c2.fillStyle=grad;c2.beginPath();c2.arc(cx,cy,r*pulse,0,Math.PI*2);c2.fill();
   c2.restore();
+}
+
+var viperBarrelRollSprite=new Image();
+viperBarrelRollSprite.src='assests/images/void-runner-barrel-roll-v1.png';
+var VIPER_ROLL_FRAMES=[
+  [46,219,249,255],[363,219,205,259],[665,226,118,257],[940,226,66,256],
+  [1093,226,243,253],[1426,224,74,258],[1605,220,194,259],[1875,219,250,255]
+];
+function drawViperSprite(c2,x,y,angle,scale,thrust,frame){
+  if(!viperBarrelRollSprite.complete||!viperBarrelRollSprite.naturalWidth)return false;
+  frame=Math.max(0,Math.min(7,frame|0));
+  var r=VIPER_ROLL_FRAMES[frame],spriteScale=.17*scale;
+  c2.save();c2.translate(x,y);c2.rotate(angle+Math.PI/2);
+  if(thrust){
+    _thruster(c2,'#00e5ff','#dffcff',-6,20,2.6,0,1);
+    _thruster(c2,'#00e5ff','#dffcff',6,20,2.6,0,1);
+  }
+  c2.imageSmoothingEnabled=false;
+  c2.shadowColor='#00dfff';c2.shadowBlur=10;
+  c2.drawImage(viperBarrelRollSprite,r[0],r[1],r[2],r[3],-r[2]*spriteScale*.5,-r[3]*spriteScale*.5,r[2]*spriteScale,r[3]*spriteScale);
+  c2.restore();return true;
 }
 
 function drawShip(c2,skinId,x,y,angle,scale,thrust){
@@ -7240,6 +7261,7 @@ var beamOwned  = lsG('vr_beamOwned', {}); // permanently purchased beams (not re
 var activeBeam = lsG('vr_activeBeam', null);
 var pulseRedline = !!lsG('vr_pulseRedline',false);
 var voltTempest = !!lsG('vr_voltTempest',false);
+function voltTempestReady(){return voltTempest&&(beamRanks.volt||0)>=5;}
 // Migration from old single-beam save
 (function(){ var ob=lsG('vr_beam',null),or=lsG('vr_beamRank',0); if(ob&&or>0&&!beamRanks[ob]){beamRanks[ob]=or;lsS('vr_beamRanks',beamRanks);activeBeam=ob;lsS('vr_activeBeam',activeBeam);} })();
 function ownedBeam(){ return activeBeam&&(beamRanks[activeBeam]||0)>=1?activeBeam:null; }
@@ -7254,6 +7276,14 @@ function markGalaxyVisited(idx){
 var galaxySelectFromPause = false;
 // ── GALAXY SELECT STAR MAP ──────────────────────────────────────────────
 var _gsRAF=null, _gsSelectedIdx=null, _gsScrollY=0, _gsTargetScrollY=0, _gsTapAnim=null;
+function drawGalaxyMapSpriteIcon(ctx,iconIdx,x,y,size,alpha){
+  var sprite=window.__vrGalaxyMapIcons;
+  if(!sprite){sprite=new Image();sprite.src='assests/images/galaxy-map-icons-v1.png';window.__vrGalaxyMapIcons=sprite;}
+  if(!sprite.complete||!sprite.naturalWidth)return false;
+  ctx.save();ctx.globalAlpha=alpha===undefined?1:alpha;ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(sprite,iconIdx*256,0,256,256,x-size/2,y-size/2,size,size);
+  ctx.restore();return true;
+}
 function _gsNodeScale(i){
   if(!_gsTapAnim||_gsTapAnim.idx!==i)return 1;
   var _el=(performance.now()-_gsTapAnim.startMs)/1000;
@@ -7468,6 +7498,7 @@ function openGalaxySelect(fromPause){
         ctx.fillStyle='#4488ff';ctx.shadowBlur=szDone?12:6;
         ctx.beginPath();ctx.arc(n.x,ny,szDone?6:4,0,Math.PI*2);ctx.fill();
         ctx.restore();
+        drawGalaxyMapSpriteIcon(ctx,0,n.x,ny,46,szDone?1:.55);
         var szLabelX=n.x>W/2?n.x-28:n.x+28;
         var szAlign=n.x>W/2?'right':'left';
         ctx.save();
@@ -7633,6 +7664,20 @@ function drawGsLandmark(ctx,n,y,gal,gi,t,visited,current,selected){
   var c=gal.acc, dim=visited?1:.18, r=selected?34:30;
   ctx.save();ctx.translate(n.x,y);ctx.globalAlpha=dim;ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=2;
   ctx.shadowColor=c;ctx.shadowBlur=visited?18:0;
+  if(drawGalaxyMapSpriteIcon(ctx,gi+1,0,0,selected?58:52,visited?1:.2)){
+    ctx.globalAlpha=1;ctx.shadowBlur=0;
+    if(current){
+      ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.lineDashOffset=-t*14;
+      ctx.beginPath();ctx.arc(0,0,r+8,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#fff';ctx.font='bold 7px Orbitron,sans-serif';ctx.textAlign='center';ctx.fillText('YOU ARE HERE',0,-r-14);
+    }else if(visited){
+      ctx.fillStyle='#06111a';ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(23,-21,8,0,Math.PI*2);ctx.fill();ctx.stroke();
+      ctx.fillStyle=c;ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText('✓',23,-18);
+    }else{
+      ctx.fillStyle='#647080';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('▣',0,4);
+    }
+    ctx.restore();return;
+  }
   ctx.clearRect(-19,-19,38,38);
   ctx.fillStyle='rgba(1,3,15,.94)';ctx.beginPath();ctx.arc(0,0,19,0,Math.PI*2);ctx.fill();
   ctx.strokeStyle=c;ctx.globalAlpha=dim*.75;
@@ -7758,7 +7803,7 @@ const BEAM_DEFS = [
     }
   },
   { id:'volt',     name:'VOLT WHIP',      icon:'beam_volt', color:'#ffcc00', cost:1000, unlockCost:1000, upgBase:600, galaxyReq:3,
-    desc:'Deploy an electric node that zaps nearby enemies. OVERDRIVE: Drops 5 nodes at once.',
+    desc:'Deploy an electric node that zaps nearby enemies. THUNDER ARRAY: Drops 5 empowered nodes at once.',
     baseDmg:10, baseCd:1.2, baseSpd:0, basePierce:0, baseSize:8,
     getStats: function(r){ return {dmg:10*Math.pow(1.22,r), cd:Math.max(0.55,1.2*Math.pow(0.94,r)), spd:0, pierce:0, size:8, spread:0, color:'#ffcc00', voltNode:true, voltRadius:160+r*18, voltDur:10+r*0.5}; },
     upgDesc: function(r){ return '+22% dmg/rank · radius '+(160+r*18)+'px · duration '+(4+r*0.5).toFixed(1)+'s'; },
@@ -7776,7 +7821,7 @@ const BEAM_DEFS = [
           dmgTick:0, zapFlash:0, r:r});
       }
       burst(g,p.x,p.y,'#ffcc00',20+r*6,200+r*30);
-      fmsg(svgIcon('lightning')+' VOLT STORM — 5 NODES','#ffcc00');
+      fmsg(svgIcon('lightning')+' THUNDER ARRAY — 5 NODES','#ffcc00');
     }
   },
   { id:'timedil', name:'TIME DILATION', icon:'hourglass', color:'#aa66ff', cost:1200, unlockCost:1200, upgBase:700, galaxyReq:5,
@@ -8825,8 +8870,8 @@ const PICKUPS=[
   {id:'gemx2',  icon:'gemx2',    label:'GEM RUSH x2',     color:'#00ffcc',dur:10, desc:'All crystal drops are doubled for 10 seconds',                    onGet:function(g){g.gemMult=2;},             onEnd:function(g){g.gemMult=1;}},
   {id:'gemx3',  icon:'gemx3',    label:'GEM SURGE x3',    color:'#44ddff',dur:10, desc:'All crystal drops are tripled for 10 seconds',                    onGet:function(g){g.gemMult=3;},             onEnd:function(g){g.gemMult=1;}},
   {id:'gemx5',  icon:'gemx5',    label:'CRYSTAL NOVA x5', color:'#ffffff',dur:10, desc:'All crystal drops are multiplied by 5 — extremely rare',           onGet:function(g){g.gemMult=5;},             onEnd:function(g){g.gemMult=1;}},
-  {id:'hp25',   icon:'heart',    label:'+25 HULL',         color:'#ff6688',dur:0,  desc:'Instantly repairs 25 HP',                                         onGet:function(g){g.player.hp=Math.min(g.player.maxHp,g.player.hp+25);fmsg('❤️ +25 HULL','#ff6688');}},
-  {id:'hp50',   icon:'heart',    label:'+50 HULL',         color:'#ff4466',dur:0,  desc:'Instantly repairs 50 HP',                                         onGet:function(g){g.player.hp=Math.min(g.player.maxHp,g.player.hp+50);fmsg('💗 +50 HULL','#ff4466');}},
+  {id:'hp25',   icon:'heart',    label:'25% HULL',         color:'#ff6688',dur:0,  desc:'Instantly repairs 25% of maximum hull',                            onGet:function(g){var h=Math.ceil(g.player.maxHp*.25);g.player.hp=Math.min(g.player.maxHp,g.player.hp+h);fmsg('25% HULL RESTORED','#ff6688');}},
+  {id:'hp50',   icon:'heart',    label:'50% HULL',         color:'#ff4466',dur:0,  desc:'Instantly repairs 50% of maximum hull',                            onGet:function(g){var h=Math.ceil(g.player.maxHp*.50);g.player.hp=Math.min(g.player.maxHp,g.player.hp+h);fmsg('50% HULL RESTORED','#ff4466');}},
   {id:'hpfull', icon:'heart',    label:'FULL REPAIR',      color:'#ff2244',dur:0,  desc:'Instantly restores your hull to full health',                     onGet:function(g){g.player.hp=g.player.maxHp;fmsg('💖 HULL RESTORED','#ff2244');}},
   // ── NEW PICKUPS ──────────────────────────────────────────────────────────
   {id:'phantom',icon:'ghost',label:'PHANTOM BARRAGE',color:'#bb88ff',dur:10,
@@ -9508,9 +9553,9 @@ var GALAXY_BOSSES=[
      // ── ATTACK: ICE SHARD SPREAD ──
      // Active in all phases. Fan of shards aimed at player.
      // Grows wider and denser each phase.
-     var spreadCount=[7,9,11,13,16][Math.min(visPhase,4)];
-     var spreadArc=[0.55,0.65,0.75,0.85,1.1][Math.min(visPhase,4)];
-     var shardSpd=frenzy?440:320;
+     var spreadCount=[5,6,7,8,10][Math.min(visPhase,4)];
+     var spreadArc=[0.5,0.58,0.66,0.75,0.92][Math.min(visPhase,4)];
+     var shardSpd=frenzy?400:295;
      if(!e._fcAttackT) e._fcAttackT=0;
      e._fcAttackT+=e.shootCd;
 
@@ -15068,7 +15113,7 @@ var _runStats = (function(){
   function galaxyKey(i){return i===-2?'s0':'g'+Math.max(0,i||0);}
   function snapshot(){var o={};try{for(var k in permData)o[k]=permData[k]||0;}catch(e){}return o;}
   function startRun(){
-    _currentRun={version:4,gameVersion:'v0.9.9 · PREPARATION',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
+    _currentRun={version:4,gameVersion:'v0.9.11 · FLIGHT',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
       outcome:null,galaxiesVisited:[],gems:0,gemsByGalaxy:{},crystalSources:{},asteroidsMined:0,
       asteroidBase:0,asteroidBonus:0,walletStart:typeof crystals!=='undefined'?crystals:0,walletEnd:null,walletDelta:0,
       deaths:{},deathEvents:[],damageDealt:0,bossDamage:0,damageTaken:0,shieldDamage:0,lowestHullPct:100,
@@ -15405,7 +15450,7 @@ function fireBeamOverdrive(){
     fmsg('REDLINE · CORE CHARGING','#ff2233');
     return;
   }
-  if(ob==='volt'&&voltTempest){
+  if(ob==='volt'&&voltTempestReady()){
     if(G._tempestCrown)return;
     var _tvStats=BEAM_DEFS.find(function(b){return b.id==='volt';}).getStats(beamRanks.volt||5);
     G._voltNodes=G._voltNodes||[];
@@ -17439,19 +17484,21 @@ function update(dt){
   }
 
   // Frost patches (G5 Cryo Ring — slow player on contact)
+  // Control immunity prevents several overlapping hazards from chain-locking movement.
+  if(g._cryoControlImmunity>0)g._cryoControlImmunity=Math.max(0,g._cryoControlImmunity-dt);
   if(!g.frostPatches) g.frostPatches=[];
   for(var fpi=g.frostPatches.length-1;fpi>=0;fpi--){
     var fp=g.frostPatches[fpi]; fp.life-=dt;
     if(fp.life<=0){g.frostPatches.splice(fpi,1);continue;}
     if(dst(p,fp)<fp.r+p.r&&p.invincible<=0){
       // Apply slow — tracked by _frostSlowTimer
-      g._frostSlowTimer=Math.max(g._frostSlowTimer||0,0.3);
+      if((g._cryoControlImmunity||0)<=0)g._frostSlowTimer=Math.max(g._frostSlowTimer||0,0.24);
     }
   }
   // Frost slow debuff (from frost patches) — smooth recovery
   if(g._frostSlowTimer>0){
     g._frostSlowTimer-=dt;
-    if(g._frostSlowTimer<=0){ g._frostSlowTimer=0; g._frostSlowRecoverT=0.4; }
+    if(g._frostSlowTimer<=0){ g._frostSlowTimer=0; g._frostSlowRecoverT=0.65; }
   }
   if(g._frostSlowRecoverT>0) g._frostSlowRecoverT-=dt;
 
@@ -17817,7 +17864,7 @@ function update(dt){
   } else {
     g._apexBonus=0;
   }
-  var _frostMult=g._frostSlowTimer>0?0.55:(g._frostSlowRecoverT>0?(0.55+(1-g._frostSlowRecoverT/0.4)*0.45):1);
+  var _frostMult=g._frostSlowTimer>0?0.65:(g._frostSlowRecoverT>0?(0.65+(1-g._frostSlowRecoverT/0.65)*0.35):1);
   var ms=p.spd*(g.speedActive?2:1)*(1+(g._apexBonus||0))*(g._lashSlowTimer>0?0.6:1)*_frostMult*(g._playerFrozenTimer>0?0.2:1)*(p._clawSlowed?0.55:1)*(p._freezeSlow&&p._freezeSlowT>0?p._freezeSlow:(p._freezeSlowRecovering?p._freezeSlow:1))*(g._ampBerserker>0&&p.hp/p.maxHp<0.5?(1+g._ampBerserker*0.05):1)*(g._redline&&g._redline.phase==='charge'?0.72:1);
   // ══════════════════════════════════════════════════════
   // G7 ABYSS WAVE SYSTEM — ghosts of past galaxies pulled in
@@ -18916,7 +18963,14 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           for(var _cbi=0;_cbi<g.enemies.length;_cbi++){if(g.enemies[_cbi].isBoss&&g.enemies[_cbi].galaxy===3){_cradleBoss=g.enemies[_cbi];break;}}
           if(_cradleBoss&&_cradleBoss._cradleOpen){g.bullets.splice(bi,1);continue;}
         }
-        if(b.freezing&&p.invincible<=0){g._freezePlayerTimer=2;p.spd*=0.25;setTimeout(function(){if(G&&G.player)G.player.spd=G.player.spd*4;},2000);fmsg('FROZEN','#88ddff');}
+        if(b.freezing&&p.invincible<=0&&(g._cryoControlImmunity||0)<=0){
+          g._frostSlowTimer=Math.max(g._frostSlowTimer||0,0.9);
+          g._cryoControlImmunity=1.25;
+          fmsg('CHILLED','#88ddff');
+        }
+        // Germinal volleys are deliberately fast, but only one projectile may
+        // register per dodge failure.
+        if(b.source&&b.source.indexOf('germinal')===0)p.invincible=Math.max(p.invincible,.55);
         if(b.isLash){g._lashSlowTimer=2;fmsg('SLOWED','#aa44ff');burst(g,p.x,p.y,'#aa44ff',6,50);}
         if(p.shield&&p.shield.hp>0){
           _runStats.markDanger('enemy projectile',b.source||b.type||b.color||'projectile',_enemyBulletDmg);
@@ -20507,7 +20561,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           if(en._pincerAngle>0.5){en._pincerDir=-1;}
           if(en._pincerAngle<0){en._pincerDir=1;}
         }
-      } else if(en.galaxy!==8) {
+      } else if(en.galaxy!==8&&en.galaxy!==5) {
         if(en.aiType!=='kite'&&en.shootTimer>scd){en.shootTimer=0;var sba=Math.atan2(p.y-en.y,p.x-en.x);g.bullets.push({x:en.x,y:en.y,vx:Math.cos(sba)*210,vy:Math.sin(sba)*210,dmg:12,size:7,pierce:0,pc:0,color:'#9b59ff',life:2.5,isEnemy:true,homing:false});}
       }
     }
@@ -20827,10 +20881,10 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       // Frost Shard — leaves frost patches that slow player
       if(en.isFrostShard){
         en._frostTrailT=(en._frostTrailT||0)+dt;
-        if(en._frostTrailT>=0.38){
+        if(en._frostTrailT>=0.9){
           en._frostTrailT=0;
           if(!g.frostPatches) g.frostPatches=[];
-          g.frostPatches.push({x:en.x,y:en.y,r:22,life:4,maxLife:4,slow:0.4});
+          if(g.frostPatches.length<16)g.frostPatches.push({x:en.x,y:en.y,r:20,life:2.2,maxLife:2.2,slow:0.65});
         }
       }
       // Cryo Drone — fires freeze bolts at player
@@ -20838,12 +20892,12 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         en.shootTimer=(en.shootTimer||0)+dt;
         if(en.shootTimer>=en.shootCd){
           en.shootTimer=0;
-          en.shootCd=1.5+Math.random()*.45;
+          en.shootCd=2.4+Math.random()*.7;
           var _cdLead=.32,_cdTx=p.x+(p._moveVx||0)*_cdLead,_cdTy=p.y+(p._moveVy||0)*_cdLead;
           var cdA=Math.atan2(_cdTy-en.y,_cdTx-en.x);
-          for(var _cfi=-1;_cfi<=1;_cfi++){
-            var _cfa=cdA+_cfi*.115;
-            g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_cfa)*315,vy:Math.sin(_cfa)*315,
+          for(var _cfi=-1;_cfi<=1;_cfi+=2){
+            var _cfa=cdA+_cfi*.075;
+            g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_cfa)*285,vy:Math.sin(_cfa)*285,
               dmg:en.dmg*0.46,size:7,pierce:0,pc:0,color:'#88ddff',life:2.5,isEnemy:true,homing:false,freezing:true});
           }
         }
@@ -20863,10 +20917,10 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         }
         // Frost trail while visible
         en._frostTrailT=(en._frostTrailT||0)+dt;
-        if(en._frostTrailT>=0.3&&!en._phasing){
+        if(en._frostTrailT>=0.75&&!en._phasing){
           en._frostTrailT=0;
           if(!g.frostPatches) g.frostPatches=[];
-          g.frostPatches.push({x:en.x,y:en.y,r:16,life:2.5,maxLife:2.5,slow:0.55});
+          if(g.frostPatches.length<16)g.frostPatches.push({x:en.x,y:en.y,r:15,life:1.6,maxLife:1.6,slow:0.65});
         }
       }
       // Glacier Golem — charges up ground slam AoE
@@ -20893,11 +20947,11 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
               p.hp-=en.dmg*1.2;p.flashTimer=0.2;
               // Brief freeze/slow on player
               if(!g._playerFrozenTimer) g._playerFrozenTimer=0;
-              g._playerFrozenTimer=Math.max(g._playerFrozenTimer,1.5);
+              if((g._cryoControlImmunity||0)<=0){g._playerFrozenTimer=Math.max(g._playerFrozenTimer,0.75);g._cryoControlImmunity=1.5;}
             }
             // Dense but readable rotating shard ring.
-            for(var si5=0;si5<12;si5++){
-              var sa5=si5/12*Math.PI*2+(gtime*.7);
+            for(var si5=0;si5<8;si5++){
+              var sa5=si5/8*Math.PI*2+(gtime*.7);
               g.bullets.push({x:en.x,y:en.y,vx:Math.cos(sa5)*275,vy:Math.sin(sa5)*275,
                 dmg:en.dmg*0.5,size:6,pierce:0,pc:0,color:'#ccf5ff',life:2.5,isEnemy:true,homing:false});
             }
@@ -21246,19 +21300,19 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         eang=Math.atan2(p.y-en.y,p.x-en.x); // face player while charging
         en.spd=0;
         if(en._hPhaseT>=0.4){
-          // Spore burst — 18 radial projectiles
-          for(var _si2=0;_si2<18;_si2++){
-            var _sa=(_si2/18)*Math.PI*2;
+          // Spore burst — readable radial pressure, not stacked lethal damage.
+          for(var _si2=0;_si2<14;_si2++){
+            var _sa=(_si2/14)*Math.PI*2;
             g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_sa)*160,vy:Math.sin(_sa)*160,
               dmg:en.dmg*1.2,size:10,pierce:0,pc:0,color:'#88ff22',life:3.2,
-              isEnemy:true,homing:false,isSpore:true,maxHullPct:.10,source:'germinal spore burst'});
+              isEnemy:true,homing:false,isSpore:true,maxHullPct:.06,source:'germinal spore burst'});
           }
-          // Tendril lash — 5 fast shots aimed at player
+          // Tendril lash — three fast lanes; a hit grants a short multi-hit lockout.
           var _la=Math.atan2(p.y-en.y,p.x-en.x);
-          for(var _li2=-2;_li2<=2;_li2++){
-            g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_la+_li2*0.18)*680,vy:Math.sin(_la+_li2*0.18)*680,
+          for(var _li2=-1;_li2<=1;_li2++){
+            g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_la+_li2*0.16)*620,vy:Math.sin(_la+_li2*0.16)*620,
               dmg:en.dmg*2.0,size:8,pierce:0,pc:0,color:'#44ff66',life:2.0,
-              isEnemy:true,homing:false,maxHullPct:.14,source:'germinal tendril lash'});
+              isEnemy:true,homing:false,maxHullPct:.08,source:'germinal tendril lash'});
           }
           burst(g,en.x,en.y,'#39ff14',12,100);
           // Lunge toward player
@@ -21547,7 +21601,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     }
     if(p.invincible<=0&&dst(p,en)<p.r+en.r){
       var _germinalDash=!!(en.isHerald&&en._hLunging);
-      var dmgAmt=(_germinalDash?Math.min(en.dmg,p.maxHp*.35):(en.isBoss?en.dmg*dt*2:en.dmg))*(1-(g._dmgReduction||0));
+      var dmgAmt=(_germinalDash?Math.min(en.dmg,p.maxHp*.27):(en.isBoss?en.dmg*dt*2:en.dmg))*(1-(g._dmgReduction||0));
       _runStats.markDanger(_germinalDash?'herald dash':(en.isBoss?'boss contact':'enemy contact'),_germinalDash?'THE GERMINAL LUNGE':(en.name||en.type||en.aiType||'contact'),dmgAmt);
       if(_germinalDash){en._hLunging=false;en._hLungeT=0;en._hPhase='drift';en._hPhaseT=0;}
       if(p.shield&&p.shield.hp>0){
@@ -22478,7 +22532,99 @@ function setPauseUpgradeDrawer(open){
 
 // ─── RENDER ───
 // ── G0 DRIFT SECTOR BACKDROP ──────────────────────────────────────────────
+var driftParallaxNebula=new Image();
+driftParallaxNebula.src='assests/images/drift-nebula-v1.png';
+var driftParallaxPlanet=new Image();
+driftParallaxPlanet.src='assests/images/drift-ringed-planet-v1.png';
+var driftParallaxHorizon=new Image();
+driftParallaxHorizon.src='assests/images/drift-burning-horizon-sunless-v2.png';
+
+function driftLayerReady(img){return img.complete&&img.naturalWidth>0;}
+function drawDriftParallaxV1(ctx,W,H,t,camX,camY){
+  if(!driftLayerReady(driftParallaxNebula)||!driftLayerReady(driftParallaxPlanet)||!driftLayerReady(driftParallaxHorizon))return false;
+  var mobile=typeof _isMobile!=='undefined'&&_isMobile;
+  var cx=camX||0,cy=camY||0;
+  var worldMid=typeof WORLD!=='undefined'?WORLD*.5:0;
+  var relX=cx+W*.5-worldMid,relY=cy+H*.5-worldMid;
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle='#010108';ctx.fillRect(0,0,W,H);ctx.imageSmoothingEnabled=false;
+
+  var ns=Math.max(W/driftParallaxNebula.naturalWidth,H/driftParallaxNebula.naturalHeight)*1.18;
+  var nw=driftParallaxNebula.naturalWidth*ns,nh=driftParallaxNebula.naturalHeight*ns;
+  var nx=(W-nw)*.5-relX*.008+Math.sin(t*.025)*8;
+  var ny=(H-nh)*.5-relY*.008+Math.cos(t*.021)*5;
+  ctx.globalAlpha=.92;ctx.drawImage(driftParallaxNebula,nx,ny,nw,nh);
+
+  if(!window._driftParallaxStars||window._driftParallaxStars.mobile!==mobile){
+    var count=mobile?90:180;window._driftParallaxStars=[];window._driftParallaxStars.mobile=mobile;
+    for(var ds=0;ds<count;ds++)window._driftParallaxStars.push({x:Math.random(),y:Math.random(),r:.35+Math.random()*1.15,a:.25+Math.random()*.65,p:Math.random()*6.283,s:.4+Math.random()*1.6});
+  }
+  for(var di=0;di<window._driftParallaxStars.length;di++){
+    var d=window._driftParallaxStars[di];
+    var dx=((d.x*W-relX*.022)%W+W)%W,dy=((d.y*H-relY*.022)%H+H)%H;
+    ctx.globalAlpha=d.a*(.62+.38*Math.sin(t*d.s+d.p));ctx.fillStyle=di%7===0?'#b47cff':'#dff7ff';
+    ctx.fillRect(Math.round(dx),Math.round(dy),d.r,d.r);
+  }
+
+  var pw=Math.min(W*(mobile?.67:.54),H*(mobile?.50:.62));
+  var ph=pw*(driftParallaxPlanet.naturalHeight/driftParallaxPlanet.naturalWidth);
+  var px=W*(mobile?.62:.71)-pw*.5-relX*.018+Math.sin(t*.035)*4;
+  var py=H*(mobile?.18:.11)-relY*.018+Math.cos(t*.031)*3;
+  ctx.globalAlpha=.90;ctx.drawImage(driftParallaxPlanet,px,py,pw,ph);
+
+  var hg=ctx.createLinearGradient(0,H*.48,0,H*.86);
+  hg.addColorStop(0,'rgba(30,0,45,0)');hg.addColorStop(.58,'rgba(110,20,35,.11)');hg.addColorStop(1,'rgba(255,75,15,.06)');
+  ctx.globalAlpha=1;ctx.fillStyle=hg;ctx.fillRect(0,H*.42,W,H*.48);
+
+  var hh=Math.max(H*(mobile?.47:.50),W*.37);
+  var hw=hh*(driftParallaxHorizon.naturalWidth/driftParallaxHorizon.naturalHeight);
+  if(hw<W*1.16){hw=W*1.16;hh=hw*(driftParallaxHorizon.naturalHeight/driftParallaxHorizon.naturalWidth);}
+  var hx=(W-hw)*.5-relX*.082+Math.sin(t*.018)*5;
+  var horizonShiftY=Math.max(-H*.07,Math.min(H*.07,relY*.082));
+  var hy=H-hh+H*.14-horizonShiftY;
+  var rimY=hy+hh*.435;
+  var sunBodyR=Math.min(W,H)*.047;
+  var neutralRimY=H-hh+H*.14+hh*.435;
+  var sunX=W*.5-relX*.012,sunY=neutralRimY-sunBodyR*.18-relY*.012;
+  var sunVisible=Math.max(0,Math.min(1,(rimY-(sunY-sunBodyR))/(sunBodyR*2)));
+  var pulse=.96+.04*Math.sin(t*.48);
+
+  // Broad bloom and restrained rays sit behind the horizon artwork.
+  var sr=Math.min(W,H)*.31;
+  var sg=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sr);
+  sg.addColorStop(0,'rgba(255,242,190,'+(.24*pulse)+')');
+  sg.addColorStop(.16,'rgba(255,145,55,'+(.13*pulse)+')');
+  sg.addColorStop(.48,'rgba(210,55,40,'+(.05*pulse)+')');sg.addColorStop(1,'rgba(110,20,80,0)');
+  ctx.globalCompositeOperation='screen';ctx.globalAlpha=1;ctx.fillStyle=sg;ctx.fillRect(sunX-sr,sunY-sr,sr*2,sr*2);
+  var sunDisk=ctx.createRadialGradient(sunX-sunBodyR*.2,sunY-sunBodyR*.2,0,sunX,sunY,sunBodyR);
+  sunDisk.addColorStop(0,'#ffffff');sunDisk.addColorStop(.25,'#fffbd0');sunDisk.addColorStop(.62,'#ffc34a');sunDisk.addColorStop(1,'rgba(255,95,20,0)');
+  ctx.globalAlpha=.96*pulse;ctx.fillStyle=sunDisk;ctx.beginPath();ctx.arc(sunX,sunY,sunBodyR,0,Math.PI*2);ctx.fill();
+  ctx.save();ctx.translate(sunX,sunY);ctx.globalAlpha=.035*pulse;ctx.fillStyle='#ffb05a';
+  var rayLen=Math.min(W,H)*.48;
+  for(var ri=0;ri<7;ri++){
+    var ra=-Math.PI*.88+ri*(Math.PI*.76/6),spread=.018+ri%2*.012;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(ra-spread)*rayLen,Math.sin(ra-spread)*rayLen);ctx.lineTo(Math.cos(ra+spread)*rayLen,Math.sin(ra+spread)*rayLen);ctx.closePath();ctx.fill();
+  }
+  ctx.restore();ctx.globalCompositeOperation='source-over';
+
+  ctx.globalAlpha=.98;ctx.drawImage(driftParallaxHorizon,hx,hy,hw,hh);
+
+  // Elliptical atmospheric glare softens the baked sunrise edge.
+  ctx.save();ctx.translate(sunX,sunY);ctx.scale(1,.13);
+  var flareR=Math.min(W*.48,hw*.34);
+  var fg=ctx.createRadialGradient(0,0,0,0,0,flareR);
+  fg.addColorStop(0,'rgba(255,255,226,'+(.68*pulse)+')');fg.addColorStop(.08,'rgba(255,205,105,'+(.42*pulse)+')');
+  fg.addColorStop(.32,'rgba(255,105,35,'+(.18*pulse)+')');fg.addColorStop(1,'rgba(215,40,80,0)');
+  ctx.globalCompositeOperation='screen';ctx.globalAlpha=.16+.84*sunVisible;ctx.fillStyle=fg;ctx.beginPath();ctx.arc(0,0,flareR,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  var haze=ctx.createLinearGradient(0,sunY-70,0,sunY+35);
+  haze.addColorStop(0,'rgba(80,20,95,0)');haze.addColorStop(.58,'rgba(255,95,40,.055)');haze.addColorStop(1,'rgba(255,170,70,.025)');
+  ctx.globalAlpha=.24+.76*sunVisible;ctx.fillStyle=haze;ctx.fillRect(0,rimY-70,W,105);
+  ctx.restore();return true;
+}
+
 function drawDriftSectorBg(ctx,W,H,t,dt,camX,camY){
+  if(drawDriftParallaxV1(ctx,W,H,t,camX,camY))return;
   ctx.save();ctx.setTransform(1,0,0,1,0,0);
   var wcx=camX||0,wcy=camY||0;
   var starPx=-wcx*0.02,starPy=-wcy*0.02;
@@ -23295,12 +23441,12 @@ function render(){
       if(_dbc.style.display==='none'){_dbc.width=W;_dbc.height=H;_dbc.style.display='block';_dbc._lcx=null;}
       // Only redraw if camera moved more than 1px or time ticked (for animations)
       var _dbcx=_dbc._lcx, _dbcy=_dbc._lcy, _dbct=_dbc._lt||0;
-      var _camMoved = !_staticBg && (Math.abs(cx-(_dbcx||0))>1 || Math.abs(cy-(_dbcy||0))>1);
+      var _camMoved = Math.abs(cx-(_dbcx||0))>1 || Math.abs(cy-(_dbcy||0))>1;
       var _timeTick = !_staticBg && (gtime - _dbct > 0.05);
       if(_dbcx===null || _dbcx===undefined || _camMoved || _timeTick){
         var _dbctx=_dbc.getContext('2d');
         _dbctx.clearRect(0,0,W,H);
-        drawDriftSectorBg(_dbctx,W,H,gtime,0.016,cx,cy);
+        drawDriftSectorBg(_dbctx,W,H,_staticBg?0:gtime,0.016,cx,cy);
         _dbc._lcx=cx; _dbc._lcy=cy; _dbc._lt=gtime;
       }
       ctx.drawImage(_dbc,0,0);
@@ -25958,7 +26104,7 @@ function render(){
       ctx.beginPath();
       ctx.moveTo(0,6);ctx.bezierCurveTo(0,3,-5,-2,-5,-5);ctx.bezierCurveTo(-5,-10,5,-10,0,-4);ctx.bezierCurveTo(5,-10,12,-10,12,-5);ctx.bezierCurveTo(12,-2,8,3,0,6);
       ctx.fill();ctx.restore();
-      var hpAmt=pk.type.id==='hpfull'?'FULL':pk.type.id==='hp50'?'+50':'+25';
+      var hpAmt=pk.type.id==='hpfull'?'FULL':pk.type.id==='hp50'?'+50%':'+25%';
       ctx.font='bold 9px Orbitron,monospace';ctx.fillStyle=pk.type.color;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(hpAmt,sx,sy+bob+16);
     } else {
       // Draw pickup as glowing circle with icon shape
@@ -26730,6 +26876,63 @@ function render(){
 //  9 Void Heart      — hybrid elites from all prior
 // ══════════════════════════════════════════════════════════════════════════
 
+// Stable source manifest for today's static art and tomorrow's animation frames.
+var driftEnemyRosterSprite=new Image();
+driftEnemyRosterSprite.src='assests/images/drift-sector-enemy-roster-v1.png';
+var DRIFT_ENEMY_SPRITE_MANIFEST={version:1,sheet:'assests/images/drift-sector-enemy-roster-v1.png',frames:[
+  {id:'needle-scout',role:'scout',typeIdx:0,x:82,y:304,w:181,h:141,drawW:2.5},
+  {id:'arc-cruiser',role:'cruiser',typeIdx:1,x:362,y:308,w:310,h:128,drawW:3.0},
+  {id:'siege-array',role:'gunner',typeIdx:2,x:739,y:268,w:232,h:202,drawW:3.35},
+  {id:'bulwark-saucer',role:'heavy',typeIdx:3,x:1038,y:247,w:375,h:233,drawW:3.35},
+  {id:'rift-skimmer',role:'kamikaze',typeIdx:4,x:1466,y:264,w:302,h:204,drawW:3.2},
+  {id:'gravity-overseer',role:'reserved',typeIdx:null,x:1835,y:295,w:265,h:163,drawW:3.5}
+]};
+function drawDriftEnemySprite(ctx,e,ti,r,ang,t){
+  // Kept local so rendering is safe even when this function is hoisted ahead
+  // of the surrounding setup block during the game's startup sequence.
+  var frames=[
+    {x:82,y:304,w:181,h:141,drawW:2.5},
+    {x:362,y:308,w:310,h:128,drawW:3.0},
+    {x:739,y:268,w:232,h:202,drawW:3.35},
+    {x:1038,y:247,w:375,h:233,drawW:3.35},
+    {x:1466,y:264,w:302,h:204,drawW:3.2}
+  ];
+  // Lazy ownership on window prevents unrelated game variables from clearing the
+  // loader and also makes a missing/late image a harmless procedural fallback.
+  var sprite=window.__vrDriftEnemyRosterSprite;
+  if(!sprite){
+    sprite=new Image();
+    sprite.src='assests/images/drift-sector-enemy-roster-v1.png';
+    window.__vrDriftEnemyRosterSprite=sprite;
+  }
+  if(!sprite.complete||!sprite.naturalWidth)return false;
+  var frame=frames[ti];
+  if(!frame)return false;
+  var dw=r*frame.drawW,dh=dw*(frame.h/frame.w);
+  ctx.save();ctx.imageSmoothingEnabled=false;
+  ctx.shadowColor=ti===4?'#d95cff':'#36f3ff';ctx.shadowBlur=_isMobile?5:12;
+  if(ti===4&&e._kamiLocked)ctx.globalAlpha=.82+.18*Math.sin(t*20);
+  ctx.drawImage(sprite,frame.x,frame.y,frame.w,frame.h,-dw/2,-dh/2,dw,dh);
+  ctx.globalAlpha=1;ctx.shadowBlur=0;
+  if(ti===4&&e._kamiLocked){
+    ctx.strokeStyle='rgba(255,70,180,'+(.55+.35*Math.sin(t*20))+')';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(0,0,r*1.85,0,Math.PI*2);ctx.stroke();
+  }else if(ti===3&&e._shockCooldown>0){
+    ctx.strokeStyle='rgba(255,80,190,'+(.25+.25*Math.sin(t*10))+')';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(0,0,r*2.8,0,Math.PI*2);ctx.stroke();
+  }else if(ti===1&&e.hp<e.maxHp*.3){
+    ctx.strokeStyle='rgba(255,70,20,'+(.55+.3*Math.sin(t*15))+')';ctx.lineWidth=2;
+    ctx.beginPath();ctx.ellipse(0,0,r*1.65,r*.72,0,0,Math.PI*2);ctx.stroke();
+  }else if(ti===2&&e._lockOnT>0){
+    ctx.save();
+    var target=e._lockOnTarget||{x:e.x,y:e.y},dx=target.x-e.x,dy=target.y-e.y;
+    var dist=Math.sqrt(dx*dx+dy*dy)||1;
+    ctx.strokeStyle='rgba(255,50,50,'+(.3+.7*Math.sin(t*25))+')';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(dx/dist*300,dy/dist*300);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  }
+  ctx.restore();return true;
+}
+
 function drawEnemyShape(ctx,e,col,t){
   var r=e.r,g2=e.galaxy||0,ti=e.typeIdx||0,ang=e.spinAngle||0;
   ctx.strokeStyle=col;ctx.fillStyle=col;
@@ -27182,6 +27385,7 @@ function drawEnemyShape(ctx,e,col,t){
   switch(g2){
     // ── G0 Drift Sector: UFO scouts + fighters ──────────────────────────
     case 0: default:
+      if(drawDriftEnemySprite(ctx,e,ti,r,ang,t))break;
       ctx.save();ctx.rotate(ang);
       if(ti===4){
         // ── KAMIKAZE — Tri-wing fighter (gold) ──
@@ -31623,40 +31827,19 @@ function drawBossShape(ctx,e,col,t){
       var _squishX=1.0-_pullStr*0.04;
       // Barrel roll: scaleX = cos(progress * 2π) gives full 360 flip
       var _brProg=p._rollProgress;
-      var _brScaleX=(_brProg!=null)?Math.cos(_brProg*Math.PI*2):1;
-      var _brDir=(p._rollDir==='left')?1:-1;
-      ctx.save();
-      ctx.translate(px,py);
-      ctx.rotate(_tiltAngle+Math.PI/2);
-      ctx.scale(_squishX*_brScaleX*_brDir||_squishX,1.0+_pullStr*0.03);
-      if(_brProg!=null){
-        // Flash white at midpoint (edge-on flip)
-        var _brFlash=Math.max(0,1-Math.abs(Math.abs(_brScaleX)-0)*4);
-        ctx.globalAlpha=Math.max(0.15,1-_brFlash*0.85);
-        if(_brFlash>0.5){ctx.shadowColor='#ffffff';ctx.shadowBlur=(_isMobile?8:28);}
-      }
-      ctx.translate(-px,-py);
-      drawShip(ctx,activeSkin,px,py,_tiltAngle,1,p.thruster);
-      ctx.restore();
+      var _brFrame=(_brProg==null)?0:Math.min(7,Math.floor(_brProg*8));
+      if(_brProg!=null&&p._rollDir==='left')_brFrame=7-_brFrame;
+      if(activeSkin==='viper'&&drawViperSprite(ctx,px,py,_tiltAngle,_squishX,p.thruster,_brFrame)){
+        // Authored sprite rendered; movement and collision remain unchanged.
+      }else drawShip(ctx,activeSkin,px,py,_tiltAngle,1,p.thruster);
     } else {
       // Barrel roll: scaleX = cos(progress * 2π)
       var _brProg2=p._rollProgress;
-      if(_brProg2!=null){
-        var _brScaleX2=Math.cos(_brProg2*Math.PI*2);
-        var _brDir2=(p._rollDir==='left')?1:-1;
-        var _brFlash2=Math.max(0,1-Math.abs(_brScaleX2)*4);
-        ctx.save();
-        ctx.translate(px,py);
-        ctx.rotate(p.visualAngle+Math.PI/2);
-        ctx.scale(_brScaleX2*_brDir2||0.01,1);
-        if(_brFlash2>0.3){ctx.shadowColor='#aaddff';ctx.shadowBlur=(_isMobile?6:22);}
-        ctx.globalAlpha=Math.max(0.15,1-_brFlash2*0.8);
-        ctx.translate(-px,-py);
-        drawShip(ctx,activeSkin,px,py,p.visualAngle,1,p.thruster);
-        ctx.restore();
-      } else {
-        drawShip(ctx,activeSkin,px,py,p.visualAngle,1,p.thruster);
-      }
+      var _brFrame2=(_brProg2==null)?0:Math.min(7,Math.floor(_brProg2*8));
+      if(_brProg2!=null&&p._rollDir==='left')_brFrame2=7-_brFrame2;
+      if(activeSkin==='viper'&&drawViperSprite(ctx,px,py,p.visualAngle,1,p.thruster,_brFrame2)){
+        // Authored sprite rendered.
+      }else drawShip(ctx,activeSkin,px,py,p.visualAngle,1,p.thruster);
     }
 
   // ── Health bar under ship ──
@@ -32344,7 +32527,7 @@ function updateHUD(){
       var _railActive=false;
       var _railBlocked=false;
       var _cdBlocked=G._singularityCd>0;
-      var _beamColors={pulse:(pulseRedline?'#ff2233':'#00f5ff'),volt:(voltTempest?'#c9a8ff':'#ffcc00'),chain:'#ff3333',blackhole:'#cc00ff',scatter:'#ff9944',timedil:'#aa66ff'};
+      var _beamColors={pulse:(pulseRedline?'#ff2233':'#00f5ff'),volt:(voltTempestReady()?'#c9a8ff':'#ffcc00'),chain:'#ff3333',blackhole:'#cc00ff',scatter:'#ff9944',timedil:'#aa66ff'};
       var _odColor=_beamColors[ownedBeam()]||'#00f5ff';
       sb.style.borderColor=_odColor; sb.style.color=_odColor;
       // Time Dilation — show field toggle state instead of overdrive
@@ -32382,7 +32565,7 @@ function updateHUD(){
       else if(G._redline&&G._redline.phase==='fire'){_hudSet(sb,'opacity','1');sb.style.background='rgba(180,0,15,.45)';sb.innerHTML=svgIcon('lightning')+' REDLINE';}
       else if(_railBlocked){_hudSet(sb,'opacity','0.4');sb.innerHTML=svgIcon('lightning')+' '+Math.ceil(G._railSingCd)+'s';}
       else if(_cdBlocked){_hudSet(sb,'opacity','0.4');sb.innerHTML=svgIcon('lightning')+' '+Math.ceil(G._singularityCd)+'s';}
-      else{_hudSet(sb,'opacity','1');sb.style.background='rgba(0,10,30,0.9)';sb.innerHTML=svgIcon('lightning')+(ownedBeam()==='pulse'&&pulseRedline?' REDLINE':ownedBeam()==='volt'&&voltTempest?' TEMPEST':' OVERDRIVE');}
+      else{_hudSet(sb,'opacity','1');sb.style.background='rgba(0,10,30,0.9)';sb.innerHTML=svgIcon('lightning')+(ownedBeam()==='pulse'&&pulseRedline?' REDLINE':ownedBeam()==='volt'&&voltTempestReady()?' TEMPEST':ownedBeam()==='volt'?' THUNDER':' OVERDRIVE');}
       // Reformat the contextual action into the circular command control.
       // Names describe the real beam action; they are not all called Overdrive.
       var _ctxBeam=ownedBeam(),_ctxName='OVERDRIVE',_ctxState='TAP Â· READY',_ctxIcon='lightning';
@@ -32392,7 +32575,7 @@ function updateHUD(){
         if(G._redline&&G._redline.phase==='charge')_ctxState='CHARGING Â· '+Math.ceil(Math.max(0,G._redline.charge-G._redline.t));
         else if(G._redline&&G._redline.phase==='fire')_ctxState='LIMITER BREACHED';
       }else if(_ctxBeam==='volt'){
-        _ctxName=voltTempest?'TEMPEST CROWN':'VOLT STORM';_ctxMax=voltTempest?60:30;
+        _ctxName=voltTempestReady()?'TEMPEST CROWN':'THUNDER ARRAY';_ctxMax=voltTempestReady()?60:30;
         if(G._tempestCrown)_ctxState='ACTIVE Â· '+Math.ceil(G._tempestCrown.life)+'s';
       }else if(_ctxBeam==='timedil'){
         _ctxName=G._tdActive?'FIELD ACTIVE':'FIELD';_ctxIcon='hourglass';
@@ -38217,7 +38400,7 @@ function updateBeamSelector(){
     var _dockCd=0,_dockMax=30;
     if(G&&G._beamOdCds)_dockCd=G._beamOdCds[def.id]||0;
     if(def.id==='pulse')_dockMax=pulseRedline?60:10;
-    else if(def.id==='volt')_dockMax=voltTempest?60:30;
+    else if(def.id==='volt')_dockMax=voltTempestReady()?60:30;
     else if(def.id==='timedil'){_dockCd=G._tdCooldown||0;_dockMax=G._tdCdMax||8;}
     else if(def.id==='blackhole'){_dockCd=G._bhSingCd||0;var _bhs=def.getStats(rank);_dockMax=_bhs._bhCd||8;}
     var _readyDeg=Math.max(0,Math.min(360,(1-_dockCd/Math.max(.01,_dockMax))*360));
@@ -38764,10 +38947,35 @@ function tutCheckPauseTip(){ /* removed */ }
 // ══════════════════════════════════════════════════════════════════════════
 var CHANNEL_LOG = [
   {
-    version: 'v0.9.9 · PREPARATION',
-    title: 'PREPARE FOR THE VOID',
+    version: 'v0.9.11 · FLIGHT',
+    title: 'INTERCEPTOR FLIGHT PASS',
+    color: '#00e5ff',
+    entries: [
+      'NEW VIPER SPRITE — the default interceptor now uses a crisp white, silver, and cyan pixel-art hull',
+      'EIGHT-FRAME BARREL ROLL — authored top, edge, and underside views replace the old horizontal squash effect',
+      'DYNAMIC THRUSTERS — engine flames remain live effects instead of being baked into the sprite',
+      'GAMEPLAY PRESERVED — steering, invincibility timing, dash damage, collision size, and other skins are unchanged',
+      'DRIFT SECTOR PARALLAX — new nebula, ringed planet system, and burning colony horizon move at independent depths',
+      'DRIFT LIGHTING PASS — layered sunrise bloom, atmospheric flare, haze, and restrained light rays soften the horizon seam',
+      'STRONGER DEPTH RESPONSE — the ringed planet and colony horizon now travel more noticeably with the camera',
+      'STATIC BACKGROUND FIX — performance mode now freezes ambient animation without disabling camera parallax',
+      'DYNAMIC SUNSET — the sun is now a separate deep-space layer that visibly sinks behind the colony horizon as altitude changes',
+      'SUNLESS HORIZON ASSET — removed the baked sunrise so planetary occlusion and atmospheric afterglow are fully dynamic',
+      'MOBILE BACKDROP SCALING — reduced live-star density on mobile while retaining the full layered environment',
+      'BACKGROUND FALLBACK — the original procedural Drift Sector remains available until all new image layers finish loading'
+    ]
+  },
+  {
+    version: 'v0.9.10 · CONTROL',
+    title: 'CRYO CONTROL',
     color: '#aa88ff',
     entries: [
+      'GERMINAL TUNING — dash damage capped at 27% max hull; approximately four clean dashes to destroy a full-hull ship',
+      'GERMINAL VOLLEYS — reduced projectile stacking and added a short multi-hit protection window',
+      'CRYO RING REBALANCE — fewer projectiles, shorter frost trails, softer slows, and protection from repeated control effects',
+      'FREEZE SPEED FIX — Cryo effects no longer modify base ship speed or create post-freeze acceleration spikes',
+      'PERCENTAGE REPAIRS — health pickups now restore 25%, 50%, or full maximum hull',
+      'VOLT WHIP — normal overdrive renamed THUNDER ARRAY; TEMPEST CROWN now requires Volt Whip rank 5 and its Void upgrade',
       'POST-GALAXY FLOW — the Skill Tree now leads into Loadout before the next warp',
       'NEW LOADOUT WARP CONTROL — destination-aware, full-width hold-to-confirm Warp button',
       'DEATH FLOW — Upgrade Ship now appears above Retry and Checkpoint options',
@@ -39200,7 +39408,7 @@ function rebuildMainMenu(){
     +'<button class="btn" id="mCLBtn" style="border-color:#31586c;color:#7295a6">CHANNEL LOG</button>'
     +'<button class="btn" id="menuSettingsBtn" style="border-color:#31586c;color:#7295a6">SETTINGS</button></div>'
     +'<div class="cmdCompanion" id="k0Companion"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><span class="k0Speaker" id="k0Speaker">K-0 // NAV UNIT</span><span class="k0Line" id="k0Line">ROUTE LOCKED. SYSTEMS NOMINAL.</span><span class="k0Hint">TAP K-0 TO TALK</span></div></div>'
-    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.9 · PREPARATION</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
+    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.11 · FLIGHT</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
   showMainMenu();playMenuMusic();
@@ -42268,17 +42476,20 @@ function lRenderBeams(container) {
         inner.appendChild(redlineBox);
       }
       if(def.id==='volt'){
+        var _tempestRankReady=rank>=5;
         var tempestBox=document.createElement('div');
         tempestBox.style.cssText='margin-top:8px;padding:11px;border-radius:8px;background:linear-gradient(135deg,rgba(190,145,255,.15),rgba(35,15,90,.1));border:1px solid rgba(200,170,255,.52);box-shadow:inset 0 0 20px rgba(130,80,255,.08);';
         tempestBox.innerHTML='<div style="font-family:Orbitron,sans-serif;font-size:12px;font-weight:900;color:#d8c8ff;letter-spacing:2px;text-shadow:0 0 10px #9b59ff;">TEMPEST CROWN</div>'
           +'<div style="font-size:9px;color:#9585b5;line-height:1.5;margin:5px 0 9px;">Five living storm nodes hunt enemies for 8 seconds. Bosses draw every arc. Kills explode through nearby targets before a final divine strike. 60s cooldown.</div>';
         if(voltTempest){
-          tempestBox.innerHTML+='<div style="font-family:Orbitron,sans-serif;font-size:10px;color:#d8c8ff;letter-spacing:2px;">◆ VOID UPGRADE INSTALLED</div>';
+          tempestBox.innerHTML+='<div style="font-family:Orbitron,sans-serif;font-size:10px;color:#d8c8ff;letter-spacing:2px;">◆ VOID UPGRADE INSTALLED'+(_tempestRankReady?'':' · REACH RANK 5')+'</div>';
         }else{
           var tempestBtn=document.createElement('button');
-          tempestBtn.style.cssText='width:100%;font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;padding:11px 0;border-radius:7px;letter-spacing:1px;border:1.5px solid '+(voidKeys>=10?'#c9a8ff':'#302744')+';background:'+(voidKeys>=10?'rgba(155,89,255,.18)':'rgba(15,8,28,.4)')+';color:'+(voidKeys>=10?'#e2d7ff':'#514762')+';';
-          tempestBtn.innerHTML='UNLOCK TEMPEST · '+svgIcon('amp_key')+' 10';
+          var _canUnlockTempest=_tempestRankReady&&voidKeys>=10;
+          tempestBtn.style.cssText='width:100%;font-family:Orbitron,sans-serif;font-size:11px;font-weight:900;padding:11px 0;border-radius:7px;letter-spacing:1px;border:1.5px solid '+(_canUnlockTempest?'#c9a8ff':'#302744')+';background:'+(_canUnlockTempest?'rgba(155,89,255,.18)':'rgba(15,8,28,.4)')+';color:'+(_canUnlockTempest?'#e2d7ff':'#514762')+';';
+          tempestBtn.innerHTML=_tempestRankReady?('UNLOCK TEMPEST · '+svgIcon('amp_key')+' 10'):'REQUIRES VOLT WHIP RANK 5';
           safeTap(tempestBtn,function(){
+            if((beamRanks.volt||0)<5){fmsg('MAX VOLT WHIP FIRST','#c9a8ff');SFX.click&&SFX.click();return;}
             if(voidKeys<10){fmsg('10 VOID KEYS REQUIRED','#ff3366');SFX.click&&SFX.click();return;}
             voidKeys-=10;lsS('vr_voidKeys',voidKeys);voltTempest=true;lsS('vr_voltTempest',true);updateKeyHUD();
             SFX.upgrade&&SFX.upgrade();fmsg('TEMPEST CROWN INSTALLED','#d8c8ff');
