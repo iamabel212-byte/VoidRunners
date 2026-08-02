@@ -278,11 +278,14 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 .beamDockRank{display:flex;gap:2px;height:3px}.beamDockRank i{display:block;width:5px;height:3px;background:currentColor;opacity:.25;box-shadow:0 0 4px currentColor}.beamDockRank i.on{opacity:1;}
 .beamDockCd{position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;padding:2px;background:conic-gradient(currentColor var(--beam-ready,360deg),rgba(80,100,130,.28) 0);box-shadow:0 0 6px currentColor;}
 .beamDockCd:after{content:"";display:block;width:100%;height:100%;border-radius:50%;background:#030817;}
-#singBtn{bottom:96px!important;left:50%!important;width:96px!important;height:96px!important;box-sizing:border-box!important;padding:0!important;border-radius:50%!important;flex-direction:column!important;gap:1px!important;background:radial-gradient(circle,rgba(155,89,255,.2),rgba(0,7,20,.96) 65%)!important;border:2px solid currentColor!important;box-shadow:0 0 20px currentColor,inset 0 0 22px rgba(155,89,255,.16)!important;letter-spacing:1px!important;text-align:center;isolation:isolate;}
+#singBtn{bottom:96px!important;left:calc(50% - 48px)!important;width:96px!important;height:96px!important;box-sizing:border-box!important;padding:0!important;border-radius:50%!important;flex-direction:column!important;gap:1px!important;background:radial-gradient(circle,rgba(155,89,255,.2),rgba(0,7,20,.96) 65%)!important;border:2px solid currentColor!important;box-shadow:0 0 20px currentColor,inset 0 0 22px rgba(155,89,255,.16)!important;letter-spacing:1px!important;text-align:center;isolation:isolate;}
 #singBtn:before{content:"";position:absolute;inset:-8px;border-radius:50%;z-index:-1;background:conic-gradient(currentColor var(--od-ready,360deg),rgba(80,100,130,.2) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 0);opacity:.9;}
 #singBtn .odIcon{height:27px;display:flex;align-items:center;justify-content:center}#singBtn .odIcon svg{width:26px;height:26px;filter:drop-shadow(0 0 7px currentColor)}
 #singBtn .odName{font:700 8px Orbitron,sans-serif;letter-spacing:.8px;max-width:82px;line-height:1.15}
 #singBtn .odState{font:6px Orbitron,sans-serif;letter-spacing:.8px;opacity:.7;margin-top:2px}
+#ultBtn{display:none;position:fixed;bottom:103px;left:calc(50% + 58px);width:72px;height:72px;box-sizing:border-box;border-radius:50%;z-index:16;pointer-events:all;align-items:center;justify-content:center;flex-direction:column;font-family:Orbitron,sans-serif;font-size:7px;font-weight:900;letter-spacing:1px;text-align:center;color:#ffd36a;background:radial-gradient(circle,rgba(255,185,45,.22),rgba(8,3,18,.97) 67%);border:2px solid currentColor;box-shadow:0 0 18px currentColor,inset 0 0 18px rgba(255,210,100,.12);transform:translateX(-50%);touch-action:none}
+#ultBtn.locked{color:#526071;filter:saturate(.35);box-shadow:0 0 8px rgba(80,100,120,.35)}
+#ultBtn .ultIcon{font-size:20px;line-height:20px}#ultBtn .ultState{font-size:5px;opacity:.75;margin-top:2px}
 #miningBar{bottom:205px;}
 @media(max-width:380px){#beamSelector .beamDockBtn{width:51px;height:58px}#beamSelector{gap:3px!important;padding-left:5px!important;padding-right:5px!important}#singBtn{width:88px!important;height:88px!important;bottom:91px!important}.beamDockName{font-size:5px}}
 /* Mobile command HUD â€” matches the new beam dock without covering play space */
@@ -632,7 +635,8 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="badgeNotif" style="position:fixed;top:56px;left:50%;transform:translateX(-50%) translateY(-20px);background:rgba(2,2,16,0.96);border:1px solid #888;border-radius:4px;padding:8px 16px;font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;opacity:0;z-index:25;pointer-events:none;transition:opacity .4s,transform .4s;white-space:nowrap;display:flex;align-items:center;gap:8px;"></div>
 <div id="pauseBtn"><svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg></div>
 <div id="beamSelector" style="display:none;position:fixed;bottom:108px;left:50%;transform:translateX(-50%);z-index:15;display:none;flex-direction:row;gap:6px;align-items:center;pointer-events:all;"></div>
-<div id="singBtn" style="display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;padding:8px 18px;background:rgba(0,10,30,0.9);border:1px solid #00f5ff;color:#00f5ff;cursor:pointer;border-radius:3px;z-index:15;pointer-events:all;align-items:center;justify-content:center;"><svg viewBox='0 0 20 20' width='14' height='14' fill='none' style='vertical-align:middle'><polygon points='12,2 5,11 10,11 8,18 15,9 10,9' stroke='currentColor' stroke-width='1.2' fill='rgba(255,220,0,0.25)'/></svg> OD</div>
+<div id="singBtn" style="display:none;position:fixed;bottom:60px;left:calc(50% - 48px);transform:translateX(-50%);font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;padding:8px 18px;background:rgba(0,10,30,0.9);border:1px solid #00f5ff;color:#00f5ff;cursor:pointer;border-radius:3px;z-index:15;pointer-events:all;align-items:center;justify-content:center;"><svg viewBox='0 0 20 20' width='14' height='14' fill='none' style='vertical-align:middle'><polygon points='12,2 5,11 10,11 8,18 15,9 10,9' stroke='currentColor' stroke-width='1.2' fill='rgba(255,220,0,0.25)'/></svg> OD</div>
+<div id="ultBtn" class="locked"><div class="ultIcon">✦</div><div id="ultName">ULTIMATE</div><div class="ultState" id="ultState">LOCKED</div></div>
 <div id="miningRing"></div>
 <div id="miningBar" style="display:none;"><div id="miningLbl"><svg viewBox="0 0 20 20" width="14" height="14" fill="none" style="vertical-align:middle"><line x1="4" y1="16" x2="16" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="18" x2="7" y2="13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> MINING</div><div id="miningTrack"><div id="miningFill"></div></div></div>
 <!-- SETTINGS PANEL -->
@@ -730,7 +734,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="bossDeathFlash"></div>
 <div class="ov" id="menu" style="display:none;">
   <h1>VOID RUNNERS</h1>
-  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.11 · FLIGHT</div>
+  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.13 · LEVIATHAN</div>
   <div class="tl" style="margin-bottom:18px;">DEEP SPACE SURVIVAL</div>
   <button class="btn" id="sBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> LAUNCH</button>
   <button class="btn" id="mBBtn" style="border-color:#00f5ff55;color:#66aacc;font-size:12px;">&#9632; LOADOUT</button>
@@ -1353,7 +1357,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="clPanel" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,0.97);z-index:80;padding:0;">
   <div style="width:min(92vw,460px);display:flex;flex-direction:column;height:100%;padding:24px 0 0;min-height:0;">
     <div style="font-family:Orbitron,sans-serif;font-size:16px;color:#00f5ff;letter-spacing:4px;text-shadow:0 0 20px #00f5ff;margin-bottom:4px;text-align:center;">&#9635; CHANNEL LOG</div>
-    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.11 · FLIGHT — TRANSMISSION HISTORY</div>
+    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.13 · LEVIATHAN — TRANSMISSION HISTORY</div>
     <div id="clContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:0 4px 20px;min-height:0;"></div>
     <button class="btn" id="clClose" style="width:min(92vw,460px);margin:12px 0 24px;flex-shrink:0;">CLOSE</button>
   </div>
@@ -1549,6 +1553,7 @@ function resetAllData(){
     'vr_activeSkin','vr_owned','vr_bossCleared_3','vr_bossCleared_3_notified',
     'vr_galaxy','vr_galaxy_event_seen','vr_keyTooltipShown','vr_shipCustom',
     'vr_bship_','vr_cb_','vr_ce_','vr_grSeen','vr_bossEnrageSeen','vr_szShieldSeen'];
+  keys.push('vr_voltTempest','vr_beamUltimateLevels','vr_bossCheckpoint');
   for(var i=0;i<keys.length;i++){try{localStorage.removeItem(keys[i]);}catch(e){}}
   // Clear dynamic prefix keys (codex discoveries, ship customs)
   try{
@@ -1964,14 +1969,14 @@ const GALAXIES=[
 const GALAXY_COMBAT_BALANCE=[
   {hp:1.00,dmg:1.00,spd:1.00,projectile:1.00,spawn:1.00},
   {hp:1.55,dmg:1.25,spd:1.08,projectile:1.05,spawn:.97},
-  {hp:1.60,dmg:1.75,spd:1.20,projectile:1.18,spawn:.88},
-  {hp:2.35,dmg:2.20,spd:1.26,projectile:1.26,spawn:.86},
-  {hp:3.00,dmg:2.75,spd:1.30,projectile:1.30,spawn:.88},
-  {hp:3.50,dmg:3.30,spd:1.36,projectile:1.36,spawn:.84},
-  {hp:4.20,dmg:4.10,spd:1.44,projectile:1.44,spawn:.80},
-  {hp:4.80,dmg:4.90,spd:1.50,projectile:1.50,spawn:.78},
-  {hp:5.40,dmg:5.80,spd:1.56,projectile:1.56,spawn:.76},
-  {hp:6.10,dmg:6.80,spd:1.62,projectile:1.62,spawn:.74}
+  {hp:1.88,dmg:1.93,spd:1.20,projectile:1.18,spawn:.88},
+  {hp:2.55,dmg:2.35,spd:1.26,projectile:1.26,spawn:.86},
+  {hp:3.25,dmg:2.95,spd:1.30,projectile:1.30,spawn:.88},
+  {hp:3.90,dmg:3.55,spd:1.36,projectile:1.36,spawn:.84},
+  {hp:4.70,dmg:4.30,spd:1.44,projectile:1.44,spawn:.80},
+  {hp:5.40,dmg:5.10,spd:1.50,projectile:1.50,spawn:.78},
+  {hp:6.10,dmg:6.00,spd:1.56,projectile:1.56,spawn:.76},
+  {hp:6.90,dmg:7.00,spd:1.62,projectile:1.62,spawn:.74}
 ];
 function getGalaxyCombatBalance(idx){
   idx=Math.max(0,Math.min(GALAXY_COMBAT_BALANCE.length-1,Number(idx)||0));
@@ -2115,6 +2120,33 @@ function drawViperSprite(c2,x,y,angle,scale,thrust,frame){
   c2.shadowColor='#00dfff';c2.shadowBlur=10;
   c2.drawImage(viperBarrelRollSprite,r[0],r[1],r[2],r[3],-r[2]*spriteScale*.5,-r[3]*spriteScale*.5,r[2]*spriteScale,r[3]*spriteScale);
   c2.restore();return true;
+}
+
+var novaBarrelRollSprite=new Image();
+novaBarrelRollSprite.src='assests/images/nova-barrel-roll-v1.png';
+var NOVA_ROLL_FRAMES=[
+  [12,212,301,280],[336,212,258,280],[644,212,168,285],[903,211,94,296],
+  [1031,191,379,352],[1427,211,95,296],[1590,212,242,283],[1851,212,306,280]
+];
+function drawNovaSprite(c2,x,y,angle,scale,thrust,frame){
+  if(!novaBarrelRollSprite.complete||!novaBarrelRollSprite.naturalWidth)return false;
+  frame=Math.max(0,Math.min(7,frame|0));
+  var r=NOVA_ROLL_FRAMES[frame],targetH=50*scale,spriteScale=targetH/r[3];
+  c2.save();c2.translate(x,y);c2.rotate(angle+Math.PI/2);
+  if(thrust){
+    _thruster(c2,'#ff6a00','#fff0a0',-10,20,2.8,0,1);
+    _thruster(c2,'#ff8a00','#ffffff',0,22,3.6,0,1.15);
+    _thruster(c2,'#ff6a00','#fff0a0',10,20,2.8,0,1);
+  }
+  c2.imageSmoothingEnabled=false;c2.shadowColor='#ff6a00';c2.shadowBlur=11;
+  c2.drawImage(novaBarrelRollSprite,r[0],r[1],r[2],r[3],-r[2]*spriteScale*.5,-r[3]*spriteScale*.5,r[2]*spriteScale,r[3]*spriteScale);
+  c2.restore();return true;
+}
+
+function drawAuthoredPlayerShip(c2,skinId,x,y,angle,scale,thrust,frame){
+  if(skinId==='viper')return drawViperSprite(c2,x,y,angle,scale,thrust,frame);
+  if(skinId==='nova')return drawNovaSprite(c2,x,y,angle,scale,thrust,frame);
+  return false;
 }
 
 function drawShip(c2,skinId,x,y,angle,scale,thrust){
@@ -2876,6 +2908,18 @@ var bgCryoDebris=[];
 var bgCrimsonDebris=[];
 var bgDriftFreighters=[];
 var bgDriftRingedPlanet=null;
+var bgLeviathanAssets=null;
+function _loadLeviathanFieldAssets(){
+  if(bgLeviathanAssets)return bgLeviathanAssets;
+  function img(src){var im=new Image();im.src=src;return im;}
+  bgLeviathanAssets={
+    stars:img('assests/images/leviathan-field-stars-v1.png'),
+    constellations:img('assests/images/leviathan-constellations-v1.png'),
+    rocks:img('assests/images/leviathan-rocks-v1.png'),
+    wormhole:img('assests/images/leviathan-wormhole-massive-v2.png')
+  };
+  return bgLeviathanAssets;
+}
 
 function buildBgForGalaxy(gIdx){
   const gal=(gIdx===-2)?SECTOR_ZERO:(GALAXIES[gIdx]||GALAXIES[0]);
@@ -2988,6 +3032,7 @@ function buildBgForGalaxy(gIdx){
 
   // ── G1 LEVIATHAN FIELD: custom background ──────────────────────────────
   if(gIdx===1){
+    _loadLeviathanFieldAssets();
 
     // ── Deep reddish-purple base gradient ──
     var bgGrad=bc.createRadialGradient(WORLD*0.5,WORLD*0.5,0,WORLD*0.5,WORLD*0.5,WORLD*0.72);
@@ -7261,6 +7306,32 @@ var beamOwned  = lsG('vr_beamOwned', {}); // permanently purchased beams (not re
 var activeBeam = lsG('vr_activeBeam', null);
 var pulseRedline = !!lsG('vr_pulseRedline',false);
 var voltTempest = !!lsG('vr_voltTempest',false);
+// One progression table for every Void-forged beam ultimate. Costs are per
+// ultimate level and intentionally data-driven for future balance passes.
+const BEAM_ULTIMATE_CONFIG={
+  pulse:{name:'REDLINE',costs:[10,20,50],maxLevel:3,cooldown:60},
+  volt:{name:'TEMPEST CROWN',costs:[10,20,50],maxLevel:3,cooldown:60},
+  blackhole:{name:'SINGULARITY',costs:[10,20,50],maxLevel:3,cooldown:120},
+  timedil:{name:'REWIND',costs:[10,20,50],maxLevel:3,cooldown:120}
+};
+var beamUltimateLevels=lsG('vr_beamUltimateLevels',{})||{};
+var _beamUltimatePurchaseLocks={};
+if(pulseRedline&&!beamUltimateLevels.pulse)beamUltimateLevels.pulse=1;
+if(voltTempest&&!beamUltimateLevels.volt)beamUltimateLevels.volt=1;
+lsS('vr_beamUltimateLevels',beamUltimateLevels);
+function beamUltimateLevel(id){return Math.max(0,Math.min((BEAM_ULTIMATE_CONFIG[id]||{}).maxLevel||0,beamUltimateLevels[id]||0));}
+function beamUltimateUnlocked(id){return beamUltimateLevel(id)>0;}
+function beamUltimateNextCost(id){var c=BEAM_ULTIMATE_CONFIG[id],l=beamUltimateLevel(id);return c&&l<c.maxLevel?c.costs[l]:null;}
+function buyBeamUltimateLevel(id){
+  var now=Date.now();if((_beamUltimatePurchaseLocks[id]||0)>now)return false;_beamUltimatePurchaseLocks[id]=now+600;
+  var cfg=BEAM_ULTIMATE_CONFIG[id],cost=beamUltimateNextCost(id);if(!cfg||cost===null)return false;
+  if((beamRanks[id]||0)<5){fmsg('MAX '+id.toUpperCase()+' FIRST','#c9a8ff');return false;}
+  if(voidKeys<cost){fmsg(cost+' VOID KEYS REQUIRED','#ff3366');return false;}
+  voidKeys-=cost;beamUltimateLevels[id]=beamUltimateLevel(id)+1;
+  if(id==='pulse'){pulseRedline=true;lsS('vr_pulseRedline',true);}if(id==='volt'){voltTempest=true;lsS('vr_voltTempest',true);}
+  lsS('vr_voidKeys',voidKeys);lsS('vr_beamUltimateLevels',beamUltimateLevels);updateKeyHUD();SFX.upgrade&&SFX.upgrade();
+  fmsg(cfg.name+' · VOID LEVEL '+beamUltimateLevels[id],'#ffd36a');return true;
+}
 function voltTempestReady(){return voltTempest&&(beamRanks.volt||0)>=5;}
 // Migration from old single-beam save
 (function(){ var ob=lsG('vr_beam',null),or=lsG('vr_beamRank',0); if(ob&&or>0&&!beamRanks[ob]){beamRanks[ob]=or;lsS('vr_beamRanks',beamRanks);activeBeam=ob;lsS('vr_activeBeam',activeBeam);} })();
@@ -7895,6 +7966,14 @@ function getBeamStats(){
   var ob=ownedBeam(); if(!ob) return null;
   var def=BEAM_DEFS.find(function(b){return b.id===ob;}); if(!def) return null;
   return def.getStats(beamRank());
+}
+
+function timeDilationCanSlowProjectile(b){
+  if(!b||!b.isEnemy)return false;
+  if(b._tdOwnerClass==='boss'||b._tdOwnerClass==='miniboss')return false;
+  if(b.maxHullPct||b.isMagmaBeam||b._bossProjectile)return false;
+  var src=String(b.source||'').toLowerCase();
+  return !/(architect|germinal|wyrm|cradle|null arbiter|void bloom|boss|herald|sentinel prime)/.test(src);
 }
 
 function openBeamShop(fromPause){
@@ -9436,15 +9515,16 @@ var GALAXY_BOSSES=[
   // G4 ── VOID BLOOM LEVIATHAN (Bio-Nebula)
   // Design: massive cosmic flower with petals, tentacles, void core
   // Phases: 1=Petal Shield, 2=Tentacle Grab, 3=Spore Spawner (DPS window)
-  {name:'VOID BLOOM LEVIATHAN',color:'#39ff14',r:62,baseHp:350000,dmg:18,baseSpd:20,xpVal:220,coins:65,shootCd:2.0,
+  {name:'VOID BLOOM LEVIATHAN',color:'#39ff14',r:62,baseHp:160000,dmg:18,baseSpd:20,xpVal:220,coins:65,shootCd:2.0,
    shoot:function(g,e,p){
      // Phase cycle: 8s shield → 6s grab → 8s vulnerable → repeat
+     e.phaseShield=false; // temporary pass: no forced invulnerability downtime
      var cycleT=(e.phaseTimer||0)%22;
      var enraged=e.hp/e.maxHp<0.3;
 
      if(enraged){
        // ENRAGE: all phases blur — shield flickers, weak pull, continuous spawns
-       e.phaseShield=(Math.sin((e.phaseTimer||0)*6)>0.3);
+       e.phaseShield=false;
        // Weak pull
        var gdx=e.x-p.x, gdy=e.y-p.y;
        var gd2=Math.sqrt(gdx*gdx+gdy*gdy)||1;
@@ -9479,7 +9559,7 @@ var GALAXY_BOSSES=[
 
      if(cycleT<8){
        // Phase 1 — PETAL SHIELD: invulnerable, spiral spore projectiles
-       e.phaseShield=true;
+       e.phaseShield=false;
        e._vbPhase=1;
        var spin=(e.phaseTimer||0)*2;
        for(var i=0;i<8;i++){
@@ -15113,7 +15193,7 @@ var _runStats = (function(){
   function galaxyKey(i){return i===-2?'s0':'g'+Math.max(0,i||0);}
   function snapshot(){var o={};try{for(var k in permData)o[k]=permData[k]||0;}catch(e){}return o;}
   function startRun(){
-    _currentRun={version:4,gameVersion:'v0.9.11 · FLIGHT',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
+    _currentRun={version:4,gameVersion:'v0.9.13 · LEVIATHAN',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
       outcome:null,galaxiesVisited:[],gems:0,gemsByGalaxy:{},crystalSources:{},asteroidsMined:0,
       asteroidBase:0,asteroidBonus:0,walletStart:typeof crystals!=='undefined'?crystals:0,walletEnd:null,walletDelta:0,
       deaths:{},deathEvents:[],damageDealt:0,bossDamage:0,damageTaken:0,shieldDamage:0,lowestHullPct:100,
@@ -15297,8 +15377,9 @@ function resetTempUpgrades(){
 function newGame(){
   _resurrectCount=0;
   window._resurrectForfeited=false;
-  // Boss checkpoints are run-local. A fresh launch always starts clean.
-  window._runBossCheckpoint=null;
+  // Encounter checkpoints survive refresh/close; explicit fresh-run flows may
+  // clear them, while Continue restores the validated snapshot.
+  window._runBossCheckpoint=loadPersistentBossCheckpoint();
   _runStats.startRun();
   // Reset G8 Echo spawn flags every new game
   if((currentGalaxy||0)===8){ window._g8EchoTimer=10; window._g8EchoSpawned=false; }
@@ -15339,7 +15420,7 @@ function newGame(){
     
     relics:[],portal:null,_upRanks:{},_activeSynergies:{},_lockedSynergies:{},
     _relicGemMult:1,_ringResonance:0,_spiralCore:0,_dmgReduction:0,
-    escorts:[],_singularityCd:0,_beamOdCds:{},_railSingCd:0,_scatterFrenzy:0,_scatterNormalCd:0,_chainExplosive:0,_voltNodes:[],_chainArcs:[],_pulseT:0,_iceMeteors:[],_freezeRings:[],_fcShards:[],_fireSurgeT:0,_fireSurgeLit:false,_fireSurgeHitting:false,_fcSurgeCd:0,_fcShardSpawnT:0,_bloodDrops:[],_riftWaves:[],_ecFragments:[],_g7:{wave:0,phase:'intro',timer:3,patternT:0,armAngle:0,done:false,telegraphs:[]},_railLaser:null,
+    escorts:[],_singularityCd:0,_beamOdCds:{},_beamUltCds:{},_rewindHistory:[],_rewindCaptureT:0,_rewindPlayback:null,_railSingCd:0,_scatterFrenzy:0,_scatterNormalCd:0,_chainExplosive:0,_voltNodes:[],_chainArcs:[],_pulseT:0,_iceMeteors:[],_freezeRings:[],_fcShards:[],_fireSurgeT:0,_fireSurgeLit:false,_fireSurgeHitting:false,_fcSurgeCd:0,_fcShardSpawnT:0,_bloodDrops:[],_riftWaves:[],_ecFragments:[],_g7:{wave:0,phase:'intro',timer:3,patternT:0,armAngle:0,done:false,telegraphs:[]},_railLaser:null,
     // ── BEAM TEMP UPGRADE VARS ──
     _arcSurgeJumps:0,_arcSurgeDmg:1,_overchargeRadius:0,_overchargeDmg:1,_ehRadiusBonus:0,_ehDmgMult:1,
     _empTimer:0,_gravPullTimer:0,_gravPullSource:null,_freezePlayerTimer:0,poisonClouds:[],
@@ -15433,7 +15514,12 @@ function fireBeamOverdrive(){
   var ob=ownedBeam();
   if(!G||!ob) return;
   if(!G._beamOdCds) G._beamOdCds={};
-  if((G._beamOdCds[ob]||0)>0) return; // per-beam cooldown — switching beams doesn't reset it
+  if((G._beamOdCds[ob]||0)>0) return;
+  var _normalDef=BEAM_DEFS.find(function(b){return b.id===ob;});
+  if(!_normalDef||!_normalDef.overdrive)return;
+  _normalDef.overdrive(G);if(SFX.beamOverdrive)SFX.beamOverdrive(ob);
+  var _normalCds={pulse:10,scatter:30,chain:30,volt:30,blackhole:30,timedil:30};
+  G._beamOdCds[ob]=_normalCds[ob]||30;G._singularityCd=G._beamOdCds[ob];SFX.ability&&SFX.ability();return;
   if(ob==='pulse'&&pulseRedline){
     if(G._redline) return;
     var _rp=G.player,_ra=_rp.aimAngle||0,_rt=null,_rd=Infinity,_rboss=null,_rbd=Infinity;
@@ -15476,6 +15562,41 @@ function fireBeamOverdrive(){
   G._singularityCd=G._beamOdCds[ob]; // keep for HUD display compat
   SFX.ability&&SFX.ability();
 }
+function _singularityCollectAsteroid(g,a){
+  if(!a||a._singularityConsumed)return;a._singularityConsumed=true;
+  var gems=Math.ceil((a.gemVal||1)*(g.gemMult||1));
+  var paid=Math.round(gems*getVoidMult('vp_crystal')*(1+(g._ampCrystal||0)+(g._ampCrystalSoul||0)));
+  crystals+=paid;g.crystalsRun+=gems;_runStats.addGems(paid,'asteroid',{base:gems,ultimate:'singularity'});incLS('gemsCollected',paid);incLS('asteroidsDestroyed');
+  dropOre(g,a.x,a.y);tryDropKey(g,a.x,a.y);burst(g,a.x,a.y,'#cc55ff',12,150);
+}
+function fireBeamUltimate(){
+  var ob=ownedBeam(),cfg=BEAM_ULTIMATE_CONFIG[ob];if(!G||!cfg)return;
+  if(!beamUltimateUnlocked(ob)){fmsg(cfg.name+' LOCKED · UPGRADE IN LOADOUT','#667080');return;}
+  G._beamUltCds=G._beamUltCds||{};if((G._beamUltCds[ob]||0)>0){fmsg(cfg.name+' · '+Math.ceil(G._beamUltCds[ob])+'s','#ffd36a');return;}
+  var lvl=beamUltimateLevel(ob);
+  if(ob==='pulse'){
+    if(G._redline)return;var p=G.player,a=p.aimAngle||0,t=null,d=Infinity,boss=null,bd=Infinity;
+    for(var i=0;i<G.enemies.length;i++){var e=G.enemies[i],dx=e.x-p.x,dy=e.y-p.y,ds=dx*dx+dy*dy;if(ds<d){d=ds;t=e;}if(e.isBoss&&ds<bd){bd=ds;boss=e;}}
+    if(boss)t=boss;if(t)a=Math.atan2(t.y-p.y,t.x-p.x);
+    G._redline={phase:'charge',t:0,charge:3,fireLife:2+.25*(lvl-1),maxFireLife:2+.25*(lvl-1),angle:a,dmgTick:0,bossTarget:boss,target:t};
+    SFX.redlineCharge&&SFX.redlineCharge();fmsg('REDLINE · CORE CHARGING','#ff2233');
+  }else if(ob==='volt'){
+    if(G._tempestCrown)return;var stats=BEAM_DEFS.find(function(b){return b.id==='volt';}).getStats(beamRanks.volt||5),nodes=[];G._voltNodes=G._voltNodes||[];
+    for(var n=0;n<5+lvl-1;n++){var na=n/(4+lvl)*Math.PI*2,node={x:G.player.x+Math.cos(na)*145,y:G.player.y+Math.sin(na)*145,life:8+lvl,maxLife:8+lvl,dmg:0,radius:90,dmgTick:0,zapFlash:0,r:beamRanks.volt||5,tempest:true};G._voltNodes.push(node);nodes.push(node);}
+    G._tempestCrown={life:8+lvl,maxLife:8+lvl,tick:0,nodes:nodes,stats:stats,angle:0};SFX.tempestCrown&&SFX.tempestCrown();fmsg('TEMPEST CROWN · STORM AWAKENED','#d8c8ff');
+  }else if(ob==='blackhole'){
+    var victims=G.enemies.slice();for(var v=0;v<victims.length;v++)if(!victims[v].isBoss&&!victims[v].isHerald)hitE(G,victims[v],victims[v].hp+1,'singularity ultimate');
+    var rocks=G.liveAsteroids.slice();for(var r=0;r<rocks.length;r++)_singularityCollectAsteroid(G,rocks[r]);G.liveAsteroids=[];
+    G.bullets=G.bullets.filter(function(b){return !b.isEnemy;});G.poisonClouds=[];G.poisonTrails=[];G.toxicPulses=[];G.frostPatches=[];G.bloodPools=[];G._meteors=[];G._meteorShower=null;
+    lsS('vr_crystals',crystals);lsS('vr_ore',oreFragments);updateKeyHUD();triggerCrystalPop();burst(G,G.player.x,G.player.y,'#cc00ff',90,700);fmsg('SINGULARITY · SECTOR CONSUMED','#e3a6ff');
+  }else if(ob==='timedil'){
+    if(G._bossCinema||G._architectPhaseCinema||G._redline||G._tempestCrown){fmsg('REWIND · TEMPORAL INTERFERENCE','#aa66ff');return;}
+    if(!G._rewindHistory||G._rewindHistory.length<2){fmsg('REWIND · INSUFFICIENT HISTORY','#aa66ff');return;}
+    G._rewindPlayback={frames:G._rewindHistory.slice(),index:G._rewindHistory.length-1,t:0};var cv=document.getElementById('gc');if(cv)cv.style.filter='hue-rotate(45deg) saturate(1.35) contrast(1.08)';burst(G,G.player.x,G.player.y,'#aa66ff',35,280);fmsg('REWIND · CAUSALITY REVERSING','#d9b5ff');
+  }else return;
+  G._beamUltCds[ob]=cfg.cooldown;SFX.ability&&SFX.ability();
+}
+
 function useAb(i){
   if((G&&(G.galaxy||0)===7)&&!window._g7Interior){fmsg(svgIcon('warning')+' ABILITIES OFFLINE — GRAVITY FIELD','#9966ff');return;}
   if(G&&G._empTimer>0&&i>0){fmsg(svgIcon('warning')+' ABILITIES OFFLINE — EMP','#ff4422');return;}
@@ -17005,6 +17126,7 @@ function hitE(g,e,dmg,damageSource){
       SFX.bossDie();
       triggerBossDeathFlash(e.color||'#ffffff');
       g.bossAlive=false;g.bossFought=true;g.killsForBoss=0;
+      clearPersistentBossCheckpoint();
       // Unlock next galaxy immediately on boss kill
       var _nextG=(g.galaxy||0)+1;
       if(_nextG<GALAXIES.length) markGalaxyVisited(_nextG);
@@ -17371,9 +17493,31 @@ function tickSynergyEffects(g, dt){
   g._deathBlossomActive=!!syn.death_blossom;
 }
 
+function tickRewindSystem(g,dt){
+  if(g._rewindPlayback){
+    var pb=g._rewindPlayback;pb.t+=dt;
+    while(pb.t>=.05&&pb.index>=0){pb.t-=.05;var s=pb.frames[pb.index--];if(!s)continue;
+      g.player.x=s.p.x;g.player.y=s.p.y;g.player.hp=Math.min(g.player.maxHp,s.p.hp);g.player.aimAngle=s.p.aimAngle;g.player.thruster=s.p.thruster;g.player.invincible=Math.max(g.player.invincible,.15);
+      if(g.player.shield&&s.p.shield!==null)g.player.shield.hp=Math.min(g.player.shield.maxHp,s.p.shield);
+      s.en.forEach(function(x){if(x.ref&&g.enemies.indexOf(x.ref)>=0){x.ref.x=x.x;x.ref.y=x.y;x.ref.vx=x.vx;x.ref.vy=x.vy;x.ref.rot=x.rot;x.ref.shootTimer=x.shootTimer;if(!x.ref.isBoss&&!x.ref.isHerald)x.ref.hp=Math.min(x.ref.maxHp,x.hp);}});
+      s.bl.forEach(function(x){if(x.ref&&g.bullets.indexOf(x.ref)>=0){x.ref.x=x.x;x.ref.y=x.y;x.ref.vx=x.vx;x.ref.vy=x.vy;x.ref.life=x.life;}});
+      s.ast.forEach(function(x){if(x.ref&&g.liveAsteroids.indexOf(x.ref)>=0){x.ref.x=x.x;x.ref.y=x.y;x.ref.vx=x.vx;x.ref.vy=x.vy;x.ref.hp=x.hp;x.ref.rot=x.rot;}});
+    }
+    if(pb.index<0){g._rewindPlayback=null;g._rewindHistory=[];var cv=document.getElementById('gc');if(cv)cv.style.filter='';burst(g,g.player.x,g.player.y,'#d9b5ff',30,240);fmsg('TIME RESUMED','#d9b5ff');}
+    return true;
+  }
+  g._rewindCaptureT=(g._rewindCaptureT||0)+dt;if(g._rewindCaptureT>=.1){g._rewindCaptureT=0;
+    g._rewindHistory=g._rewindHistory||[];g._rewindHistory.push({p:{x:g.player.x,y:g.player.y,hp:g.player.hp,aimAngle:g.player.aimAngle,thruster:g.player.thruster,shield:g.player.shield?g.player.shield.hp:null},
+      en:g.enemies.map(function(e){return{ref:e,x:e.x,y:e.y,vx:e.vx,vy:e.vy,rot:e.rot,hp:e.hp,shootTimer:e.shootTimer};}),
+      bl:g.bullets.map(function(b){return{ref:b,x:b.x,y:b.y,vx:b.vx,vy:b.vy,life:b.life};}),
+      ast:g.liveAsteroids.map(function(a){return{ref:a,x:a.x,y:a.y,vx:a.vx,vy:a.vy,hp:a.hp,rot:a.rot};})});
+    if(g._rewindHistory.length>30)g._rewindHistory.shift();
+  }return false;
+}
 function update(dt){
   _diagUpdateCount++;
   var g=G;g.time+=dt;g.waveTimer+=dt;
+  if(tickRewindSystem(g,dt))return;
   var p=g.player,c=chaos();
   _runStats.tick(dt,g,p);
   // Dev Room: keep all enemies frozen if freeze toggle is on
@@ -18528,19 +18672,18 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     if(g._tdLife<=0){
       g._tdActive=false;
       g._tdCooldown=g._tdCdMax||8;
-      for(var _tdi=0;_tdi<g.enemies.length;_tdi++) g.enemies[_tdi]._tdSlowed=false;
+      for(var _tdi=0;_tdi<g.bullets.length;_tdi++) g.bullets[_tdi]._tdSlowed=false;
     } else {
       // Apply/remove slow based on distance from player
       var _tdR=g._tdRadius||200;
-      for(var _tdi2=0;_tdi2<g.enemies.length;_tdi2++){
-        var _tde=g.enemies[_tdi2];
-        var _tdd=dst(p,_tde);
-        _tde._tdSlowed=_tdd<_tdR;
+      for(var _tdi2=0;_tdi2<g.bullets.length;_tdi2++){
+        var _tdb=g.bullets[_tdi2];
+        _tdb._tdSlowed=timeDilationCanSlowProjectile(_tdb)&&dst(p,_tdb)<_tdR;
       }
     }
   } else {
     // Field off — clear any lingering slow
-    if(g.enemies) for(var _tdc=0;_tdc<g.enemies.length;_tdc++) g.enemies[_tdc]._tdSlowed=false;
+    if(g.bullets) for(var _tdc=0;_tdc<g.bullets.length;_tdc++) g.bullets[_tdc]._tdSlowed=false;
   }
 
   // Reverse time overdrive — move enemies backward
@@ -18880,7 +19023,8 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       b.chainOriginX=undefined; // only draw once
     }
     if(b.chainExplosive&&b.chainJump){burst(g,b.x,b.y,'#ff3333',10,100);for(var cxi=g.enemies.length-1;cxi>=0;cxi--){if(!g.enemies[cxi].isBoss&&dst(b,g.enemies[cxi])<90)hitE(g,g.enemies[cxi],b.dmg*0.6);}}
-    b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+    var _tdBulletMult=(b.isEnemy&&b._tdSlowed)?(g._tdSlow||0.35):1;
+    b.x+=b.vx*dt*_tdBulletMult;b.y+=b.vy*dt*_tdBulletMult;b.life-=dt;
     // Cull any bullet that's far off screen (player or enemy)
     {var _bcx=g.camera.x,_bcy=g.camera.y,_bsx=b.x-_bcx,_bsy=b.y-_bcy;
      if(_bsx<-300||_bsx>W+300||_bsy<-300||_bsy>H+300){g.bullets.splice(bi,1);continue;}}
@@ -19020,7 +19164,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     if(en.frozen>0){en.frozen-=dt;continue;}
     // Time Dilation — slow multiplier
     var _tdMult=1;
-    if(en._tdSlowed) _tdMult=g._tdSlow||0.35;
+    // Regular Time Dilation affects projectiles only, never enemy movement.
     // Reverse Time overdrive — enemies move away from player
     if(en._tdReverse&&en._tdReverseT>0&&!en.isBoss){
       var _rva=Math.atan2(en.y-p.y,en.x-p.x); // away from player
@@ -20261,7 +20405,15 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       if(!en.charging&&!_shootSuppressed){
         en.shootTimer=(en.shootTimer||0)+dt;
         var scd2=(en.shootCd||1.5)*(en.enraged?0.55:1);
-        if(en.shootTimer>=scd2){en.shootTimer=0;if(en.shoot)en.shoot(g,en,p);}
+        if(en.shootTimer>=scd2){
+          en.shootTimer=0;
+          if(en.shoot){
+            var _shotStart=g.bullets.length;
+            en.shoot(g,en,p);
+            var _shotClass=en.isBoss?'boss':(en.isHerald?'miniboss':'regular');
+            for(var _sj=_shotStart;_sj<g.bullets.length;_sj++)if(g.bullets[_sj].isEnemy)g.bullets[_sj]._tdOwnerClass=_shotClass;
+          }
+        }
       }
 
       // Update boss HP bar
@@ -21600,8 +21752,17 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       }
     }
     if(p.invincible<=0&&dst(p,en)<p.r+en.r){
-      var _germinalDash=!!(en.isHerald&&en._hLunging);
-      var dmgAmt=(_germinalDash?Math.min(en.dmg,p.maxHp*.27):(en.isBoss?en.dmg*dt*2:en.dmg))*(1-(g._dmgReduction||0));
+      // Germinal used to bypass its dash cap on the first/last frame of a lunge,
+      // because those frames fell through to the generic (raw en.dmg) contact path.
+      // Treat every Germinal body impact as the same authored hit and lock it once.
+      var _isGerminalContact=!!en.isHerald;
+      var _germinalDash=!!(_isGerminalContact&&en._hLunging);
+      if(_isGerminalContact&&(gtime-(en._lastGerminalContact||-99))<1.0)continue;
+      var dmgAmt=(_isGerminalContact?Math.min(en.dmg,p.maxHp*.26):(en.isBoss?en.dmg*dt*2:en.dmg))*(1-(g._dmgReduction||0));
+      if(_isGerminalContact){
+        en._lastGerminalContact=gtime;
+        if(window.VR_DEBUG_GERMINAL)console.log('[GERMINAL HIT]',{dash:_germinalDash,damage:dmgAmt,hull:p.hp,maxHull:p.maxHp});
+      }
       _runStats.markDanger(_germinalDash?'herald dash':(en.isBoss?'boss contact':'enemy contact'),_germinalDash?'THE GERMINAL LUNGE':(en.name||en.type||en.aiType||'contact'),dmgAmt);
       if(_germinalDash){en._hLunging=false;en._hLungeT=0;en._hPhase='drift';en._hPhaseT=0;}
       if(p.shield&&p.shield.hp>0){
@@ -22096,6 +22257,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
   if(g._singularityCd>0){window._odDecPerSec=(window._odDecPerSec||0)+1;window._odDtSum=(window._odDtSum||0)+dt;g._singularityCd-=dt;if(g._singularityCd<0)g._singularityCd=0;}
   // Per-beam overdrive cooldowns
   if(g._beamOdCds){var _ob2=ownedBeam();for(var _bk in g._beamOdCds){g._beamOdCds[_bk]-=dt;if(g._beamOdCds[_bk]<0)g._beamOdCds[_bk]=0;}if(_ob2)g._singularityCd=g._beamOdCds[_ob2]||0;}
+  if(g._beamUltCds)for(var _uk in g._beamUltCds){g._beamUltCds[_uk]-=dt;if(g._beamUltCds[_uk]<0)g._beamUltCds[_uk]=0;}
   // PULSE REDLINE — three-second cinematic charge, then a two-second crimson execution beam
   if(g._redline){
     var _rls=g._redline,_rlp=g.player;
@@ -24878,8 +25040,37 @@ function render(){
   }
 
 
-  // ── G1 LEVIATHAN FIELD: WORMHOLE VORTEX ──────────────────────────────
-  if(currentGalaxy===1 && window._g1Wormhole){
+  // ── G1 LEVIATHAN FIELD: layered production backdrop ──────────────────
+  if(currentGalaxy===1&&window._g1Wormhole){
+    var _la=_loadLeviathanFieldAssets(),_ready=_la.stars.complete&&_la.stars.naturalWidth&&_la.constellations.complete&&_la.constellations.naturalWidth&&_la.rocks.complete&&_la.rocks.naturalWidth&&_la.wormhole.complete&&_la.wormhole.naturalWidth;
+    window._g1Wormhole.assetMode=!!_ready;
+    if(_ready){
+      var _camNX=cx/Math.max(1,WORLD-W)-.5,_camNY=cy/Math.max(1,WORLD-H)-.5;
+      function _levCover(im,ox,oy,scale,blend,alpha){
+        var sc=Math.max(W/im.naturalWidth,H/im.naturalHeight)*(scale||1),dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;
+        ctx.save();ctx.globalCompositeOperation=blend||'source-over';ctx.globalAlpha=alpha===undefined?1:alpha;ctx.imageSmoothingEnabled=false;
+        ctx.drawImage(im,(W-dw)/2+(ox||0),(H-dh)/2+(oy||0),dw,dh);ctx.restore();
+      }
+      // Distant stars barely respond; constellation fossils move by only 1.8%
+      // of camera travel so they read as impossibly large structures.
+      _levCover(_la.stars,-_camNX*W*.012,-_camNY*H*.012,1.08,'source-over',1);
+      _levCover(_la.constellations,-_camNX*W*.018,-_camNY*H*.018,1.06,'screen',.82);
+
+      // The rift sits at an extremely deep parallax depth. It remains enormous
+      // while drifting only slightly with the camera, so it reads as torn space.
+      var _whx=W*.5-_camNX*W*.026,_why=H*.46-_camNY*H*.026;
+      var _drawSize=Math.min(W,H)*1.08;
+      ctx.save();ctx.translate(_whx,_why);ctx.rotate(gtime*.04);
+      ctx.globalCompositeOperation='screen';ctx.globalAlpha=.94;ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(_la.wormhole,-_drawSize/2,-_drawSize/2,_drawSize,_drawSize);
+      ctx.restore();
+      // Nearby rock silhouettes carry the strongest parallax.
+      _levCover(_la.rocks,-_camNX*W*.09,-_camNY*H*.09,1.12,'screen',.9);
+    }
+  }
+
+  // ── G1 LEVIATHAN FIELD: procedural fallback vortex ───────────────────
+  if(false && currentGalaxy===1 && window._g1Wormhole && !window._g1Wormhole.assetMode){
     var wh=window._g1Wormhole;
     var whx=wh.x*WORLD-cx, why=wh.y*WORLD-cy, whr=wh.r;
     // Always tick worm state every frame so movement stays smooth
@@ -31498,13 +31689,13 @@ function drawBossShape(ctx,e,col,t){
     ctx.save();
 
     // Desaturate enemies inside ring — draw grey overlay on slowed enemies
-    for(var _tdRi=0;_tdRi<g.enemies.length;_tdRi++){
-      var _tdRe=g.enemies[_tdRi];
+    for(var _tdRi=0;_tdRi<g.bullets.length;_tdRi++){
+      var _tdRe=g.bullets[_tdRi];
       if(!_tdRe._tdSlowed) continue;
       var _tdEx=_tdRe.x-cx, _tdEy=_tdRe.y-cy;
       ctx.globalAlpha=0.55;
       ctx.fillStyle='rgba(160,140,200,0.45)';
-      ctx.beginPath();ctx.arc(_tdEx,_tdEy,_tdRe.r*1.1,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(_tdEx,_tdEy,Math.max(5,(_tdRe.size||4)*1.35),0,Math.PI*2);ctx.fill();
     }
     ctx.globalAlpha=1;
 
@@ -31829,7 +32020,7 @@ function drawBossShape(ctx,e,col,t){
       var _brProg=p._rollProgress;
       var _brFrame=(_brProg==null)?0:Math.min(7,Math.floor(_brProg*8));
       if(_brProg!=null&&p._rollDir==='left')_brFrame=7-_brFrame;
-      if(activeSkin==='viper'&&drawViperSprite(ctx,px,py,_tiltAngle,_squishX,p.thruster,_brFrame)){
+      if(drawAuthoredPlayerShip(ctx,activeSkin,px,py,_tiltAngle,_squishX,p.thruster,_brFrame)){
         // Authored sprite rendered; movement and collision remain unchanged.
       }else drawShip(ctx,activeSkin,px,py,_tiltAngle,1,p.thruster);
     } else {
@@ -31837,7 +32028,7 @@ function drawBossShape(ctx,e,col,t){
       var _brProg2=p._rollProgress;
       var _brFrame2=(_brProg2==null)?0:Math.min(7,Math.floor(_brProg2*8));
       if(_brProg2!=null&&p._rollDir==='left')_brFrame2=7-_brFrame2;
-      if(activeSkin==='viper'&&drawViperSprite(ctx,px,py,p.visualAngle,1,p.thruster,_brFrame2)){
+      if(drawAuthoredPlayerShip(ctx,activeSkin,px,py,p.visualAngle,1,p.thruster,_brFrame2)){
         // Authored sprite rendered.
       }else drawShip(ctx,activeSkin,px,py,p.visualAngle,1,p.thruster);
     }
@@ -32411,6 +32602,7 @@ function updateHUD(){
   var m=Math.floor(G.time/60).toString().padStart(2,'0'),s=Math.floor(G.time%60).toString().padStart(2,'0');
   document.getElementById('td').textContent=m+':'+s;
   updateBeamSelector();
+  if(typeof updateUltimateBtn==='function')updateUltimateBtn();
   // Gem counter in HUD - tiered visual effects [v8]
   var _hg=document.getElementById('hudGems');
   if(_hg){
@@ -32527,7 +32719,7 @@ function updateHUD(){
       var _railActive=false;
       var _railBlocked=false;
       var _cdBlocked=G._singularityCd>0;
-      var _beamColors={pulse:(pulseRedline?'#ff2233':'#00f5ff'),volt:(voltTempestReady()?'#c9a8ff':'#ffcc00'),chain:'#ff3333',blackhole:'#cc00ff',scatter:'#ff9944',timedil:'#aa66ff'};
+      var _beamColors={pulse:'#00f5ff',volt:'#ffcc00',chain:'#ff3333',blackhole:'#cc00ff',scatter:'#ff9944',timedil:'#aa66ff'};
       var _odColor=_beamColors[ownedBeam()]||'#00f5ff';
       sb.style.borderColor=_odColor; sb.style.color=_odColor;
       // Time Dilation — show field toggle state instead of overdrive
@@ -32558,31 +32750,28 @@ function updateHUD(){
           _hudSet(sb,'opacity','1');
           sb.style.borderColor='#cc00ff'; sb.style.color='#cc00ff';
           sb.style.background='rgba(0,10,30,0.9)';
-          sb.innerHTML=svgIcon('void')+' SINGULARITY';
+          sb.innerHTML=svgIcon('void')+' BLACK HOLE';
         }
-      } else if(G._tempestCrown){_hudSet(sb,'opacity','1');sb.style.background='rgba(70,35,130,.32)';sb.innerHTML=svgIcon('lightning')+' TEMPEST '+Math.ceil(G._tempestCrown.life);}
-      else if(G._redline&&G._redline.phase==='charge'){_hudSet(sb,'opacity','1');sb.style.background='rgba(100,0,10,.35)';sb.innerHTML=svgIcon('lightning')+' CHARGING '+Math.ceil(Math.max(0,G._redline.charge-G._redline.t));}
-      else if(G._redline&&G._redline.phase==='fire'){_hudSet(sb,'opacity','1');sb.style.background='rgba(180,0,15,.45)';sb.innerHTML=svgIcon('lightning')+' REDLINE';}
-      else if(_railBlocked){_hudSet(sb,'opacity','0.4');sb.innerHTML=svgIcon('lightning')+' '+Math.ceil(G._railSingCd)+'s';}
+      } else if(_railBlocked){_hudSet(sb,'opacity','0.4');sb.innerHTML=svgIcon('lightning')+' '+Math.ceil(G._railSingCd)+'s';}
       else if(_cdBlocked){_hudSet(sb,'opacity','0.4');sb.innerHTML=svgIcon('lightning')+' '+Math.ceil(G._singularityCd)+'s';}
-      else{_hudSet(sb,'opacity','1');sb.style.background='rgba(0,10,30,0.9)';sb.innerHTML=svgIcon('lightning')+(ownedBeam()==='pulse'&&pulseRedline?' REDLINE':ownedBeam()==='volt'&&voltTempestReady()?' TEMPEST':ownedBeam()==='volt'?' THUNDER':' OVERDRIVE');}
+      else{_hudSet(sb,'opacity','1');sb.style.background='rgba(0,10,30,0.9)';sb.innerHTML=svgIcon('lightning')+(ownedBeam()==='volt'?' THUNDER':' OVERDRIVE');}
       // Reformat the contextual action into the circular command control.
       // Names describe the real beam action; they are not all called Overdrive.
       var _ctxBeam=ownedBeam(),_ctxName='OVERDRIVE',_ctxState='TAP Â· READY',_ctxIcon='lightning';
       var _ctxCd=G._singularityCd||0,_ctxMax=30;
       if(_ctxBeam==='pulse'){
-        _ctxName=pulseRedline?'REDLINE':'PULSE OVERDRIVE';_ctxMax=pulseRedline?60:10;
+        _ctxName='PULSE OVERDRIVE';_ctxMax=10;
         if(G._redline&&G._redline.phase==='charge')_ctxState='CHARGING Â· '+Math.ceil(Math.max(0,G._redline.charge-G._redline.t));
         else if(G._redline&&G._redline.phase==='fire')_ctxState='LIMITER BREACHED';
       }else if(_ctxBeam==='volt'){
-        _ctxName=voltTempestReady()?'TEMPEST CROWN':'THUNDER ARRAY';_ctxMax=voltTempestReady()?60:30;
+        _ctxName='THUNDER ARRAY';_ctxMax=30;
         if(G._tempestCrown)_ctxState='ACTIVE Â· '+Math.ceil(G._tempestCrown.life)+'s';
       }else if(_ctxBeam==='timedil'){
         _ctxName=G._tdActive?'FIELD ACTIVE':'FIELD';_ctxIcon='hourglass';
         _ctxCd=G._tdCooldown||0;_ctxMax=G._tdCdMax||8;
         _ctxState=G._tdActive?'TAP Â· COLLAPSE':_ctxCd>0?'RECHARGING Â· '+Math.ceil(_ctxCd)+'s':'TAP Â· DEPLOY';
       }else if(_ctxBeam==='blackhole'){
-        _ctxName='SINGULARITY';_ctxIcon='void';
+        _ctxName='BLACK HOLE';_ctxIcon='void';
         _ctxCd=G._bhSingCd||0;
         var _ctxBhDef=BEAM_DEFS.find(function(b){return b.id==='blackhole';});
         var _ctxBhStats=_ctxBhDef?_ctxBhDef.getStats(beamRanks.blackhole||1):null;
@@ -32749,6 +32938,13 @@ function _voidKeyHoldFx(host){
 function _checkpointClone(value){
   try{return JSON.parse(JSON.stringify(value));}catch(e){return null;}
 }
+const BOSS_CHECKPOINT_SCHEMA=2;
+function loadPersistentBossCheckpoint(){
+  var cp=lsG('vr_bossCheckpoint',null);if(!cp)return null;
+  if(cp.schema!==BOSS_CHECKPOINT_SCHEMA||!Number.isFinite(cp.galaxy)||cp.galaxy<0||cp.galaxy>=GALAXIES.length||!cp.player){try{localStorage.removeItem('vr_bossCheckpoint');}catch(e){}return null;}
+  return cp;
+}
+function clearPersistentBossCheckpoint(){window._runBossCheckpoint=null;try{localStorage.removeItem('vr_bossCheckpoint');}catch(e){}}
 function setBossCheckpoint(kind,threshold){
   if(!G||!G.player)return;
   var effectiveRequirement=getEffectiveBossKillRequirement(G.galaxy||0);
@@ -32759,7 +32955,7 @@ function setBossCheckpoint(kind,threshold){
   // A main checkpoint only blocks weaker/repeated snapshots in the same galaxy.
   // A checkpoint from an earlier galaxy must always be replaced.
   if(old&&old.galaxy===checkpointGalaxy&&(old.kind==='main'||old.kind===kind))return;
-  window._runBossCheckpoint={
+  window._runBossCheckpoint={schema:BOSS_CHECKPOINT_SCHEMA,savedAt:Date.now(),
     kind:kind,galaxy:checkpointGalaxy,threshold:threshold||0,
     wave:G.wave||1,time:G.time||0,kills:G.kills||0,crystalsRun:G.crystalsRun||0,
     player:_checkpointClone(G.player),gun:_checkpointClone(G.gun),
@@ -32770,11 +32966,12 @@ function setBossCheckpoint(kind,threshold){
     abilityTimers:(G.abilities||[]).map(function(a){return a.timer||0;}),
     beamRanks:_checkpointClone(beamRanks),activeBeam:activeBeam
   };
+  lsS('vr_bossCheckpoint',window._runBossCheckpoint);
   showWA(kind==='main'?'MAIN BOSS CHECKPOINT':'MINI-BOSS CHECKPOINT',kind==='main'?'#ffd36a':'#39ff14');
   try{k0QueueEvent('checkpoint',{kind:kind,galaxy:G.galaxy||0});}catch(e){}
 }
 function restoreBossCheckpoint(){
-  var cp=window._runBossCheckpoint;
+  var cp=window._runBossCheckpoint||loadPersistentBossCheckpoint();
   if(!cp||!G||cp.galaxy!==(G.galaxy||0))return false;
   cleanupAllOverlays();stopDeathMusic();stopMenuMusic();stopBossMusic();stopMusic();
   G.running=true;G.paused=false;G._deathCounted=false;G._bossCinema=false;
@@ -32817,6 +33014,7 @@ function restoreBossCheckpoint(){
   var joyEl=document.getElementById('jz');if(joyEl)joyEl.style.display='block';
   var joyBaseEl=document.getElementById('jbase');if(joyBaseEl)joyBaseEl.style.display='block';
   var singEl=document.getElementById('singBtn');if(singEl)singEl.style.display='flex';
+  var ultEl=document.getElementById('ultBtn');if(ultEl)ultEl.style.display='flex';
   var bossBarEl=document.getElementById('bb');if(bossBarEl)bossBarEl.style.display='none';
   var sectorEl=document.getElementById('sectorMeter');
   if(sectorEl)sectorEl.style.display=(G.galaxy||0)===7?'none':'block';
@@ -33371,7 +33569,11 @@ function renderHangar(){
     var canvas = document.getElementById('heroShipCanvas');
     canvas.style.borderColor = owned ? sk.col+'44' : 'rgba(0,245,255,0.1)';
     canvas.style.background = owned ? 'rgba('+hexToRgb(sk.col)+',0.05)' : 'rgba(0,245,255,0.02)';
-    canvas.innerHTML = '<span style="font-family:Orbitron,sans-serif;font-size:9px;color:'+( owned ? sk.col+'88' : '#00f5ff22')+';letter-spacing:2px;">SHIP RENDER</span>';
+    if(sk.id==='nova'){
+      canvas.innerHTML='<img src="assests/images/nova-shop-v1.png" alt="NOVA" style="display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 14px rgba(255,106,0,.72));">';
+    }else{
+      canvas.innerHTML = '<span style="font-family:Orbitron,sans-serif;font-size:9px;color:'+( owned ? sk.col+'88' : '#00f5ff22')+';letter-spacing:2px;">SHIP RENDER</span>';
+    }
 
     // Name
     var nameEl = document.getElementById('heroName');
@@ -33475,7 +33677,11 @@ function renderHangar(){
     // Ship render placeholder
     var render = document.createElement('div');
     render.style.cssText = 'width:100%;height:72px;display:flex;align-items:center;justify-content:center;border-radius:6px;margin-bottom:8px;background:'+(owned?'rgba('+hexToRgb(sk.col)+',0.06)':'rgba(0,0,0,0.3)')+';border:1px dashed '+(owned?sk.col+'33':'#1a1a2e')+';';
-    render.innerHTML = '<span style="font-family:Orbitron,sans-serif;font-size:7px;color:'+(owned?sk.col+'55':'#1a1a2e')+';letter-spacing:1px;">SHIP</span>';
+    if(sk.id==='nova'){
+      render.innerHTML='<img src="assests/images/nova-shop-v1.png" alt="NOVA" style="display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 8px rgba(255,106,0,.55));">';
+    }else{
+      render.innerHTML = '<span style="font-family:Orbitron,sans-serif;font-size:7px;color:'+(owned?sk.col+'55':'#1a1a2e')+';letter-spacing:1px;">SHIP</span>';
+    }
     card.appendChild(render);
 
     // Name
@@ -33575,7 +33781,7 @@ function inPanel(t){
 }
 function inUI(t){
   var el=document.elementFromPoint(t.clientX,t.clientY);
-  return el&&(el.closest('#ab')||el.closest('#pauseBtn')||el.closest('#pauseMenu')||el.closest('#singBtn'));
+  return el&&(el.closest('#ab')||el.closest('#pauseBtn')||el.closest('#pauseMenu')||el.closest('#singBtn')||el.closest('#ultBtn'));
 }
 
 document.addEventListener('touchstart',function(e){
@@ -34060,7 +34266,7 @@ function exitDevRoom(){
   cleanupAllOverlays();
   stopMusic(); stopBossMusic();
   document.getElementById('hud').style.display = 'none';
-  var _els = ['gc','ab','hudGems','sectorMeter','galaxyBadge','jz','jbase','singBtn','pauseMenu'];
+  var _els = ['gc','ab','hudGems','sectorMeter','galaxyBadge','jz','jbase','singBtn','ultBtn','pauseMenu'];
   _els.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
   document.getElementById('pauseBtn').style.display = 'none';
   var menuEl = document.getElementById('menu');
@@ -37394,7 +37600,7 @@ document.getElementById('singBtn').addEventListener('pointerdown',function(e){
         G._tdCdMax=_stats._tdCd||8;
       }
       _tdDef.fire(G);
-      if(!G._tdActive){ G._tdCooldown=G._tdCdMax||8; for(var _tdc2=0;_tdc2<G.enemies.length;_tdc2++) G.enemies[_tdc2]._tdSlowed=false; }
+      if(!G._tdActive){ G._tdCooldown=G._tdCdMax||8; for(var _tdc2=0;_tdc2<G.bullets.length;_tdc2++) G.bullets[_tdc2]._tdSlowed=false; }
       if(!G._tdActive) SFX.ability&&SFX.ability();
     }
     return;
@@ -37407,6 +37613,7 @@ document.getElementById('singBtn').addEventListener('pointerdown',function(e){
   }
   fireBeamOverdrive();
 });
+document.getElementById('ultBtn').addEventListener('pointerdown',function(e){e.stopPropagation();if(G&&G.running&&!G.paused)fireBeamUltimate();});
 
 document.getElementById('pauseBtn').addEventListener('pointerdown',function(e){
   e.stopPropagation();
@@ -38417,6 +38624,12 @@ function updateOverdriveBtn(){
   if(G&&G._singularityCd>0){btn.style.opacity='0.35';btn.innerHTML=svgIcon('lightning')+' '+(Math.ceil(G._singularityCd))+'s';}
   else{btn.style.opacity='1';btn.innerHTML=svgIcon('lightning')+' OVERDRIVE';}
 }
+function updateUltimateBtn(){
+  var btn=document.getElementById('ultBtn'),name=document.getElementById('ultName'),state=document.getElementById('ultState');if(!btn)return;
+  var ob=ownedBeam(),cfg=BEAM_ULTIMATE_CONFIG[ob],show=!!(ob&&G&&G.running&&!G.paused);btn.style.display=show?'flex':'none';if(!show||!cfg)return;
+  var unlocked=beamUltimateUnlocked(ob),cd=(G._beamUltCds&&G._beamUltCds[ob])||0;btn.classList.toggle('locked',!unlocked);
+  name.textContent=cfg.name;state.textContent=!unlocked?'LOCKED':cd>0?Math.ceil(cd)+'s':'READY';btn.style.opacity=cd>0?'.48':'1';
+}
 function buildAudioBar(){
   var bar=document.getElementById('audioBar');
   bar.innerHTML='';
@@ -38883,6 +39096,7 @@ function tutCheckBeamUnlocked(beamId){
   }
   if(typeof updateBeamSelector==='function') updateBeamSelector();
   if(typeof updateOverdriveBtn==='function') updateOverdriveBtn();
+  if(typeof updateUltimateBtn==='function') updateUltimateBtn();
   showTutBubble({key:'tut_beam_unlocked', title:'BEAM UNLOCKED',
     text:'Beams replace your default weapon with a specialized attack. Select it below to equip it.',
     x:window.innerWidth*0.5, y:window.innerHeight*0.75, anchor:'bc',
@@ -38890,7 +39104,7 @@ function tutCheckBeamUnlocked(beamId){
     onDismiss: function(){
       if(isPauseMenuOpen() || !G || !G.running || G.paused) return; // skip if in menu
       showTutBubble({key:'tut_overdrive', title:'OVERDRIVE',
-        text:'Every beam has a unique ultimate ability. Tap OVERDRIVE to unleash it. Each use triggers a cooldown before it is ready again.',
+        text:'Every beam keeps its normal Overdrive. Void-forged Ultimates use the separate gold button once unlocked.',
         x:window.innerWidth*0.5, y:window.innerHeight*0.75, anchor:'bc',
         arrowTarget:'singBtn'});
     }
@@ -38946,6 +39160,29 @@ function tutCheckPauseTip(){ /* removed */ }
 // CHANNEL LOG
 // ══════════════════════════════════════════════════════════════════════════
 var CHANNEL_LOG = [
+  {
+    version:'v0.9.13 · LEVIATHAN',title:'THE FIELD AWAKENS',color:'#65f6ff',entries:[
+      'LEVIATHAN FIELD ART PASS — new layered midnight starfield and cyan-violet nebula backdrop',
+      'COLOSSAL CONSTELLATIONS — six skeletal leviathans drift at an intentionally near-static depth',
+      'LIVING WORMHOLE — eight authored frames breathe, contract, erupt, shockwave, and return to idle',
+      'WORM SPAWNING — eruption frames now expel code-driven worm silhouettes, spores, and energy debris',
+      'DEPTH LAYERS — distant stars, constellations, world-fixed wormhole, and foreground rocks move independently',
+      'MOBILE PERFORMANCE — reduced eruption particle count and glow cost on mobile with procedural fallback assets'
+    ]
+  },
+  {
+    version: 'v0.9.12 · ASCENSION',title:'VOID ASCENSION SYSTEMS',color:'#ffd36a',entries:[
+      'VOID BLOOM REBALANCE — substantially reduced hull and removed its invulnerability shield cycle',
+      'GALAXY PRESSURE CURVE — centralized regular-enemy health and damage scaling from Machine Remnant onward',
+      'TIME DILATION RULES — regular enemy projectiles slow inside the field while bosses and their attacks remain immune',
+      'GERMINAL CONTACT FIX — closed the lunge-state damage gap and limited each collision to one authored hull hit',
+      'DUAL BEAM CONTROLS — Overdrive and Ultimate now have separate mobile-safe combat buttons',
+      'VOID ULTIMATE PROGRESSION — shared 10 / 20 / 50 Void Key upgrade path with persistent levels',
+      'SINGULARITY — 120-second sector clear preserves bosses and grants normal enemy and asteroid rewards once',
+      'REWIND — reverses the last three seconds of live combat state without rewinding boss health, rewards, or cooldowns',
+      'PERSISTENT CHECKPOINTS — validated mini-boss and main-boss saves can be continued from the command deck'
+    ]
+  },
   {
     version: 'v0.9.11 · FLIGHT',
     title: 'INTERCEPTOR FLIGHT PASS',
@@ -39394,11 +39631,13 @@ function rebuildMainMenu(){
   stopMusic();stopDeathMusic();stopVaultMusic();
   var ov = document.getElementById('menu');
   var cmdGal=(typeof currentGalaxy!=='undefined'&&currentGalaxy>=0&&GALAXIES[currentGalaxy])?GALAXIES[currentGalaxy]:GALAXIES[0];
+  var cmdCp=loadPersistentBossCheckpoint();
   ov.classList.add('commandDeck');
   ov.innerHTML=''
     +'<div class="cmdLogo"><h1>VOID RUNNERS</h1><div class="cmdSub">DEEP SPACE SURVIVAL</div></div>'
     +'<div class="cmdResources"><div class="cmdResource"><b style="color:#ffd84a">'+crystals.toLocaleString()+'</b>CRYSTALS</div><div class="cmdResource"><b style="color:#c877ff">'+voidKeys.toLocaleString()+'</b>VOID KEYS</div><div class="cmdResource"><b style="color:#55dfff">'+oreFragments.toLocaleString()+'</b>ORE</div></div>'
     +'<button class="btn cmdLaunch" id="sBtn"><span class="cmdLaunchTitle">LAUNCH</span><span class="cmdLaunchSub">CURRENT DESTINATION · '+cmdGal.name+'</span></button>'
+    +(cmdCp?'<button class="btn" id="checkpointContinueBtn" style="border-color:#ffd36a;color:#ffd36a;margin-top:8px;box-shadow:0 0 18px rgba(255,190,70,.16);">CONTINUE FROM '+(cmdCp.kind==='main'?'MAIN BOSS':'MINI-BOSS')+' CHECKPOINT · G'+(cmdCp.galaxy+1)+'</button>':'')
     +'<div class="cmdPrimary">'
     +'<button class="btn cmdCard" id="mBBtn" style="border-color:#00ddef;color:#78efff"><svg viewBox="0 0 40 40" fill="none"><path d="M20 4L33 12V28L20 36 7 28V12Z" stroke="currentColor"/><path d="M20 4V36M7 12L33 28M33 12L7 28" stroke="currentColor" opacity=".55"/></svg>LOADOUT</button>'
     +'<button class="btn cmdCard" id="mGBtn" style="border-color:#a85cff;color:#c989ff"><svg viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="20" rx="17" ry="7" stroke="currentColor" transform="rotate(-28 20 20)"/><ellipse cx="20" cy="20" rx="17" ry="7" stroke="currentColor" transform="rotate(28 20 20)" opacity=".6"/><circle cx="20" cy="20" r="4" fill="currentColor"/></svg>GALAXY MAP</button>'
@@ -39408,15 +39647,19 @@ function rebuildMainMenu(){
     +'<button class="btn" id="mCLBtn" style="border-color:#31586c;color:#7295a6">CHANNEL LOG</button>'
     +'<button class="btn" id="menuSettingsBtn" style="border-color:#31586c;color:#7295a6">SETTINGS</button></div>'
     +'<div class="cmdCompanion" id="k0Companion"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><span class="k0Speaker" id="k0Speaker">K-0 // NAV UNIT</span><span class="k0Line" id="k0Line">ROUTE LOCKED. SYSTEMS NOMINAL.</span><span class="k0Hint">TAP K-0 TO TALK</span></div></div>'
-    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.11 · FLIGHT</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
+    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.13 · LEVIATHAN</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
   showMainMenu();playMenuMusic();
   k0InitMenu();
   updatePrestigeUI();
   // Rewire button handlers
+  var _cpContinue=document.getElementById('checkpointContinueBtn');if(_cpContinue)_cpContinue.addEventListener('pointerdown',function(){
+    var cp=loadPersistentBossCheckpoint();if(!cp){fmsg('CHECKPOINT INVALID','#ff3366');rebuildMainMenu();return;}currentGalaxy=cp.galaxy;window._runBossCheckpoint=cp;document.getElementById('menu').style.display='none';newGame();window._runBossCheckpoint=cp;if(!restoreBossCheckpoint()){fmsg('CHECKPOINT RESTORE FAILED','#ff3366');rebuildMainMenu();}
+  });
   document.getElementById('sBtn').addEventListener('pointerdown',function(){
     SFX.click&&SFX.click();
+    clearPersistentBossCheckpoint();
     if(!localStorage.getItem('vr_seenCutscene')){
       stopMenuMusic();
       document.getElementById('menu').style.display='none';
@@ -42467,8 +42710,7 @@ function lRenderBeams(container) {
           redlineBtn.innerHTML='UNLOCK REDLINE · '+svgIcon('amp_key')+' 10';
           safeTap(redlineBtn,function(){
             if(voidKeys<10){fmsg('10 VOID KEYS REQUIRED','#ff3366');SFX.click&&SFX.click();return;}
-            voidKeys-=10;lsS('vr_voidKeys',voidKeys);pulseRedline=true;lsS('vr_pulseRedline',true);updateKeyHUD();
-            SFX.upgrade&&SFX.upgrade();fmsg('PULSE REDLINE INSTALLED','#ff2233');
+            buyBeamUltimateLevel('pulse');
             lRefreshCoins();var _rlfc=document.getElementById('loadoutContent');if(_rlfc){_rlfc.innerHTML='';lRenderBeams(_rlfc);}
           });
           redlineBox.appendChild(redlineBtn);
@@ -42491,13 +42733,22 @@ function lRenderBeams(container) {
           safeTap(tempestBtn,function(){
             if((beamRanks.volt||0)<5){fmsg('MAX VOLT WHIP FIRST','#c9a8ff');SFX.click&&SFX.click();return;}
             if(voidKeys<10){fmsg('10 VOID KEYS REQUIRED','#ff3366');SFX.click&&SFX.click();return;}
-            voidKeys-=10;lsS('vr_voidKeys',voidKeys);voltTempest=true;lsS('vr_voltTempest',true);updateKeyHUD();
-            SFX.upgrade&&SFX.upgrade();fmsg('TEMPEST CROWN INSTALLED','#d8c8ff');
+            buyBeamUltimateLevel('volt');
             lRefreshCoins();var _tcfc=document.getElementById('loadoutContent');if(_tcfc){_tcfc.innerHTML='';lRenderBeams(_tcfc);}
           });
           tempestBox.appendChild(tempestBtn);
         }
         inner.appendChild(tempestBox);
+      }
+      var _ucfg=BEAM_ULTIMATE_CONFIG[def.id],_ulvl=_ucfg?beamUltimateLevel(def.id):0;
+      if(_ucfg&&((def.id!=='pulse'&&def.id!=='volt')||_ulvl>0)){
+        var _ucost=beamUltimateNextCost(def.id),_ub=document.createElement('div');
+        _ub.style.cssText='margin-top:8px;padding:11px;border-radius:8px;background:rgba(255,190,65,.07);border:1px solid rgba(255,205,105,.35);';
+        _ub.innerHTML='<div style="font-family:Orbitron,sans-serif;font-size:11px;color:#ffd36a;letter-spacing:2px;">✦ '+_ucfg.name+'</div><div style="font-size:9px;color:#9a8965;margin:5px 0 8px;">VOID LEVEL '+_ulvl+' / '+_ucfg.maxLevel+' · '+_ucfg.cooldown+'s COOLDOWN</div>';
+        if(_ucost!==null){var _uBtn=document.createElement('button');_uBtn.style.cssText='width:100%;padding:10px;background:rgba(255,190,65,.12);border:1px solid #aa8540;color:#ffd36a;font-family:Orbitron,sans-serif;font-size:10px;';_uBtn.innerHTML=(_ulvl?'ASCEND':'UNLOCK')+' · '+svgIcon('amp_key')+' '+_ucost;
+          safeTap(_uBtn,(function(id){return function(){if(buyBeamUltimateLevel(id)){lRefreshCoins();var c=document.getElementById('loadoutContent');if(c){c.innerHTML='';lRenderBeams(c);}}};})(def.id));_ub.appendChild(_uBtn);
+        }else _ub.innerHTML+='<div style="color:#fff1b0;font:9px Orbitron,sans-serif;letter-spacing:2px;">MAX VOID LEVEL</div>';
+        inner.appendChild(_ub);
       }
     } else {
       var _isPulseFreeL = def.id==='pulse' && !lsG('vr_firstBeamBought',false) && lsG('vr_pulseUnlockable',false);
