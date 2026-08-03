@@ -734,7 +734,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="bossDeathFlash"></div>
 <div class="ov" id="menu" style="display:none;">
   <h1>VOID RUNNERS</h1>
-  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.13 · LEVIATHAN</div>
+  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.15 · GHOST SIGNAL</div>
   <div class="tl" style="margin-bottom:18px;">DEEP SPACE SURVIVAL</div>
   <button class="btn" id="sBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> LAUNCH</button>
   <button class="btn" id="mBBtn" style="border-color:#00f5ff55;color:#66aacc;font-size:12px;">&#9632; LOADOUT</button>
@@ -1357,7 +1357,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="clPanel" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,0.97);z-index:80;padding:0;">
   <div style="width:min(92vw,460px);display:flex;flex-direction:column;height:100%;padding:24px 0 0;min-height:0;">
     <div style="font-family:Orbitron,sans-serif;font-size:16px;color:#00f5ff;letter-spacing:4px;text-shadow:0 0 20px #00f5ff;margin-bottom:4px;text-align:center;">&#9635; CHANNEL LOG</div>
-    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.13 · LEVIATHAN — TRANSMISSION HISTORY</div>
+    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.15 · GHOST SIGNAL — TRANSMISSION HISTORY</div>
     <div id="clContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:0 4px 20px;min-height:0;"></div>
     <button class="btn" id="clClose" style="width:min(92vw,460px);margin:12px 0 24px;flex-shrink:0;">CLOSE</button>
   </div>
@@ -2909,6 +2909,9 @@ var bgCrimsonDebris=[];
 var bgDriftFreighters=[];
 var bgDriftRingedPlanet=null;
 var bgLeviathanAssets=null;
+var bgMachineRemnantAssets=null;
+var bgMeteorStormAssets=null;
+var machineRemnantEnemyAtlas=null;
 function _loadLeviathanFieldAssets(){
   if(bgLeviathanAssets)return bgLeviathanAssets;
   function img(src){var im=new Image();im.src=src;return im;}
@@ -2919,6 +2922,32 @@ function _loadLeviathanFieldAssets(){
     wormhole:img('assests/images/leviathan-wormhole-massive-v2.png')
   };
   return bgLeviathanAssets;
+}
+function _loadMachineRemnantAssets(){
+  if(bgMachineRemnantAssets)return bgMachineRemnantAssets;
+  function img(src){var im=new Image();im.src=src;return im;}
+  bgMachineRemnantAssets={
+    stars:img('assests/images/machine-remnant-stars-v1.png'),
+    station:img('assests/images/machine-remnant-station-v1.png'),
+    wreckage:img('assests/images/machine-remnant-wreckage-v2.png')
+  };
+  return bgMachineRemnantAssets;
+}
+function _loadMeteorStormAssets(){
+  if(bgMeteorStormAssets)return bgMeteorStormAssets;
+  function img(src){var im=new Image();im.src=src;return im;}
+  bgMeteorStormAssets={
+    base:img('assests/images/meteor-storm-planet-ring-snes-v1.png'),
+    mid:img('assests/images/meteor-storm-mid-rocks-snes-v1.png'),
+    foreground:img('assests/images/meteor-storm-foreground-rocks-snes-v1.png')
+  };
+  return bgMeteorStormAssets;
+}
+function _loadMachineRemnantEnemyAtlas(){
+  if(machineRemnantEnemyAtlas)return machineRemnantEnemyAtlas;
+  machineRemnantEnemyAtlas=new Image();
+  machineRemnantEnemyAtlas.src='assests/images/machine-remnant-enemies-snes-atlas-v1.png';
+  return machineRemnantEnemyAtlas;
 }
 
 function buildBgForGalaxy(gIdx){
@@ -3259,6 +3288,7 @@ function buildBgForGalaxy(gIdx){
 
   // ── G2 MACHINE REMNANT: Abandoned Station + Mechanical Graveyard ──────────
   if(gIdx===2){
+    _loadMachineRemnantAssets();
     // Very dark near-black — station is far back
     bc.fillStyle='#010203'; bc.fillRect(0,0,WORLD,WORLD);
 
@@ -15193,7 +15223,7 @@ var _runStats = (function(){
   function galaxyKey(i){return i===-2?'s0':'g'+Math.max(0,i||0);}
   function snapshot(){var o={};try{for(var k in permData)o[k]=permData[k]||0;}catch(e){}return o;}
   function startRun(){
-    _currentRun={version:4,gameVersion:'v0.9.13 · LEVIATHAN',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
+    _currentRun={version:4,gameVersion:'v0.9.15 · GHOST SIGNAL',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
       outcome:null,galaxiesVisited:[],gems:0,gemsByGalaxy:{},crystalSources:{},asteroidsMined:0,
       asteroidBase:0,asteroidBonus:0,walletStart:typeof crystals!=='undefined'?crystals:0,walletEnd:null,walletDelta:0,
       deaths:{},deathEvents:[],damageDealt:0,bossDamage:0,damageTaken:0,shieldDamage:0,lowestHullPct:100,
@@ -15755,7 +15785,7 @@ function spawnEnemy(){
     var wormTiers=[
       // T0 — LEVIATHAN LARVA (blue, basic chase)
       {r:12,color:'#00aaff',hp:(35+g.wave*10)*gd*pm, dmg:Math.round(7*1.2*gd*pm), spd:Math.min(198,99+g.wave*4.5)*gd,
-       xpVal:4, segs:5, aiType:'chase', name:'larva'},
+       xpVal:4, segs:2, aiType:'chase', name:'larva'},
       // T1 — MAGMA BURROWER (orange/gold, fire trail)
       {r:16,color:'#ff8800',hp:(80+g.wave*20)*gd*pm, dmg:Math.round(12*1.2*gd*pm), spd:Math.min(180,90+g.wave*4.5)*gd,
        xpVal:8, segs:7, aiType:'chase', name:'magma', isMagma:true},
@@ -15826,19 +15856,19 @@ function spawnEnemy(){
     var droneTiers=[
       // T0 — CRAB DRONE (green, fast relentless creeper — never stops, never speeds up)
       {r:13,color:'#44ff88',hp:(60+g.wave*18)*gd*pm, dmg:Math.round(18*gd*pm), spd:Math.min(180,Math.round((90+g.wave*5)*gd)),
-       xpVal:4, aiType:'chase', name:'crab'},
+       xpVal:4, aiType:'chase', name:'drifter'},
       // T1 — SEEKER DRONE (green, fast aggressive chaser + rapid shots)
       {r:11,color:'#44ff88',hp:(30+g.wave*10)*gd*pm, dmg:Math.round(14*gd*pm), spd:Math.min(380,Math.round((90+g.wave*6)*gd)),
-       xpVal:6, aiType:'chase', name:'seeker', isSeeker:true},
+       xpVal:6, aiType:'chase', name:'dive_bomber', isSeeker:true},
       // T2 — SNIPER DRONE (red/orange, stays far, piercing laser)
       {r:14,color:'#ff6633',hp:(70+g.wave*18)*gd*pm, dmg:Math.round(20*gd*pm), spd:Math.min(160,Math.round((40+g.wave*3)*gd)),
        xpVal:10, aiType:'kite', name:'sniper', isSniper:true},
       // T3 — HEAVY DRONE (orange, slow tank, wide plasma)
       {r:20,color:'#ff8800',hp:(180+g.wave*40)*gd*pm, dmg:Math.round(16*gd*pm), spd:Math.min(100,Math.round((30+g.wave*2)*gd)),
-       xpVal:16, aiType:'tank', name:'heavy', isHeavyDrone:true, armor:0.35},
+       xpVal:16, aiType:'tank', name:'barrager', isHeavyDrone:true, armor:0.35},
       // T4 — BOMB DRONE (red, drifts toward player, proximity explosion)
       {r:15,color:'#ff2244',hp:(60+g.wave*15)*gd*pm, dmg:Math.round(30*gd*pm), spd:Math.min(130,Math.round((35+g.wave*3)*gd)),
-       xpVal:14, aiType:'chase', name:'bomb', isBombDrone:true},
+       xpVal:14, aiType:'chase', name:'exploder', isBombDrone:true},
     ];
     // Wave-gated pool
     var dPool=g.wave<3?[0]:g.wave<4?[0,0,1]:g.wave<6?[0,0,1,2]:g.wave<8?[0,0,1,2,3]:[0,0,1,2,3,4];
@@ -23840,7 +23870,7 @@ function render(){
     ctx.restore();
   }
 
-  if(bgC && currentGalaxy!==0 && currentGalaxy!==8 && !((currentGalaxy===7) && window._g7Interior)){
+  if(bgC && currentGalaxy!==0 && (currentGalaxy!==2||!(_loadMachineRemnantAssets().stars.complete&&_loadMachineRemnantAssets().stars.naturalWidth&&_loadMachineRemnantAssets().station.complete&&_loadMachineRemnantAssets().station.naturalWidth&&_loadMachineRemnantAssets().wreckage.complete&&_loadMachineRemnantAssets().wreckage.naturalWidth)) && currentGalaxy!==8 && !((currentGalaxy===7) && window._g7Interior)){
     if(currentGalaxy===9&&window._g9Phases&&window._g9FadingIn&&window._g9NextPhaseIdx!==undefined){
       // Draw current phase
       ctx.drawImage(window._g9Phases[window._g9PhaseIdx||0],-cx,-cy);
@@ -24882,7 +24912,7 @@ function render(){
     }
   }
   // ── G2: fixed deep-background star layer (no parallax — truly locked) ──
-  if(currentGalaxy===2 && window._g2FixedStars){
+  if(currentGalaxy===2 && window._g2FixedStars && !(_loadMachineRemnantAssets().stars.complete&&_loadMachineRemnantAssets().stars.naturalWidth&&_loadMachineRemnantAssets().station.complete&&_loadMachineRemnantAssets().station.naturalWidth&&_loadMachineRemnantAssets().wreckage.complete&&_loadMachineRemnantAssets().wreckage.naturalWidth)){
     var fs=window._g2FixedStars;
     for(var fi=0;fi<fs.length;fi++){
       var fst=fs[fi];
@@ -25598,6 +25628,76 @@ function render(){
 
   // ── G2 MACHINE REMNANT: distant station + alarm + debris ──────────────
   if(currentGalaxy===2){
+    var _g2Art=_loadMachineRemnantAssets();
+    var _g2Ready=_g2Art.stars.complete&&_g2Art.stars.naturalWidth&&
+      _g2Art.station.complete&&_g2Art.station.naturalWidth&&
+      _g2Art.wreckage.complete&&_g2Art.wreckage.naturalWidth;
+    if(_g2Ready){
+      var _g2SpawnCx=WORLD/2-W/2,_g2SpawnCy=WORLD/2-H/2;
+      var _g2CamDx=cx-_g2SpawnCx,_g2CamDy=cy-_g2SpawnCy;
+      var _g2BaseScale=Math.max(W/_g2Art.stars.naturalWidth,H/_g2Art.stars.naturalHeight)*1.12;
+      var _g2BgW=_g2Art.stars.naturalWidth*_g2BaseScale,_g2BgH=_g2Art.stars.naturalHeight*_g2BaseScale;
+      ctx.save();ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(_g2Art.stars,(W-_g2BgW)/2-_g2CamDx*.015,(H-_g2BgH)/2-_g2CamDy*.015,_g2BgW,_g2BgH);
+      ctx.restore();
+
+      // Broad drifting mist banks. The sprites stay crisp while the fog remains soft.
+      function drawMachineFogBand(seed,yBase,speed,alpha,col,front){
+        var span=W+600;
+        var drift=((gtime*speed+seed*211)%span+span)%span;
+        ctx.save();ctx.globalCompositeOperation=front?'screen':'source-over';
+        for(var fi=0;fi<8;fi++){
+          var fx=((fi*span/7+drift)%span)-300;
+          var fy=yBase+Math.sin(fi*1.31+seed+gtime*.08)*55;
+          var rx=170+(fi%3)*55,ry=55+(fi%4)*18;
+          var fogGrad=ctx.createRadialGradient(fx,fy,0,fx,fy,rx);
+          fogGrad.addColorStop(0,'rgba('+col+','+alpha+')');
+          fogGrad.addColorStop(.45,'rgba('+col+','+(alpha*.65)+')');
+          fogGrad.addColorStop(1,'rgba('+col+',0)');
+          ctx.fillStyle=fogGrad;ctx.beginPath();ctx.ellipse(fx,fy,rx,ry,0,0,Math.PI*2);ctx.fill();
+        }
+        ctx.restore();
+      }
+      drawMachineFogBand(1,H*.18,5.5,.12,'45,72,88',false);
+      drawMachineFogBand(2,H*.42,-4.4,.10,'38,62,78',false);
+      drawMachineFogBand(3,H*.70,3.8,.115,'50,38,74',false);
+      drawMachineFogBand(4,H*.88,-3.0,.085,'42,66,76',false);
+
+      // The station is almost fixed in depth, with only slight camera parallax.
+      var _g2StationAspect=_g2Art.station.naturalWidth/_g2Art.station.naturalHeight;
+      var _g2StationW=(W>=H)?H*1.47:W*1.75;
+      var _g2StationH=_g2StationW*(_g2Art.station.naturalHeight/_g2Art.station.naturalWidth);
+      var _g2StationX=W*.53-_g2CamDx*.06;
+      var _g2StationY=H*.48-_g2CamDy*.06;
+      ctx.save();ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(_g2Art.station,_g2StationX-_g2StationW/2,_g2StationY-_g2StationH/2,_g2StationW,_g2StationH);
+      ctx.restore();
+
+      // Dormant rogue-AI eye: restrained pulse, not a bright portal.
+      var _g2CorePulse=.08+.055*(.5+.5*Math.sin(gtime*1.7));
+      var _g2CoreRadius=Math.max(36,W*.08);
+      var _g2CoreGlow=ctx.createRadialGradient(_g2StationX,_g2StationY,0,_g2StationX,_g2StationY,_g2CoreRadius);
+      _g2CoreGlow.addColorStop(0,'rgba(255,25,18,'+_g2CorePulse+')');
+      _g2CoreGlow.addColorStop(.4,'rgba(155,8,18,'+(_g2CorePulse*.45)+')');
+      _g2CoreGlow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=_g2CoreGlow;ctx.fillRect(_g2StationX-_g2CoreRadius,_g2StationY-_g2CoreRadius,_g2CoreRadius*2,_g2CoreRadius*2);
+
+      // A thinner fog pass crosses the station to sell abandonment and depth.
+      drawMachineFogBand(5,H*.32,7.0,.075,'58,88,96',true);
+      drawMachineFogBand(6,H*.58,-5.8,.065,'48,70,86',true);
+      drawMachineFogBand(7,H*.80,5.0,.07,'68,42,88',true);
+
+      // Foreground wreckage shifts more strongly than the station.
+      var _g2FgScale=Math.max(W/_g2Art.wreckage.naturalWidth,H/_g2Art.wreckage.naturalHeight)*1.02;
+      var _g2FgW=_g2Art.wreckage.naturalWidth*_g2FgScale,_g2FgH=_g2Art.wreckage.naturalHeight*_g2FgScale;
+      ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.82;
+      ctx.drawImage(_g2Art.wreckage,(W-_g2FgW)/2-_g2CamDx*.20,(H-_g2FgH)/2-_g2CamDy*.20,_g2FgW,_g2FgH);
+      ctx.restore();
+    }
+  }
+
+  // Procedural fallback retained for slow or failed asset loads.
+  if(currentGalaxy===2 && !(_loadMachineRemnantAssets().stars.complete&&_loadMachineRemnantAssets().stars.naturalWidth&&_loadMachineRemnantAssets().station.complete&&_loadMachineRemnantAssets().station.naturalWidth&&_loadMachineRemnantAssets().wreckage.complete&&_loadMachineRemnantAssets().wreckage.naturalWidth)){
     // Station anchored in world space with slow parallax (0.22x)
     // World anchor WORLD*0.606, WORLD*0.560 puts it upper-right of center at spawn
     var ST_PAR = 0.10;
@@ -25879,8 +25979,42 @@ function render(){
       ctx.stroke(); ctx.restore();
     }
   }
-  // ── G3 METEOR STORM BELT: animated spinning ring system ──────────────────
-  if(currentGalaxy===3){
+  // Authored SNES Meteor Storm Belt with independent depth planes.
+  var _g3Art=_loadMeteorStormAssets();
+  var _g3ArtReady=_g3Art.base.complete&&_g3Art.base.naturalWidth&&
+    _g3Art.mid.complete&&_g3Art.mid.naturalWidth&&
+    _g3Art.foreground.complete&&_g3Art.foreground.naturalWidth;
+  if(currentGalaxy===3&&_g3ArtReady){
+    var _g3CamDx=(cx+W/2)-WORLD/2,_g3CamDy=(cy+H/2)-WORLD/2;
+    function drawG3Layer(im,depth,overscan,alpha){
+      var sc=Math.max(W/im.naturalWidth,H/im.naturalHeight)*overscan;
+      var dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;
+      var maxX=Math.max(0,(dw-W)/2-2),maxY=Math.max(0,(dh-H)/2-2);
+      var px=Math.max(-maxX,Math.min(maxX,-_g3CamDx*depth));
+      var py=Math.max(-maxY,Math.min(maxY,-_g3CamDy*depth));
+      ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=alpha;
+      ctx.drawImage(im,(W-dw)/2+px,(H-dh)/2+py,dw,dh);ctx.restore();
+    }
+    // Planet and its single ring system barely move; nearer rocks travel faster.
+    drawG3Layer(_g3Art.base,.012,1.06,1);
+
+    // Sparse distant meteor pixels drift independently across the upper-left sky.
+    ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.38;
+    for(var _g3mi=0;_g3mi<2;_g3mi++){
+      var _g3mx=((gtime*(7+_g3mi*3)+_g3mi*W*.43)%(W*.62))-45;
+      var _g3my=H*(.13+_g3mi*.15)+Math.sin(gtime*.11+_g3mi)*18;
+      ctx.fillStyle=_g3mi?'#8b3a12':'#d86618';
+      ctx.fillRect(Math.round(_g3mx),Math.round(_g3my),22,2);
+      ctx.fillStyle='#4b1d09';ctx.fillRect(Math.round(_g3mx-12),Math.round(_g3my),10,1);
+    }
+    ctx.restore();
+
+    drawG3Layer(_g3Art.mid,.055,1.10,.78);
+    drawG3Layer(_g3Art.foreground,.12,1.16,.90);
+  }
+
+  // Procedural fallback retained for slow or failed asset loads.
+  if(currentGalaxy===3&&!_g3ArtReady){
     // ── Offscreen cache for ringed planet — 20fps, static support ──
     if(!window._g3BgCanvas||window._g3BgCanvas.width!==W||window._g3BgCanvas.height!==H){
       window._g3BgCanvas=document.createElement('canvas');
@@ -26695,6 +26829,13 @@ function render(){
         ctx.save();
         ctx.translate(wsx,wsy);
         ctx.globalAlpha=segAlpha;
+        var prevWseg=e.wormSegs[Math.max(0,ws-1)];
+        var segAngle=Math.atan2(prevWseg.y-wseg.y,prevWseg.x-wseg.x)-Math.PI/2;
+        if(drawLeviathanWormSprite(ctx,e,wTi,'segment',segR,segAngle,col)){
+          ctx.globalAlpha=1;
+          ctx.restore();
+          continue;
+        }
         if(wTi===0){
           // T0 LARVA — skip segment drawing, whole body drawn as head
           ctx.restore(); break;
@@ -27122,6 +27263,72 @@ function drawDriftEnemySprite(ctx,e,ti,r,ang,t){
     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(dx/dist*300,dy/dist*300);ctx.stroke();ctx.setLineDash([]);ctx.restore();
   }
   ctx.restore();return true;
+}
+
+// Leviathan Field modular SNES atlas: one authored head and one reusable body
+// segment per tier. Crops are kept explicit so transparent padding never
+// affects mobile-scale readability or segment spacing.
+var LEVIATHAN_WORM_SPRITE_MANIFEST={version:1,sheet:'assests/images/leviathan-worm-snes-atlas-v1.png',frames:[
+  {head:{x:83,y:248,w:175,h:229,hScale:2.55},segment:{x:86,y:535,w:168,h:252,hScale:2.05}},
+  {head:{x:328,y:122,w:218,h:320,hScale:3.05},segment:{x:342,y:524,w:189,h:358,hScale:3.95}},
+  {head:{x:632,y:114,w:290,h:360,hScale:3.10},segment:{x:644,y:522,w:184,h:360,hScale:4.90}},
+  {head:{x:922,y:110,w:307,h:343,hScale:3.00},segment:{x:929,y:522,w:300,h:355,hScale:3.18}},
+  {head:{x:1229,y:125,w:236,h:312,hScale:3.20},segment:{x:1229,y:518,w:209,h:364,hScale:4.22}}
+]};
+function drawLeviathanWormSprite(ctx,e,tier,part,r,rotation,col){
+  // This renderer can be reached by the first synchronous paint before the
+  // later global manifest assignment has executed. Keep a local fallback so
+  // first-frame asset loading can never crash the run.
+  var manifest=LEVIATHAN_WORM_SPRITE_MANIFEST||{sheet:'assests/images/leviathan-worm-snes-atlas-v1.png',frames:[
+    {head:{x:83,y:248,w:175,h:229,hScale:2.55},segment:{x:86,y:535,w:168,h:252,hScale:2.05}},
+    {head:{x:328,y:122,w:218,h:320,hScale:3.05},segment:{x:342,y:524,w:189,h:358,hScale:3.95}},
+    {head:{x:632,y:114,w:290,h:360,hScale:3.10},segment:{x:644,y:522,w:184,h:360,hScale:4.90}},
+    {head:{x:922,y:110,w:307,h:343,hScale:3.00},segment:{x:929,y:522,w:300,h:355,hScale:3.18}},
+    {head:{x:1229,y:125,w:236,h:312,hScale:3.20},segment:{x:1229,y:518,w:209,h:364,hScale:4.22}}
+  ]};
+  var sprite=window.__vrLeviathanWormSprite;
+  if(!sprite){
+    sprite=new Image();
+    sprite.src=manifest.sheet;
+    window.__vrLeviathanWormSprite=sprite;
+  }
+  if(!sprite.complete||!sprite.naturalWidth)return false;
+  var set=manifest.frames[tier];
+  var frame=set&&set[part];
+  if(!frame)return false;
+  var dh=r*frame.hScale,dw=dh*(frame.w/frame.h);
+  ctx.save();
+  ctx.rotate(rotation||0);
+  ctx.imageSmoothingEnabled=false;
+  ctx.shadowBlur=0;
+  ctx.drawImage(sprite,frame.x,frame.y,frame.w,frame.h,-dw/2,-dh/2,dw,dh);
+  if(e.flashTimer>0||e.frozen>0||e.isElite){
+    ctx.globalCompositeOperation='source-atop';
+    ctx.globalAlpha=e.flashTimer>0?.75:e.frozen>0?.35:.22;
+    ctx.fillStyle=e.flashTimer>0?'#ffffff':e.frozen>0?'#88ddff':'#ffd700';
+    ctx.fillRect(-dw/2,-dh/2,dw,dh);
+  }
+  ctx.restore();
+  return true;
+}
+
+function drawMachineRemnantEnemySprite(ctx,e,t){
+  var atlas=_loadMachineRemnantEnemyAtlas();
+  if(!atlas.complete||!atlas.naturalWidth)return false;
+  // Tight bounds in gameplay order: Drifter, Dive Bomber, Sniper, Barrager, Exploder.
+  var frames=[[27,332,271,289],[334,347,280,279],[614,340,289,256],[939,343,257,274],[1248,340,255,259]];
+  var ti=Math.max(0,Math.min(4,e.typeIdx||0)),fr=frames[ti];
+  var maxDim=e.r*[3.8,4.2,4.0,3.8,3.8][ti];
+  var scale=maxDim/Math.max(fr[2],fr[3]);
+  var dw=Math.round(fr[2]*scale),dh=Math.round(fr[3]*scale);
+  ctx.save();ctx.imageSmoothingEnabled=false;
+  if(e.flashTimer>0)ctx.filter='brightness(2.8)';
+  else if(e.frozen>0)ctx.filter='saturate(.35) hue-rotate(145deg) brightness(1.45)';
+  if(ti===1){var divePulse=e._skPulse||1;ctx.scale(divePulse,divePulse);}
+  if(ti===4&&e._bombArmed)ctx.globalAlpha=.86+.14*Math.sin(t*8);
+  ctx.drawImage(atlas,fr[0],fr[1],fr[2],fr[3],-dw/2,-dh/2,dw,dh);
+  ctx.restore();
+  return true;
 }
 
 function drawEnemyShape(ctx,e,col,t){
@@ -27760,6 +27967,39 @@ function drawEnemyShape(ctx,e,col,t){
       ctx.shadowBlur=(_isMobile?2:6); ctx.shadowColor=col;
       var wTi2=e.typeIdx||0;
 
+      var headAngle=0;
+      if(e.wormSegs&&e.wormSegs.length>1){
+        headAngle=Math.atan2(e.y-e.wormSegs[1].y,e.x-e.wormSegs[1].x)-Math.PI/2;
+      }
+      if(drawLeviathanWormSprite(ctx,e,wTi2,'head',r,headAngle,col)){
+        // Keep combat telegraphs code-driven and readable above the flat atlas.
+        if(e.isIronclad&&e._icCharging){
+          ctx.globalAlpha=0.4+0.4*Math.sin(t*20);
+          ctx.fillStyle='#ff2244';ctx.beginPath();ctx.arc(0,0,r*1.6,0,Math.PI*2);ctx.fill();
+          ctx.globalAlpha=1;
+        }
+        if(e.isCrystal&&e._crPulseTimer>(e._crPulseCd-0.5)){
+          var atlasPulseAlpha=(e._crPulseTimer-(e._crPulseCd-0.5))/0.5;
+          ctx.globalAlpha=atlasPulseAlpha*0.3;ctx.strokeStyle='#aa44ff';ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(0,0,r*4*atlasPulseAlpha,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+        }
+        if(e.isCrystal&&e._crChainTargets&&e._crChainTargets.length){
+          ctx.strokeStyle='rgba(170,68,255,0.7)';ctx.lineWidth=2;
+          for(var atlasCi=0;atlasCi<e._crChainTargets.length;atlasCi++){
+            var atlasCt=e._crChainTargets[atlasCi];
+            ctx.globalAlpha=Math.max(0,atlasCt.life/0.5);
+            ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(atlasCt.x-e.x,atlasCt.y-e.y);ctx.stroke();
+          }
+          ctx.globalAlpha=1;
+        }
+        if(e.isOuroboros&&e._obCoiled){
+          ctx.globalAlpha=.3+.2*Math.sin(t*6);ctx.strokeStyle='#ffaa22';ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(0,0,r*1.65,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+        }
+        ctx.restore();
+        break;
+      }
+
       if(wTi2===0){
         // T0 LARVA — cute little grub, single elongated oval body
         // Elongated body (the whole worm is just this shape)
@@ -27948,6 +28188,19 @@ function drawEnemyShape(ctx,e,col,t){
       var pAng=(e._pincerAngle||0);
       var dTi=e.typeIdx||0;
       ctx.save();ctx.shadowBlur=(_isMobile?2:6);ctx.shadowColor=col;
+
+      if(drawMachineRemnantEnemySprite(ctx,e,t)){
+        // Gameplay telegraphs remain separate from the approved body art.
+        if(dTi===2&&e._sniperCharging){
+          ctx.globalAlpha=.35+.25*Math.sin(t*16);ctx.strokeStyle='#ff4400';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+          ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(e._sniperLockAngle)*300,Math.sin(e._sniperLockAngle)*300);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+        }
+        if(dTi===4&&e._bombArmed){
+          ctx.globalAlpha=.15+.1*Math.sin(t*8);ctx.strokeStyle='#ff2244';ctx.lineWidth=1;
+          ctx.beginPath();ctx.arc(0,0,r*2.5,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+        }
+        ctx.restore();break;
+      }
 
       if(dTi===0){
         // T0 CRAB DRONE — armored circle, pincers, scan bar
@@ -34440,7 +34693,7 @@ function _openDevEnemySpawner(bossOnly){
       {name:'HEAVY DEBRIS',    fn:function(x,y){G.enemies.push({x:x,y:y,r:16,color:'#224466',hp:30, maxHp:30, dmg:10,spd:28, xpVal:5,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,galaxy:-2,aiType:'chase',_szWobble:0});}}
     ]},
     {galaxy:0,label:'G1  LEVIATHAN FIELD',color:'#ff6600',enemies:[
-      {name:'LEVIATHAN LARVA',  fn:function(x,y){var gd=(GALAXIES[0]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:12,color:'#00aaff',hp:Math.round((35+G.wave*10)*gd),maxHp:Math.round((35+G.wave*10)*gd),dmg:Math.round(8*1.2*gd),spd:Math.min(220,110+G.wave*5)*gd,xpVal:4,segs:5,aiType:'chase',flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:1});}},
+      {name:'LEVIATHAN LARVA',  fn:function(x,y){var gd=(GALAXIES[0]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:12,color:'#00aaff',hp:Math.round((35+G.wave*10)*gd),maxHp:Math.round((35+G.wave*10)*gd),dmg:Math.round(8*1.2*gd),spd:Math.min(220,110+G.wave*5)*gd,xpVal:4,segs:2,aiType:'chase',flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:1});}},
       {name:'MAGMA BURROWER',   fn:function(x,y){var gd=(GALAXIES[0]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:16,color:'#ff8800',hp:Math.round((80+G.wave*20)*gd),maxHp:Math.round((80+G.wave*20)*gd),dmg:Math.round(14*1.2*gd),spd:Math.min(200,100+G.wave*5)*gd,xpVal:8,segs:7,aiType:'chase',isMagma:true,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:1,galaxy:1});}},
       {name:'IRONCLAD MECH',    fn:function(x,y){var gd=(GALAXIES[0]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:18,color:'#ff2244',hp:Math.round((160+G.wave*35)*gd),maxHp:Math.round((160+G.wave*35)*gd),dmg:Math.round(22*1.2*gd),spd:Math.min(240,115+G.wave*5)*gd,xpVal:14,segs:8,aiType:'chase',isIronclad:true,armor:0.4,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:2,galaxy:1});}},
       {name:'CRYSTAL LEVIATHAN',fn:function(x,y){var gd=(GALAXIES[0]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:15,color:'#aa44ff',hp:Math.round((100+G.wave*25)*gd),maxHp:Math.round((100+G.wave*25)*gd),dmg:Math.round(18*1.2*gd),spd:Math.min(260,120+G.wave*7)*gd,xpVal:18,segs:7,aiType:'chase',isCrystal:true,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:3,galaxy:1});}},
@@ -39161,6 +39414,24 @@ function tutCheckPauseTip(){ /* removed */ }
 // ══════════════════════════════════════════════════════════════════════════
 var CHANNEL_LOG = [
   {
+    version:'v0.9.15 · GHOST SIGNAL',title:'THE STATION IS LISTENING',color:'#6994b8',entries:[
+      'MACHINE REMNANT ART PASS — a colossal abandoned rogue-AI station now dominates the sector',
+      'LAYERED PARALLAX — distant stars, slow station mass, and close wreckage move at distinct depths',
+      'DEAD-SPACE FOG — blocky cyan-gray and violet fog banks drift behind and across the station',
+      'DORMANT CORE — restrained red AI pulses and isolated maintenance lights haunt the derelict',
+      'MOBILE CLARITY — dark negative space preserves enemy, projectile, and pickup readability'
+    ]
+  },
+  {
+    version:'v0.9.14 · WYRMBORN',title:'WORMS OF THE OLD VOID',color:'#ff9b38',entries:[
+      'LEVIATHAN WORM REDESIGN — all five field species now use authored modular SNES-style pixel sprites',
+      'TWO-SEGMENT LARVA — the upright Leviathan Larva is now a compact head-and-body creature',
+      'MODULAR WORM CHAINS — larger species repeat a dedicated body sprite while retaining their existing movement and attacks',
+      'MAGMA BURROWER — volcanic head updated with two distinct ember eyes',
+      'SPRITE STANDARD — future Void Runners art follows limited-palette, flat-shaded, chunky 16-bit styling'
+    ]
+  },
+  {
     version:'v0.9.13 · LEVIATHAN',title:'THE FIELD AWAKENS',color:'#65f6ff',entries:[
       'LEVIATHAN FIELD ART PASS — new layered midnight starfield and cyan-violet nebula backdrop',
       'COLOSSAL CONSTELLATIONS — six skeletal leviathans drift at an intentionally near-static depth',
@@ -39647,7 +39918,7 @@ function rebuildMainMenu(){
     +'<button class="btn" id="mCLBtn" style="border-color:#31586c;color:#7295a6">CHANNEL LOG</button>'
     +'<button class="btn" id="menuSettingsBtn" style="border-color:#31586c;color:#7295a6">SETTINGS</button></div>'
     +'<div class="cmdCompanion" id="k0Companion"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><span class="k0Speaker" id="k0Speaker">K-0 // NAV UNIT</span><span class="k0Line" id="k0Line">ROUTE LOCKED. SYSTEMS NOMINAL.</span><span class="k0Hint">TAP K-0 TO TALK</span></div></div>'
-    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.13 · LEVIATHAN</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
+    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.15 · GHOST SIGNAL</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
   showMainMenu();playMenuMusic();
