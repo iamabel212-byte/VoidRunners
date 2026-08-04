@@ -73,9 +73,9 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 .prowEmpty{width:100%;padding:10px;text-align:center;font:7px Orbitron,sans-serif;letter-spacing:1.5px;color:#4c6070;}
 .pch{background:rgba(10,2,20,0.9);border:1px solid rgba(155,89,255,0.4);padding:2px 7px;font-size:9px;color:var(--p);font-family:'Orbitron',sans-serif;letter-spacing:1px;border-radius:2px;}
 #galaxyBadge{position:fixed;top:54px;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:3px;pointer-events:none;z-index:10;color:#334;}
-#warpOverlay{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;transition:opacity .4s;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-#warpTitle{font-family:'Orbitron',sans-serif;font-size:clamp(18px,5vw,32px);font-weight:900;letter-spacing:6px;text-align:center;margin-bottom:6px;}
-#warpSub{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:4px;text-align:center;opacity:.7;}
+#warpOverlay{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;transition:opacity .22s;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#010108;overflow:hidden;}
+#warpCanvas{image-rendering:pixelated;image-rendering:crisp-edges;}
+#warpTitle,#warpSub{display:none;}
 .ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(2,2,10,0.82);z-index:50;padding:0 0 20px;}
 @keyframes deathFadeIn{0%{opacity:0;transform:scale(1.03);}100%{opacity:1;transform:scale(1);}}
 .death-fadein{animation:deathFadeIn 0.7s cubic-bezier(0.2,0,0.3,1) forwards;}
@@ -734,7 +734,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="bossDeathFlash"></div>
 <div class="ov" id="menu" style="display:none;">
   <h1>VOID RUNNERS</h1>
-  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.15 · GHOST SIGNAL</div>
+  <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:4px;">v0.9.16 · SALVAGE SIGNAL</div>
   <div class="tl" style="margin-bottom:18px;">DEEP SPACE SURVIVAL</div>
   <button class="btn" id="sBtn"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" style="vertical-align:middle"><polygon points="4,2 18,10 4,18"/></svg> LAUNCH</button>
   <button class="btn" id="mBBtn" style="border-color:#00f5ff55;color:#66aacc;font-size:12px;">&#9632; LOADOUT</button>
@@ -1357,7 +1357,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="clPanel" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,0.97);z-index:80;padding:0;">
   <div style="width:min(92vw,460px);display:flex;flex-direction:column;height:100%;padding:24px 0 0;min-height:0;">
     <div style="font-family:Orbitron,sans-serif;font-size:16px;color:#00f5ff;letter-spacing:4px;text-shadow:0 0 20px #00f5ff;margin-bottom:4px;text-align:center;">&#9635; CHANNEL LOG</div>
-    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.15 · GHOST SIGNAL — TRANSMISSION HISTORY</div>
+    <div style="font-family:Orbitron,sans-serif;font-size:10px;color:#446;letter-spacing:3px;margin-bottom:20px;text-align:center;">VOID RUNNERS v0.9.16 · SALVAGE SIGNAL — TRANSMISSION HISTORY</div>
     <div id="clContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;padding:0 4px 20px;min-height:0;"></div>
     <button class="btn" id="clClose" style="width:min(92vw,460px);margin:12px 0 24px;flex-shrink:0;">CLOSE</button>
   </div>
@@ -2911,7 +2911,11 @@ var bgDriftRingedPlanet=null;
 var bgLeviathanAssets=null;
 var bgMachineRemnantAssets=null;
 var bgMeteorStormAssets=null;
+var bgSectorZeroAssets=null;
 var machineRemnantEnemyAtlas=null;
+var meteorStormEnemyAtlas=null;
+var mineableAsteroidAtlas=null;
+var sectorZeroEnemyAtlas=null;
 function _loadLeviathanFieldAssets(){
   if(bgLeviathanAssets)return bgLeviathanAssets;
   function img(src){var im=new Image();im.src=src;return im;}
@@ -2937,17 +2941,165 @@ function _loadMeteorStormAssets(){
   if(bgMeteorStormAssets)return bgMeteorStormAssets;
   function img(src){var im=new Image();im.src=src;return im;}
   bgMeteorStormAssets={
-    base:img('assests/images/meteor-storm-planet-ring-snes-v1.png'),
+    stars:img('assests/images/meteor-storm-stars-snes-v2.png'),
+    planetRings:img('assests/images/meteor-storm-planet-rings-pixel-v4.png'),
     mid:img('assests/images/meteor-storm-mid-rocks-snes-v1.png'),
     foreground:img('assests/images/meteor-storm-foreground-rocks-snes-v1.png')
   };
   return bgMeteorStormAssets;
+}
+function _loadSectorZeroAssets(){
+  if(bgSectorZeroAssets)return bgSectorZeroAssets;
+  function img(src){var im=new Image();im.src=src;return im;}
+  bgSectorZeroAssets={
+    stars:img('assests/images/sector-zero-stars-v1.png'),
+    station:img('assests/images/sector-zero-station-v1.png'),
+    freighters:img('assests/images/sector-zero-freighters-v1.png')
+  };
+  return bgSectorZeroAssets;
+}
+
+var SECTOR_ZERO_FREIGHTER_FRAMES=[
+  {x:214,y:148,w:400,h:158,facing:1},
+  {x:1038,y:173,w:437,h:113,facing:-1},
+  {x:149,y:635,w:580,h:116,facing:-1},
+  {x:1087,y:636,w:322,h:108,facing:-1}
+];
+
+function drawSectorZeroBackground(ctx,cx,cy,t){
+  var assets=_loadSectorZeroAssets();
+  if(!(assets.stars.complete&&assets.stars.naturalWidth&&assets.station.complete&&assets.station.naturalWidth&&assets.freighters.complete&&assets.freighters.naturalWidth))return false;
+  var camDx=cx+W*.5-WORLD*.5,camDy=cy+H*.5-WORLD*.5;
+  ctx.save();ctx.imageSmoothingEnabled=false;
+
+  function drawCover(im,scale,ox,oy){
+    var cover=Math.max(W/im.naturalWidth,H/im.naturalHeight)*scale;
+    var dw=im.naturalWidth*cover,dh=im.naturalHeight*cover;
+    ctx.drawImage(im,(W-dw)*.5+ox,(H-dh)*.5+oy,dw,dh);
+  }
+
+  ctx.fillStyle='#010316';ctx.fillRect(0,0,W,H);
+  drawCover(assets.stars,1.075,-camDx*.014+Math.sin(t*.015)*4,-camDy*.012+Math.cos(t*.012)*3);
+
+  var stationW=Math.min(W*1.02,H*.62*(assets.station.naturalWidth/assets.station.naturalHeight));
+  var stationH=stationW*(assets.station.naturalHeight/assets.station.naturalWidth);
+  var stationX=W*.52-camDx*.052+Math.sin(t*.12)*2.5;
+  var stationY=H*.49-camDy*.046+Math.cos(t*.10)*2;
+
+  var routes=[
+    {frame:0,dur:15.5,off:.02,depth:1,size:.155,dockX:-.405,dockY:-.015,outerX:-.10,outerY:.34,arc:-.045},
+    {frame:1,dur:18.0,off:.41,depth:1,size:.175,dockX:.405,dockY:.095,outerX:1.10,outerY:.67,arc:.035},
+    {frame:3,dur:21.5,off:.67,depth:0,size:.090,dockX:-.18,dockY:-.12,outerX:.08,outerY:.18,arc:-.07},
+    {frame:2,dur:25.0,off:.22,depth:0,size:.105,dockX:.22,dockY:-.095,outerX:.92,outerY:.21,arc:.06}
+  ];
+
+  function smooth(v){return v*v*(3-2*v);}
+  function trafficPose(route){
+    var cycle=((t/route.dur)+route.off)%1;
+    var out,travel,headingOut;
+    if(cycle<.13){out=0;travel=0;headingOut=true;}
+    else if(cycle<.43){travel=smooth((cycle-.13)/.30);out=travel;headingOut=true;}
+    else if(cycle<.56){out=1;travel=1;headingOut=false;}
+    else if(cycle<.88){travel=smooth((cycle-.56)/.32);out=1-travel;headingOut=false;}
+    else{out=0;travel=0;headingOut=true;}
+    var dockX=stationX+stationW*route.dockX,dockY=stationY+stationH*route.dockY;
+    var outerX=W*route.outerX,outerY=H*route.outerY;
+    return {x:dockX+(outerX-dockX)*out,y:dockY+(outerY-dockY)*out+Math.sin(out*Math.PI)*H*route.arc,out:out,headingOut:headingOut,dockX:dockX,outerX:outerX};
+  }
+
+  function drawGuide(route,alpha){
+    var p=trafficPose(route);
+    ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#3ddcff';
+    var dx=p.outerX-p.dockX,dy=H*route.outerY-(stationY+stationH*route.dockY);
+    for(var gi=0;gi<9;gi++){
+      var gp=(gi/8+t*.035)%1;
+      var gx=p.dockX+dx*gp,gy=stationY+stationH*route.dockY+dy*gp;
+      var blink=.3+.7*Math.max(0,Math.sin(t*2.2+gi*1.8));
+      ctx.globalAlpha=alpha*blink;ctx.fillRect(Math.round(gx)-1,Math.round(gy)-1,2,2);
+    }
+    ctx.restore();
+  }
+
+  function drawFreighter(route){
+    var fr=SECTOR_ZERO_FREIGHTER_FRAMES[route.frame],p=trafficPose(route);
+    var targetW=stationW*route.size*(route.depth?.78:1);
+    var targetH=targetW*(fr.h/fr.w);
+    var desiredFacing=p.headingOut?(p.outerX>=p.dockX?1:-1):(p.outerX>=p.dockX?-1:1);
+    var flip=desiredFacing!==fr.facing;
+    var fade=.72+.28*Math.sin(Math.min(1,p.out)*Math.PI*.5);
+    ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y));
+    if(flip)ctx.scale(-1,1);
+    ctx.globalAlpha=(route.depth?.58:.96)*fade;
+    ctx.drawImage(assets.freighters,fr.x,fr.y,fr.w,fr.h,-targetW*.5,-targetH*.5,targetW,targetH);
+    ctx.restore();
+  }
+
+  drawGuide(routes[2],.22);drawGuide(routes[3],.18);
+  drawFreighter(routes[2]);drawFreighter(routes[3]);
+
+  ctx.globalAlpha=.96;
+  ctx.drawImage(assets.station,stationX-stationW*.5,stationY-stationH*.5,stationW,stationH);
+  ctx.globalAlpha=1;
+  for(var bl=0;bl<3;bl++){
+    var bx=stationX+stationW*(-.16+bl*.16),by=stationY+stationH*.12;
+    var ba=.18+.45*Math.max(0,Math.sin(t*2.4+bl*2.1));
+    ctx.fillStyle='rgba(55,225,255,'+ba+')';ctx.fillRect(Math.round(bx)-2,Math.round(by)-1,4,2);
+  }
+
+  drawGuide(routes[0],.34);drawGuide(routes[1],.30);
+  drawFreighter(routes[0]);drawFreighter(routes[1]);
+  ctx.restore();return true;
 }
 function _loadMachineRemnantEnemyAtlas(){
   if(machineRemnantEnemyAtlas)return machineRemnantEnemyAtlas;
   machineRemnantEnemyAtlas=new Image();
   machineRemnantEnemyAtlas.src='assests/images/machine-remnant-enemies-snes-atlas-v1.png';
   return machineRemnantEnemyAtlas;
+}
+function _loadMeteorStormEnemyAtlas(){
+  if(meteorStormEnemyAtlas)return meteorStormEnemyAtlas;
+  meteorStormEnemyAtlas=new Image();
+  meteorStormEnemyAtlas.src='assests/images/meteor-storm-enemies-snes-atlas-v1.png?matte=2';
+  return meteorStormEnemyAtlas;
+}
+function _loadMineableAsteroidAtlas(){
+  if(mineableAsteroidAtlas)return mineableAsteroidAtlas;
+  mineableAsteroidAtlas=new Image();
+  mineableAsteroidAtlas.src='assests/images/mineable-asteroids-snes-atlas-v2.png?v=2';
+  return mineableAsteroidAtlas;
+}
+function _loadSectorZeroEnemyAtlas(){
+  if(sectorZeroEnemyAtlas)return sectorZeroEnemyAtlas;
+  sectorZeroEnemyAtlas=new Image();
+  sectorZeroEnemyAtlas.src='assests/images/sector-zero-enemies-snes-atlas-v1.png';
+  return sectorZeroEnemyAtlas;
+}
+
+var SECTOR_ZERO_ENEMY_FRAMES=[
+  {x:174,y:201,w:271,h:203},
+  {x:744,y:202,w:351,h:189},
+  {x:74,y:766,w:553,h:242},
+  {x:627,y:707,w:614,h:361}
+];
+
+function drawSectorZeroEnemySprite(ctx,e,typeIdx,t,isBoss){
+  var atlas=_loadSectorZeroEnemyAtlas();
+  if(!(atlas.complete&&atlas.naturalWidth))return false;
+  var idx=isBoss?3:Math.max(0,Math.min(2,typeIdx||0));
+  var fr=SECTOR_ZERO_ENEMY_FRAMES[idx];
+  var scale=isBoss?4.15:[3.25,3.35,3.45][idx];
+  var dw=e.r*scale,dh=dw*(fr.h/fr.w);
+  var bob=Math.sin(t*(isBoss?1.35:2.1)+(e._szWobble||0))*(isBoss?2.2:1.15);
+  var pulse=.76+.24*Math.sin(t*(isBoss?3.0:4.1)+idx*1.7);
+  ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(0,bob);
+  ctx.shadowColor=isBoss?'#55bbff':'#33aaff';
+  ctx.shadowBlur=_isMobile?(isBoss?8:3):(isBoss?18:7);
+  ctx.drawImage(atlas,fr.x,fr.y,fr.w,fr.h,-dw*.5,-dh*.5,dw,dh);
+  ctx.shadowBlur=0;
+  // Tight animated core light keeps these static sprites feeling alive.
+  ctx.globalAlpha=.12+.18*pulse;ctx.fillStyle='#bdf7ff';
+  ctx.beginPath();ctx.arc(0,-dh*.015,e.r*(isBoss?.34:.25),0,Math.PI*2);ctx.fill();
+  ctx.restore();return true;
 }
 
 function buildBgForGalaxy(gIdx){
@@ -2958,6 +3110,7 @@ function buildBgForGalaxy(gIdx){
 
   // ── SECTOR ZERO: Deep space outpost — dark navy, stars, drifting debris ──
   if(gIdx===-2){
+    _loadSectorZeroAssets();
     // Faint blue nebula wisps
     var szNeb=bc.createRadialGradient(WORLD*0.25,WORLD*0.4,0,WORLD*0.25,WORLD*0.4,WORLD*0.55);
     szNeb.addColorStop(0,'rgba(20,40,100,0.10)');
@@ -7174,6 +7327,13 @@ function refreshBossProgressMeter(galaxyIdx,resetProgress){
   if(smc)smc.textContent=kills+'/'+required;
 }
 
+// Approved SNES warp-tunnel artwork. The canvas redraws it in nested depth
+// passes so the painted vortex moves without softening the source pixels.
+var warpTunnelArt=new Image();
+warpTunnelArt.src='assests/images/warp-tunnel-snes-v1.png';
+var bossWarpPortalArt=new Image();
+bossWarpPortalArt.src='assests/images/boss-warp-portal-snes-v1.png';
+
 function warpToGalaxy(gIdx){
   _runStats.onGalaxyChange(gIdx);
   // ── Architect interstitial: only when flagged (??? node or natural portal from G4→G5) ──
@@ -7218,31 +7378,109 @@ function warpToGalaxy(gIdx){
   const gal=(currentGalaxy===-2)?SECTOR_ZERO:(GALAXIES[currentGalaxy]||GALAXIES[0]);
   const ov=document.getElementById('warpOverlay');
   const wc=document.getElementById('warpCanvas');
-  wc.width=W;wc.height=H;
+  var warpDpr=Math.min(2,window.devicePixelRatio||1);
+  wc.width=Math.round(W*warpDpr);wc.height=Math.round(H*warpDpr);
   const wctx=wc.getContext('2d');
+  wctx.setTransform(warpDpr,0,0,warpDpr,0,0);
+  wctx.imageSmoothingEnabled=false;
   document.getElementById('warpTitle').textContent=gal.name;
   document.getElementById('warpTitle').style.color=gal.acc;
   document.getElementById('warpTitle').style.textShadow='0 0 30px '+gal.acc;
   document.getElementById('warpSub').textContent=currentGalaxy===-2?'TRAINING SECTOR · SAFE ZONE':('GALAXY '+(currentGalaxy+1)+' · DIFFICULTY x'+gal.diff.toFixed(2));
   document.getElementById('warpSub').style.color=gal.acc;
-  const stars=Array.from({length:200},()=>({x:(Math.random()-.5)*W*2,y:(Math.random()-.5)*H*2,spd:1+Math.random()*4}));
-  let frame=0;const totalFrames=90;
+  const warpStreakColors=['#8dfaff','#19dfff','#5f73ff','#b72cff','#f0dcff'];
+  const streaks=Array.from({length:96},()=>({
+    ang:Math.random()*Math.PI*2,
+    z:Math.random(),
+    spd:.55+Math.random()*1.35,
+    bend:(Math.random()-.5)*.34,
+    len:.018+Math.random()*.055,
+    width:1+Math.floor(Math.random()*3),
+    color:warpStreakColors[Math.floor(Math.random()*warpStreakColors.length)]
+  }));
+  const shards=Array.from({length:22},()=>({
+    ang:Math.random()*Math.PI*2,
+    z:.18+Math.random()*.82,
+    spd:.45+Math.random()*.8,
+    size:2+Math.random()*6,
+    color:warpStreakColors[Math.floor(Math.random()*warpStreakColors.length)]
+  }));
+  let frame=0;const totalFrames=132;
   ov.style.opacity='1';
   SFX.warp();
   if(G)G.paused=true;
   var pb=document.getElementById('pauseBtn');if(pb)pb.style.display='none';
   function animFrame(){
     if(!warpAnimating){ ov.style.opacity='0'; return; } // bail if cancelled
-    wctx.fillStyle='rgba(0,0,0,0.25)';wctx.fillRect(0,0,W,H);
     const t=frame/totalFrames;
-    wctx.globalAlpha=Math.min(0.85,t*2);
-    wctx.strokeStyle=gal.acc;
-    for(const s of stars){
-      const stretch=t*t*20+0.5;
-      const sx=W/2+s.x*t*2,sy=H/2+s.y*t*2;
-      const ex=W/2+s.x*(t*2+stretch*.08),ey=H/2+s.y*(t*2+stretch*.08);
-      wctx.lineWidth=1+t*2;wctx.beginPath();wctx.moveTo(sx,sy);wctx.lineTo(ex,ey);wctx.stroke();
+    const surge=t*t*(3-2*t);
+    const vx=W*(.535+Math.sin(frame*.017)*.004);
+    const vy=H*(.465+Math.cos(frame*.013)*.004);
+    const maxR=Math.hypot(W,H)*.72;
+    wctx.setTransform(warpDpr,0,0,warpDpr,0,0);
+    wctx.globalAlpha=1;
+    wctx.globalCompositeOperation='source-over';
+    wctx.fillStyle='#010108';wctx.fillRect(0,0,W,H);
+
+    function drawTunnel(scale,rotation,alpha){
+      if(!warpTunnelArt.complete||!warpTunnelArt.naturalWidth)return;
+      var iw=warpTunnelArt.naturalWidth,ih=warpTunnelArt.naturalHeight;
+      var cover=Math.max(W/iw,H/ih)*scale;
+      wctx.save();
+      wctx.globalAlpha=alpha;
+      wctx.translate(vx,vy);
+      wctx.rotate(rotation);
+      wctx.drawImage(warpTunnelArt,-iw*cover*.535,-ih*cover*.465,iw*cover,ih*cover);
+      wctx.restore();
     }
+
+    // One stable outer field plus three progressively faster inner bands.
+    drawTunnel(1.015+surge*.075,-frame*.00045,1);
+    var bandR=[maxR*.62,maxR*.39,maxR*.205];
+    var bandSpin=[.0009,-.00165,.0025];
+    var bandZoom=[.095,.145,.23];
+    for(var bi=0;bi<bandR.length;bi++){
+      wctx.save();
+      wctx.beginPath();wctx.arc(vx,vy,bandR[bi],0,Math.PI*2);wctx.clip();
+      drawTunnel(1.02+surge*bandZoom[bi],frame*bandSpin[bi],.86);
+      wctx.restore();
+    }
+
+    // Pixel streaks accelerate out of the throat on independent depth tracks.
+    wctx.lineCap='butt';
+    for(const s of streaks){
+      s.z+=s.spd*(.0045+surge*.012);
+      if(s.z>1){s.z-=1;s.ang=Math.random()*Math.PI*2;}
+      var curve=s.ang+s.bend*(1-s.z)+frame*.0012;
+      var r=Math.pow(s.z,1.72)*maxR;
+      var rz=Math.pow(Math.max(0,s.z-s.len*(1+surge*2.2)),1.72)*maxR;
+      var sx=vx+Math.cos(curve)*rz,sy=vy+Math.sin(curve)*rz*.72;
+      var ex=vx+Math.cos(curve)*r,ey=vy+Math.sin(curve)*r*.72;
+      wctx.globalAlpha=.18+s.z*.7;
+      wctx.strokeStyle=s.color;wctx.lineWidth=s.width;
+      wctx.beginPath();wctx.moveTo(Math.round(sx),Math.round(sy));wctx.lineTo(Math.round(ex),Math.round(ey));wctx.stroke();
+    }
+
+    // Sparse crystalline fragments provide the fastest foreground parallax.
+    for(const sh of shards){
+      sh.z+=sh.spd*(.003+surge*.009);
+      if(sh.z>1){sh.z-=.86;sh.ang=Math.random()*Math.PI*2;}
+      var sr=Math.pow(sh.z,1.5)*maxR;
+      var px=vx+Math.cos(sh.ang+frame*.0008)*sr;
+      var py=vy+Math.sin(sh.ang+frame*.0008)*sr*.72;
+      var ss=sh.size*(.4+sh.z*1.5);
+      wctx.save();wctx.translate(Math.round(px),Math.round(py));wctx.rotate(sh.ang+frame*.018);
+      wctx.globalAlpha=.2+sh.z*.6;wctx.fillStyle=sh.color;
+      wctx.beginPath();wctx.moveTo(0,-ss);wctx.lineTo(ss*.45,0);wctx.lineTo(0,ss*1.7);wctx.lineTo(-ss*.45,0);wctx.closePath();wctx.fill();wctx.restore();
+    }
+
+    // Keep the vanishing point deep and readable while the rim stays luminous.
+    var core=wctx.createRadialGradient(vx,vy,0,vx,vy,Math.max(18,Math.min(W,H)*.16));
+    core.addColorStop(0,'rgba(0,0,5,.98)');core.addColorStop(.42,'rgba(2,1,14,.72)');core.addColorStop(1,'rgba(4,1,18,0)');
+    wctx.globalAlpha=1;wctx.globalCompositeOperation='source-over';wctx.fillStyle=core;wctx.fillRect(0,0,W,H);
+
+    // Quick black-to-tunnel entry prevents the previous galaxy flashing through.
+    if(t<.11){wctx.fillStyle='rgba(0,0,5,'+(1-t/.11)+')';wctx.fillRect(0,0,W,H);}
     wctx.globalAlpha=1;
     frame++;
     if(frame<totalFrames){requestAnimationFrame(animFrame);}
@@ -8833,12 +9071,6 @@ const UPGRADES=[
     },
     ult:{name:'SQUADRON',desc:'All frigates simultaneously launch a full barrage — one missile per enemy on screen',color:'#ff6a00'}},
   // ── BEAM-SPECIFIC TEMP UPGRADES ──────────────────────────────────────────
-  {id:'arc_surge',name:'ARC SURGE',  icon:'lightning',maxRank:RUN_MAX_RANK, beamReq:'chain',
-    desc:'Chain Arc hits more targets and deals more damage',
-    apply:function(g){var r=g._upRanks.arc_surge;if(r>=RUN_MAX_RANK){g._arcSurgeJumps=(g._arcSurgeJumps||0)+3;g._arcSurgeDmg=(g._arcSurgeDmg||1)*2;return;}
-      if(r<=3){g._arcSurgeJumps=(g._arcSurgeJumps||0)+1;}
-      else{g._arcSurgeDmg=(g._arcSurgeDmg||1)*1.18;}},
-    ult:{name:'CHAIN STORM',desc:'Chain bolts jump to 3 extra targets and deal double damage',color:'#ff3333'}},
   {id:'overcharge',name:'OVERCHARGE',icon:'lightning',maxRank:RUN_MAX_RANK, beamReq:'volt',
     desc:'Volt nodes grow larger and strike harder',
     apply:function(g){var r=g._upRanks.overcharge;if(r>=RUN_MAX_RANK)return;
@@ -8975,7 +9207,7 @@ const PICKUPS=[
       if(activeSkin==='specter'&&Math.random()<0.2){var bonus=3+Math.floor(Math.random()*5);crystals+=bonus;lsS('vr_crystals',crystals);fmsg(svgIcon('crystal')+' SILVER LINING +'+bonus,'#c0c0c0');}}}}},
   {id:'adr',    icon:'lightning',label:'OVERDRIVE',       color:'#ffcc22',dur:10, desc:'Fire rate, bullet speed, and damage all increase dramatically',   onGet:function(g){g.adrActive=true;},         onEnd:function(g){g.adrActive=false;}},
   {id:'vamp',   icon:'vamp',     label:'VOID DRAIN',      color:'#cc44ff',dur:10, desc:'Every kill heals you for 5 HP',                                   onGet:function(g){g.vampActive=true;},        onEnd:function(g){g.vampActive=false;}},
-  {id:'cryst',  icon:'crystal',  label:'+15 CRYSTALS',    color:'#00f5ff',dur:0,  desc:'Instantly grants 15 crystals to spend in the loadout',            onGet:function(g){crystals+=15;_runStats.addGems(15,'pickup');lsS('vr_crystals',crystals);fmsg('💎 +15 CRYSTALS','#00f5ff');}},
+  {id:'cryst',  icon:'crystal',  label:'CRYSTAL CACHE',   color:'#00f5ff',dur:0,  desc:'Opens for 25 crystals plus 5 more for every galaxy reached',        onGet:function(g){var idx=Math.max(0,Math.min(9,g.galaxy||0));var amount=25+idx*5;crystals+=amount;g.crystalsRun=(g.crystalsRun||0)+amount;_runStats.addGems(amount,'pickup');lsS('vr_crystals',crystals);triggerCrystalPop();fmsg(svgIcon('crystal')+' CRYSTAL CACHE +'+amount,'#00f5ff');}},
   {id:'gemx2',  icon:'gemx2',    label:'GEM RUSH x2',     color:'#00ffcc',dur:10, desc:'All crystal drops are doubled for 10 seconds',                    onGet:function(g){g.gemMult=2;},             onEnd:function(g){g.gemMult=1;}},
   {id:'gemx3',  icon:'gemx3',    label:'GEM SURGE x3',    color:'#44ddff',dur:10, desc:'All crystal drops are tripled for 10 seconds',                    onGet:function(g){g.gemMult=3;},             onEnd:function(g){g.gemMult=1;}},
   {id:'gemx5',  icon:'gemx5',    label:'CRYSTAL NOVA x5', color:'#ffffff',dur:10, desc:'All crystal drops are multiplied by 5 — extremely rare',           onGet:function(g){g.gemMult=5;},             onEnd:function(g){g.gemMult=1;}},
@@ -8996,6 +9228,18 @@ const PICKUPS=[
     onGet:function(g){g.signalJamActive=true;burst(g,g.player.x,g.player.y,'#ff55cc',20,200);fmsg('📡 SIGNAL JAM — ENEMIES BLINDED','#ff55cc');},
     onEnd:function(g){g.signalJamActive=false;}},
 ];
+
+// Authored SNES pickup art. Keep this manifest keyed to gameplay IDs so the
+// existing pickup effects remain independent from their visual presentation.
+var PICKUP_SPRITES={};
+[
+  'shield','rage','speed','freeze','nuke','adr','vamp','cryst','gemx2',
+  'gemx3','gemx5','hp25','hp50','hpfull','phantom','surge','jam'
+].forEach(function(id){
+  var image=new Image();
+  image.src='assests/images/pickups/'+id+'.png';
+  PICKUP_SPRITES[id]=image;
+});
 
 // ─── ABILITIES (all capped at 5) ───
 const ABILITIES=[
@@ -15202,7 +15446,9 @@ function spawnLiveAsteroids(g,n){
     var hp=r*3;
     var _astSeed=Math.random()*999;
     g.liveAsteroids.push({x:x,y:y,r:r,verts:verts,hp:hp,maxHp:hp,rot:Math.random()*Math.PI*2,seed:_astSeed,
-      rotSpd:0,vx:(Math.random()-.5)*20,vy:(Math.random()-.5)*20,
+      rotSpd:(Math.random()-.5)*0.16,vx:(Math.random()-.5)*20,vy:(Math.random()-.5)*20,
+      spriteVariant:Math.floor(Math.random()*4),visualScale:.9+Math.random()*.22,
+      floatPhase:Math.random()*Math.PI*2,floatSpeed:.65+Math.random()*.55,floatAmp:2.5+Math.random()*3.5,
       flashTimer:0,gemVal:Math.ceil(r/2.5)*gemScale});
   }
 }
@@ -15223,7 +15469,7 @@ var _runStats = (function(){
   function galaxyKey(i){return i===-2?'s0':'g'+Math.max(0,i||0);}
   function snapshot(){var o={};try{for(var k in permData)o[k]=permData[k]||0;}catch(e){}return o;}
   function startRun(){
-    _currentRun={version:4,gameVersion:'v0.9.15 · GHOST SIGNAL',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
+    _currentRun={version:4,gameVersion:'v0.9.16 · SALVAGE SIGNAL',startedAt:Date.now(),galaxy:currentGalaxy,duration:0,kills:0,maxWave:1,maxEnemies:0,
       outcome:null,galaxiesVisited:[],gems:0,gemsByGalaxy:{},crystalSources:{},asteroidsMined:0,
       asteroidBase:0,asteroidBonus:0,walletStart:typeof crystals!=='undefined'?crystals:0,walletEnd:null,walletDelta:0,
       deaths:{},deathEvents:[],damageDealt:0,bossDamage:0,damageTaken:0,shieldDamage:0,lowestHullPct:100,
@@ -15751,12 +15997,13 @@ function spawnEnemy(){
       {r:16,color:'#224466', hp:30, dmg:10,spd:28, xpVal:5},
     ];
     var _szPool=g.wave<3?[0,0,0,1]:g.wave<6?[0,0,1,1,2]:[0,1,1,2,2];
-    var _szT=_szTypes[_szPool[Math.floor(Math.random()*_szPool.length)]];
+    var _szTypeIdx=_szPool[Math.floor(Math.random()*_szPool.length)];
+    var _szT=_szTypes[_szTypeIdx];
     g.enemies.push({
       x:x,y:y,r:_szT.r,spd:_szT.spd,hp:_szT.hp,maxHp:_szT.hp,
       dmg:_szT.dmg,color:_szT.color,xpVal:_szT.xpVal,
       flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,
-      galaxy:-2,aiType:'chase',
+      galaxy:-2,aiType:'chase',typeIdx:_szTypeIdx,
       // Slow wobble drift
       _szWobble:Math.random()*Math.PI*2,
     });
@@ -17758,7 +18005,7 @@ function update(dt){
           x:_sbx,y:_sby,r:42,spd:22,hp:1000,maxHp:1000,
           dmg:8,color:'#224466',xpVal:20,
           flashTimer:0,frozen:0,isBoss:true,spinAngle:0,
-          shootTimer:0,galaxy:-2,aiType:'chase',
+          shootTimer:0,galaxy:-2,aiType:'chase',typeIdx:3,
           shoots:true,_szBoss:true,
           _shootCd:2.2,_shootT:1.5,
           name:'SENTINEL PRIME',
@@ -21875,7 +22122,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
 
   // Portal update
   if(g.portal){
-    g.portal.angle+=dt*2.2;g.portal.pulseT+=dt;
+    g.portal.angle+=dt*2.2;g.portal.pulseT+=dt;g.portal.life=(g.portal.life||0)+dt;
     if(dst(p,g.portal)<g.portal.r-10){
       var dest=g.portal.galaxyTo;
       if(!g._xpSalvaged&&dest<GALAXIES.length){
@@ -22544,6 +22791,7 @@ function collectPK(g,t){
     _fp.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,4,20,0.94);border:1px solid '+t.color+'66;border-radius:10px;padding:24px 28px;max-width:min(88vw,340px);z-index:600;font-family:Orbitron,sans-serif;text-align:center;box-shadow:0 0 30px '+t.color+'33;';
     _fp.innerHTML=
       '<div style="font-size:11px;letter-spacing:3px;color:'+t.color+';text-shadow:0 0 12px '+t.color+';margin-bottom:10px;">POWER-UP COLLECTED</div>'
+      +'<img src="assests/images/pickups/'+t.id+'.png" alt="" style="display:block;width:88px;height:88px;object-fit:contain;image-rendering:pixelated;margin:0 auto 8px;filter:drop-shadow(0 0 10px '+t.color+'88);">'
       +'<div style="font-size:13px;color:#ccd;font-family:\'Exo 2\',sans-serif;line-height:1.65;margin-bottom:10px;">Power-ups spawn randomly across the map. Fly over them to grab them.</div>'
       +'<div style="font-size:11px;letter-spacing:2px;color:'+t.color+';margin-bottom:8px;">THIS ONE IS '+t.label+'</div>'
       +'<div style="font-size:11px;color:#778899;font-family:\'Exo 2\',sans-serif;line-height:1.5;margin-bottom:16px;">'+t.desc+'</div>'
@@ -23870,7 +24118,9 @@ function render(){
     ctx.restore();
   }
 
-  if(bgC && currentGalaxy!==0 && (currentGalaxy!==2||!(_loadMachineRemnantAssets().stars.complete&&_loadMachineRemnantAssets().stars.naturalWidth&&_loadMachineRemnantAssets().station.complete&&_loadMachineRemnantAssets().station.naturalWidth&&_loadMachineRemnantAssets().wreckage.complete&&_loadMachineRemnantAssets().wreckage.naturalWidth)) && currentGalaxy!==8 && !((currentGalaxy===7) && window._g7Interior)){
+  if(currentGalaxy===-2&&drawSectorZeroBackground(ctx,cx,cy,(typeof gtime!=='undefined'?gtime:0))){
+    // Sector Zero uses viewport-space art planes for gentle camera parallax.
+  } else if(bgC && currentGalaxy!==0 && (currentGalaxy!==2||!(_loadMachineRemnantAssets().stars.complete&&_loadMachineRemnantAssets().stars.naturalWidth&&_loadMachineRemnantAssets().station.complete&&_loadMachineRemnantAssets().station.naturalWidth&&_loadMachineRemnantAssets().wreckage.complete&&_loadMachineRemnantAssets().wreckage.naturalWidth)) && currentGalaxy!==8 && !((currentGalaxy===7) && window._g7Interior)){
     if(currentGalaxy===9&&window._g9Phases&&window._g9FadingIn&&window._g9NextPhaseIdx!==undefined){
       // Draw current phase
       ctx.drawImage(window._g9Phases[window._g9PhaseIdx||0],-cx,-cy);
@@ -25981,7 +26231,8 @@ function render(){
   }
   // Authored SNES Meteor Storm Belt with independent depth planes.
   var _g3Art=_loadMeteorStormAssets();
-  var _g3ArtReady=_g3Art.base.complete&&_g3Art.base.naturalWidth&&
+  var _g3ArtReady=_g3Art.stars.complete&&_g3Art.stars.naturalWidth&&
+    _g3Art.planetRings.complete&&_g3Art.planetRings.naturalWidth&&
     _g3Art.mid.complete&&_g3Art.mid.naturalWidth&&
     _g3Art.foreground.complete&&_g3Art.foreground.naturalWidth;
   if(currentGalaxy===3&&_g3ArtReady){
@@ -25995,8 +26246,39 @@ function render(){
       ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=alpha;
       ctx.drawImage(im,(W-dw)/2+px,(H-dh)/2+py,dw,dh);ctx.restore();
     }
-    // Planet and its single ring system barely move; nearer rocks travel faster.
-    drawG3Layer(_g3Art.base,.012,1.06,1);
+    function drawG3ForegroundDrifters(im){
+      // Four isolated rocks from the transparent foreground sheet. Each has its
+      // own lane and pace, and only wraps after the whole sprite clears the left edge.
+      var rocks=[
+        [1111,676,359,280,.180,.17, 7.2,.04, .82],
+        [ 195,728,347,247,.160,.42, 9.0,.31, .88],
+        [  52,389,287,263,.145,.70, 6.4,.58, .80],
+        [ 165, 51,308,238,.170,.86, 8.1,.82, .86]
+      ];
+      var parX=Math.max(-90,Math.min(90,-_g3CamDx*.12));
+      var parY=Math.max(-55,Math.min(55,-_g3CamDy*.12));
+      ctx.save();ctx.imageSmoothingEnabled=false;
+      for(var ri=0;ri<rocks.length;ri++){
+        var r=rocks[ri];
+        var rw=Math.max(88,Math.min(225,W*r[4]));
+        var rh=rw*r[3]/r[2];
+        var margin=rw*.62+70;
+        var travel=W+margin*2;
+        var phase=((gtime*r[6]+r[7]*travel)%travel+travel)%travel;
+        var rx=W+margin-phase+parX;
+        var baseY=Math.max(rh*.56+8,Math.min(H-rh*.56-8,H*r[5]));
+        var ry=baseY+Math.sin(gtime*.16+ri*1.73)*8+parY;
+        ctx.save();ctx.globalAlpha=r[8];ctx.translate(Math.round(rx),Math.round(ry));
+        ctx.rotate(Math.sin(gtime*.045+ri*2.1)*.025);
+        ctx.drawImage(im,r[0],r[1],r[2],r[3],-rw/2,-rh/2,rw,rh);
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+    // Rich far stars remain almost fixed. Planet and its one ring system stay
+    // unified on a separate plane with only a slight additional camera shift.
+    drawG3Layer(_g3Art.stars,.003,1.04,1);
+    drawG3Layer(_g3Art.planetRings,.018,1.07,1);
 
     // Sparse distant meteor pixels drift independently across the upper-left sky.
     ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.38;
@@ -26010,7 +26292,7 @@ function render(){
     ctx.restore();
 
     drawG3Layer(_g3Art.mid,.055,1.10,.78);
-    drawG3Layer(_g3Art.foreground,.12,1.16,.90);
+    drawG3ForegroundDrifters(_g3Art.foreground);
   }
 
   // Procedural fallback retained for slow or failed asset loads.
@@ -26385,40 +26667,118 @@ function render(){
   // Galaxy portal
   if(g.portal){
     var pt=g.portal,sx=pt.x-cx,sy=pt.y-cy;
+    var _portalReady=bossWarpPortalArt.complete&&bossWarpPortalArt.naturalWidth;
     ctx.save();ctx.translate(sx,sy);
-    // Outer glow ring
-    ctx.shadowBlur=(_isMobile?10:40);ctx.shadowColor='#9b59ff';
-    for(var pi=0;pi<3;pi++){
-      ctx.strokeStyle='rgba(155,89,255,'+(0.6-pi*0.15)+')';
-      ctx.lineWidth=4-pi;
-      ctx.beginPath();ctx.arc(0,0,pt.r+pi*8+Math.sin(gtime*3+pi)*4,0,Math.PI*2);ctx.stroke();
+    if(_portalReady){
+      // The authored sprite is composited as independent inner and outer planes.
+      // This keeps the portal pixel-crisp while allowing the vortex and frame to
+      // move at different speeds without changing its gameplay collision radius.
+      var _portalBorn=Math.min(1,(pt.life||0)/.72);
+      var _portalEase=1-Math.pow(1-_portalBorn,3);
+      var _portalPulse=1+Math.sin(pt.pulseT*2.35)*.018;
+      var _portalScale=(.42+.58*_portalEase)*_portalPulse;
+      var _portalDraw=pt.r*3.28;
+      var _portalOuter=pt.r*1.48;
+      var _portalInner=pt.r*.78;
+      ctx.scale(_portalScale,_portalScale);
+      ctx.imageSmoothingEnabled=false;
+
+      // Soft restrained aura behind the metalwork.
+      ctx.save();ctx.globalAlpha=.22+.08*Math.sin(pt.pulseT*2.1);
+      ctx.strokeStyle='#9b4dff';ctx.lineWidth=3;
+      ctx.shadowBlur=(_isMobile?7:20);ctx.shadowColor='#7c2cff';
+      ctx.beginPath();ctx.arc(0,0,_portalOuter*.91,0,Math.PI*2);ctx.stroke();ctx.restore();
+
+      // Counter-rotating galaxy core, clipped inside the frame opening.
+      ctx.save();ctx.beginPath();ctx.arc(0,0,_portalInner,0,Math.PI*2);ctx.clip();
+      ctx.rotate(-pt.angle*.19);
+      ctx.globalAlpha=.94+.06*Math.sin(pt.pulseT*3.1);
+      ctx.drawImage(bossWarpPortalArt,-_portalDraw/2,-_portalDraw/2,_portalDraw,_portalDraw);
+      ctx.restore();
+
+      // Ancient gate frame on its own slow-moving plane.
+      ctx.save();ctx.beginPath();ctx.arc(0,0,_portalOuter,0,Math.PI*2);
+      ctx.arc(0,0,_portalInner*.94,0,Math.PI*2,true);ctx.clip('evenodd');
+      ctx.rotate(pt.angle*.018);
+      ctx.shadowBlur=(_isMobile?3:9);ctx.shadowColor='rgba(168,69,255,.8)';
+      ctx.drawImage(bossWarpPortalArt,-_portalDraw/2,-_portalDraw/2,_portalDraw,_portalDraw);
+      ctx.restore();
+
+      // Four cardinal crystals remain visually anchored and pulse in sequence.
+      for(var _pc=0;_pc<4;_pc++){
+        var _pca=_pc*Math.PI/2;
+        var _pcr=_portalOuter*.89;
+        var _pca2=.38+.28*Math.max(0,Math.sin(pt.pulseT*3.2-_pc*.72));
+        ctx.save();ctx.translate(Math.cos(_pca)*_pcr,Math.sin(_pca)*_pcr);
+        ctx.rotate(_pca);ctx.globalAlpha=_pca2;ctx.fillStyle='#d56cff';
+        ctx.shadowBlur=(_isMobile?5:14);ctx.shadowColor='#b724ff';
+        ctx.beginPath();ctx.moveTo(7,0);ctx.lineTo(0,4);ctx.lineTo(-7,0);ctx.lineTo(0,-4);ctx.closePath();ctx.fill();ctx.restore();
+      }
+
+      // Deterministic pixel motes: no frame-to-frame random shimmer.
+      ctx.shadowBlur=0;
+      for(var _pm=0;_pm<12;_pm++){
+        var _pma=_pm*2.399+pt.pulseT*(.16+(_pm%3)*.035);
+        var _pmr=_portalOuter*(1.04+(_pm%4)*.105);
+        var _pmBlink=.16+.7*Math.max(0,Math.sin(pt.pulseT*2.7+_pm*1.73));
+        var _pmSize=(_pm%5===0)?3:2;
+        ctx.globalAlpha=_pmBlink;
+        ctx.fillStyle=(_pm%4===0)?'#42e9ff':'#b34cff';
+        ctx.fillRect(Math.round(Math.cos(_pma)*_pmr-_pmSize/2),Math.round(Math.sin(_pma)*_pmr-_pmSize/2),_pmSize,_pmSize);
+      }
+      ctx.globalAlpha=1;
+
+      // Boss-death arrival shockwave and a brief white core ignition.
+      if((pt.life||0)<1.05){
+        var _ps=(pt.life||0)/1.05;
+        ctx.globalAlpha=(1-_ps)*.72;ctx.strokeStyle='#cf7bff';ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(0,0,_portalOuter*(.7+_ps*.85),0,Math.PI*2);ctx.stroke();
+        ctx.globalAlpha=Math.max(0,1-_ps*2.2);ctx.fillStyle='#fff';
+        ctx.beginPath();ctx.arc(0,0,9*(1-_ps)+2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+      }
+    }else{
+      // Lightweight fallback while the authored sprite loads.
+      ctx.shadowBlur=(_isMobile?8:24);ctx.shadowColor='#9b59ff';ctx.strokeStyle='#9b59ff';ctx.lineWidth=4;
+      ctx.beginPath();ctx.arc(0,0,pt.r+Math.sin(gtime*3)*3,0,Math.PI*2);ctx.stroke();
+      for(var _pfs=0;_pfs<8;_pfs++){
+        var _pfsa=pt.angle+_pfs*Math.PI/4;ctx.beginPath();ctx.moveTo(0,0);
+        ctx.lineTo(Math.cos(_pfsa)*pt.r*.78,Math.sin(_pfsa)*pt.r*.78);ctx.stroke();
+      }
     }
-    // Spinning inner vortex lines
-    ctx.shadowBlur=(_isMobile?6:20);
-    for(var si=0;si<8;si++){
-      var sa=pt.angle+(si/8)*Math.PI*2;
-      ctx.strokeStyle='rgba(155,89,255,'+(0.4+0.4*Math.sin(gtime*4+si))+')';
-      ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);
-      ctx.lineTo(Math.cos(sa)*(pt.r*0.8),Math.sin(sa)*(pt.r*0.8));ctx.stroke();
-    }
-    // Center swirl fill
-    var grad=ctx.createRadialGradient(0,0,0,0,0,pt.r);
-    grad.addColorStop(0,'rgba(155,89,255,0.5)');
-    grad.addColorStop(0.5,'rgba(100,50,200,0.2)');
-    grad.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,pt.r,0,Math.PI*2);ctx.fill();
     ctx.shadowBlur=0;ctx.restore();
     // Label
     ctx.font='bold 9px Orbitron,monospace';ctx.fillStyle='#9b59ff';ctx.textAlign='center';ctx.textBaseline='bottom';
-    ctx.fillText('GALAXY '+(pt.galaxyTo+1)+' PORTAL',sx,sy-pt.r-8);
+    ctx.fillText('GALAXY '+(pt.galaxyTo+1)+' PORTAL',sx,sy-pt.r*1.62-8);
     ctx.font='8px Orbitron,monospace';ctx.fillStyle='rgba(155,89,255,0.7)';
-    ctx.fillText('ENTER TO WARP',sx,sy-pt.r+4);
+    ctx.fillText('ENTER TO WARP',sx,sy-pt.r*1.62+4);
   }
 
   // World pickups
   for(var i=0;i<g.worldPickups.length;i++){
     var pk=g.worldPickups[i],sx=pk.x-cx,sy=pk.y-cy;if(sx<-60||sx>W+60||sy<-60||sy>H+60)continue;
     var bob=Math.sin(pk.bob)*6,pulse=.7+.3*Math.sin(pk.bob*1.3);
+    var pickupSprite=PICKUP_SPRITES[pk.type.id];
+    if(pickupSprite&&pickupSprite.complete&&pickupSprite.naturalWidth){
+      var pickupY=sy+bob;
+      var pickupSize=(_isMobile?64:72)*(0.94+pulse*0.06);
+      var pickupAlpha=pk.life<5?0.58+Math.sin(gtime*12)*0.32:1;
+      ctx.save();
+      ctx.globalAlpha=Math.max(0.18,pickupAlpha);
+      ctx.imageSmoothingEnabled=false;
+      // A restrained field ring keeps the transparent sprite readable over
+      // detailed galaxy backgrounds without hiding its authored silhouette.
+      ctx.beginPath();ctx.arc(sx,pickupY,28+pulse*2,0,Math.PI*2);
+      ctx.fillStyle=pk.type.color+'0b';ctx.fill();
+      ctx.strokeStyle=pk.type.color+'44';ctx.lineWidth=1.25;
+      ctx.setLineDash([3,5]);ctx.lineDashOffset=-gtime*8;ctx.stroke();ctx.setLineDash([]);
+      ctx.shadowBlur=_isMobile?8:16;ctx.shadowColor=pk.type.color;
+      ctx.drawImage(pickupSprite,sx-pickupSize/2,pickupY-pickupSize/2,pickupSize,pickupSize);
+      ctx.restore();
+      ctx.font='bold 8px Orbitron,monospace';ctx.fillStyle=pk.type.color;
+      ctx.textAlign='center';ctx.textBaseline='top';
+      ctx.fillText(pk.type.label,sx,pickupY+pickupSize*.43);
+      continue;
+    }
     ctx.save();ctx.shadowBlur=(_isMobile?6:22);ctx.shadowColor=pk.type.color;
     ctx.beginPath();ctx.arc(sx,sy+bob,20,0,Math.PI*2);ctx.fillStyle=pk.type.color+'18';ctx.fill();ctx.strokeStyle=pk.type.color;ctx.lineWidth=1.5;ctx.stroke();
     // Draw heart shape for health pickups, icon for others
@@ -26653,7 +27013,26 @@ function render(){
     var ast=g.liveAsteroids[i],sx=ast.x-cx,sy=ast.y-cy;if(sx<-130||sx>W+130||sy<-130||sy>H+130)continue;
     var hpPct=ast.hp/ast.maxHp;
     var isFlash=ast.flashTimer>0;
+    var _astFloatPhase=ast.floatPhase==null?(ast.seed||i)*1.37:ast.floatPhase;
+    var _astFloatSpeed=ast.floatSpeed||.9;
+    var _astFloatAmp=ast.floatAmp||3.5;
+    sx+=Math.cos(gtime*_astFloatSpeed*.73+_astFloatPhase)*_astFloatAmp*.32;
+    sy+=Math.sin(gtime*_astFloatSpeed+_astFloatPhase)*_astFloatAmp;
     ctx.save();ctx.translate(sx,sy);ctx.rotate(ast.rot);
+
+    var _mineAtlas=_loadMineableAsteroidAtlas();
+    var _mineSpriteReady=_mineAtlas.complete&&_mineAtlas.naturalWidth>=1024;
+    if(_mineSpriteReady){
+      var _mineVariant=ast.spriteVariant==null?Math.abs(Math.floor((ast.seed||i)*997))%4:ast.spriteVariant%4;
+      var _mineDamageRow=hpPct<.58?1:0;
+      var _mineDrawSize=ast.r*3*(ast.visualScale||1);
+      ctx.imageSmoothingEnabled=false;
+      ctx.shadowBlur=_isMobile?2:7;
+      ctx.shadowColor='#168fff';
+      if(isFlash)ctx.filter='brightness(2.8) saturate(0)';
+      ctx.drawImage(_mineAtlas,_mineVariant*256,_mineDamageRow*256,256,256,-_mineDrawSize/2,-_mineDrawSize/2,_mineDrawSize,_mineDrawSize);
+      ctx.filter='none';ctx.shadowBlur=0;
+    }else{
 
     // ── Rocky base — dark chunky polygon ──
     ctx.fillStyle=isFlash?'#ffffff':'#2e2e3a';
@@ -26764,12 +27143,14 @@ function render(){
       }
     }
 
+    }
+
     // ── HP dots ──
     ctx.shadowBlur=0;
     for(var di=0;di<5;di++){ctx.beginPath();ctx.arc(-ast.r*.7+di*ast.r*.36,-ast.r-7,2.5,0,Math.PI*2);ctx.fillStyle=di<Math.ceil(hpPct*5)?galAcc:'#222';ctx.shadowBlur=di<Math.ceil(hpPct*5)?6:0;ctx.shadowColor=galAcc;ctx.fill();}
 
     // ── Crack lines when damaged ──
-    if(hpPct<0.6){ctx.strokeStyle='rgba(255,160,80,0.5)';ctx.lineWidth=1;ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(-ast.r*.5,0);ctx.lineTo(ast.r*.3,ast.r*.25);ctx.stroke();ctx.beginPath();ctx.moveTo(0,-ast.r*.4);ctx.lineTo(ast.r*.2,ast.r*.4);ctx.stroke();}
+    if(!_mineSpriteReady&&hpPct<0.6){ctx.strokeStyle='rgba(255,160,80,0.5)';ctx.lineWidth=1;ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(-ast.r*.5,0);ctx.lineTo(ast.r*.3,ast.r*.25);ctx.stroke();ctx.beginPath();ctx.moveTo(0,-ast.r*.4);ctx.lineTo(ast.r*.2,ast.r*.4);ctx.stroke();}
 
     ctx.restore();
     // Tutorial asteroid — pulsing ring on all ring members
@@ -27071,6 +27452,7 @@ function render(){
       // Sector Zero has its own Sentinel Prime renderer below. Sending galaxy -2
       // through drawBossShape falls into its Architect default branch.
       if(e.galaxy!==-2)drawBossShape(ctx,e,col,gtime);
+      else drawSectorZeroEnemySprite(ctx,e,3,gtime,true);
       if(e.galaxy===9&&e._architectPhase===0)drawArchitectDesignTelegraph(ctx,e,gtime);
       // ── G0 TRACTOR BEAM VISUAL ──
       if(e.galaxy===0 && e._tractorActive){
@@ -27331,6 +27713,62 @@ function drawMachineRemnantEnemySprite(ctx,e,t){
   return true;
 }
 
+function drawMeteorStormEnemySprite(ctx,e,t){
+  var atlas=_loadMeteorStormEnemyAtlas();
+  if(!atlas.complete||!atlas.naturalWidth)return false;
+  // Approved gameplay order: Drifter, Spitter, Orbiter, Surger, Splitter.
+  var frames=[[44,234,345,360],[435,234,312,330],[764,252,335,320],[1132,261,338,312],[1484,254,372,335]];
+  var ti=Math.max(0,Math.min(4,e.typeIdx||0)),fr=frames[ti];
+  var maxDim=e.r*[4.15,3.95,4.15,4.0,3.85][ti];
+  var scale=maxDim/Math.max(fr[2],fr[3]);
+  var dw=Math.round(fr[2]*scale),dh=Math.round(fr[3]*scale);
+  var bob=Math.sin(t*2.1+e.x*.009+ti*.8)*e.r*.07;
+  var pulse=1+.018*Math.sin(t*3.3+e.y*.006+ti);
+  if(ti===1&&e._erupting)pulse+=.07*Math.abs(Math.sin(t*12));
+  ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(0,bob);
+  if(ti===3&&!e._hasSplit&&e.hp<=e.maxHp*.55){
+    ctx.translate(Math.sin(t*38)*e.r*.07,Math.cos(t*31)*e.r*.05);
+  }
+  ctx.scale(pulse,pulse);
+  ctx.drawImage(atlas,fr[0],fr[1],fr[2],fr[3],-dw/2,-dh/2,dw,dh);
+  if(e.flashTimer>0||e.frozen>0||e.isElite){
+    ctx.globalAlpha=e.flashTimer>0?.72:e.frozen>0?.42:.22;
+    ctx.filter=e.flashTimer>0?'brightness(2.8) contrast(.7)':e.frozen>0?'sepia(1) saturate(4) hue-rotate(145deg) brightness(1.35)':'sepia(1) saturate(3) brightness(1.25)';
+    ctx.drawImage(atlas,fr[0],fr[1],fr[2],fr[3],-dw/2,-dh/2,dw,dh);
+  }
+  ctx.restore();
+  return true;
+}
+
+function drawMeteorStormEnemyTelegraphs(ctx,e,t){
+  var r=e.r,ti=e.typeIdx||0;
+  if(ti===1&&e._erupting){
+    var mPct=1-(e._eruptWindup/0.7);
+    var mAlpha=0.4+0.5*Math.abs(Math.sin(t*12));
+    ctx.save();ctx.strokeStyle='rgba(255,100,20,'+mAlpha+')';
+    ctx.lineWidth=3+mPct*4;ctx.shadowBlur=(_isMobile?6:20);ctx.shadowColor='#ff6622';
+    ctx.beginPath();ctx.arc(0,0,r*1.6+mPct*20,0,Math.PI*2);ctx.stroke();ctx.restore();
+  }
+  if(ti===2&&e._sniperState==='aiming'&&e._aimAngle!==undefined){
+    var sAlpha=0.5+0.5*Math.abs(Math.sin(t*10)),sLen=600;
+    ctx.save();ctx.rotate(e._aimAngle+Math.PI/2);
+    ctx.strokeStyle='rgba(158,86,255,'+sAlpha+')';ctx.lineWidth=1.5;
+    ctx.shadowBlur=(_isMobile?3:12);ctx.shadowColor='#9e56ff';ctx.setLineDash([8,6]);
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-sLen);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(190,130,255,0.95)';ctx.beginPath();ctx.arc(0,-sLen,5,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  if(ti===3&&!e._hasSplit&&e.hp<=e.maxHp*.55){
+    var spAlpha=0.5+0.5*Math.abs(Math.sin(t*16));
+    ctx.save();ctx.strokeStyle='rgba(255,214,36,'+spAlpha+')';ctx.lineWidth=2;
+    ctx.shadowBlur=(_isMobile?5:18);ctx.shadowColor='#ffd624';
+    for(var lki=0;lki<4;lki++){
+      var lka=lki/4*Math.PI*2+t*3;ctx.beginPath();ctx.moveTo(0,0);
+      ctx.lineTo(Math.cos(lka)*r*1.8,Math.sin(lka)*r*1.8);ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
 function drawEnemyShape(ctx,e,col,t){
   var r=e.r,g2=e.galaxy||0,ti=e.typeIdx||0,ang=e.spinAngle||0;
   ctx.strokeStyle=col;ctx.fillStyle=col;
@@ -27340,6 +27778,7 @@ function drawEnemyShape(ctx,e,col,t){
 
   // ── SECTOR ZERO enemy shapes ──────────────────────────────────────────
   if(g2===-2){
+    if(drawSectorZeroEnemySprite(ctx,e,ti,t,false))return;
     ctx.save();
     ctx.rotate(ang*0.4);
     ctx.shadowBlur=_isMobile?8:18; ctx.shadowColor='#44aaff';
@@ -28317,6 +28756,10 @@ function drawEnemyShape(ctx,e,col,t){
     // ── G3 METEOR STORM BELT: Shard Dwellers ──────────────────────────
     case 3:
     {
+      if(drawMeteorStormEnemySprite(ctx,e,t)){
+        drawMeteorStormEnemyTelegraphs(ctx,e,t);
+        break;
+      }
       ctx.save();
       // Tier colors: grey(0), orange(1), red(2), purple(3)
       var sdCols=['#aaaaaa','#ff8833','#ff2222','#aa44ff'];
@@ -32435,6 +32878,8 @@ function upgradeRankDesc(id){
     case'magnet':return nr<=9?'RANGE +'+Math.round((_RS.mag[nr-1]-1)*100)+'%':'SIPHON FIELD: Duplicate pickups';
     case'spread':return nr<=5?'+1 BOLT':nr<=9?'+DMG +SIZE':'SHRAPNEL: AoE explosions';
     case'escort':return nr<=4?'+1 MISSILE FRIGATE':nr<=8?'UPGRADE ALL: Bigger blasts':nr<=9?'FIRE PATCH: Burning craters':'SQUADRON: Auto-barrage';
+    case'overcharge':return nr<=3?'NODE RADIUS +20%':'VOLT DAMAGE +18%';
+    case'event_horizon':return 'PULL RADIUS +15% · DAMAGE +12%';
     default:return'';
   }
 }
@@ -32584,6 +33029,42 @@ function triggerSynergyAnimation(syn, card1El, card2El, onDone){
   confirmBtn.addEventListener('pointerleave',function(){_hCancelled=true;cancelAnimationFrame(_hRaf);confirmFill.style.width='0%';});
 }
 
+var RUN_CARD_ART_ROOT='assests/images/run-cards-v1/';
+var RUN_CARD_ART={
+  dmg:{b:['01-standard-plasma-turbo-phase.png','0%'],u:['05-base-overcharge-eventhorizon-plus-meltdown.png','100%']},
+  spd:{b:['01-standard-plasma-turbo-phase.png','50%'],u:['06-ultimate-bulletstorm-ghostrail-slipstream.png','0%']},
+  pierce:{b:['01-standard-plasma-turbo-phase.png','100%'],u:['06-ultimate-bulletstorm-ghostrail-slipstream.png','50%']},
+  mvspd:{b:['02-standard-ion-hull-nanobots.png','0%'],u:['06-ultimate-bulletstorm-ghostrail-slipstream.png','100%']},
+  maxhp:{b:['02-standard-ion-hull-nanobots.png','50%'],u:['07-ultimate-ironcurtain-swarmcloud-novaring.png','0%']},
+  regen:{b:['02-standard-ion-hull-nanobots.png','100%'],u:['07-ultimate-ironcurtain-swarmcloud-novaring.png','50%']},
+  orbit:{b:['03-standard-defense-nova-tractor.png','0%'],u:['07-ultimate-ironcurtain-swarmcloud-novaring.png','100%']},
+  nova:{b:['03-standard-defense-nova-tractor.png','50%'],u:['08-ultimate-supernova-siphon-shrapnel.png','0%']},
+  magnet:{b:['03-standard-defense-nova-tractor.png','100%'],u:['08-ultimate-supernova-siphon-shrapnel.png','50%']},
+  spread:{b:['04-standard-scatter-escort-arc.png','0%'],u:['08-ultimate-supernova-siphon-shrapnel.png','100%']},
+  escort:{b:['04-standard-scatter-escort-arc.png','50%'],u:['09-ultimate-squadron-chainstorm-voltstorm.png','0%']},
+  overcharge:{b:['05-standard-overcharge-eventhorizon-plus-meltdown.png','0%'],u:['09-ultimate-squadron-chainstorm-voltstorm.png','100%']},
+  event_horizon:{b:['05-standard-overcharge-eventhorizon-plus-meltdown.png','50%'],u:['10-ultimate-singularity.png','50%',true]}
+};
+function skinRunUpgradeCard(card,id,isUltimate,tierColor,label){
+  var entry=RUN_CARD_ART[id],spec=entry&&(isUltimate?entry.u:entry.b);
+  if(!spec)return false;
+  for(var ci=0;ci<card.children.length;ci++)card.children[ci].style.display='none';
+  card.setAttribute('aria-label',label);
+  card.style.width='150px';
+  card.style.height='300px';
+  card.style.padding='0';
+  card.style.border='0';
+  card.style.borderRadius='12px';
+  card.style.backgroundColor='transparent';
+  card.style.backgroundImage='url("'+RUN_CARD_ART_ROOT+spec[0]+'?v=2")';
+  card.style.backgroundRepeat='no-repeat';
+  card.style.backgroundSize=spec[2]?'contain':'300% auto';
+  card.style.backgroundPosition=spec[1]+' center';
+  card.style.boxShadow='0 0 24px '+(isUltimate?tierColor:'#b8bec8')+'66';
+  card.style.imageRendering='pixelated';
+  return true;
+}
+
 function showLU(){
   if(!G._upRanks)G._upRanks={};
   var _lvlEl=document.getElementById('lvl'); if(_lvlEl) _lvlEl.textContent=G.player.level;
@@ -32651,7 +33132,7 @@ function showLU(){
 
     var _cardBorderColor=_activeSynForCard?'#ffd700':(_synHint?_synHint.color:''+tier.color+'88');
     var _cardGlow=_activeSynForCard?'30px #ffd700':(_synHint?'24px '+_synHint.color:'16px '+tier.glow);
-    card.style.cssText='width:120px;padding:16px 12px;border:2px solid '+_cardBorderColor+';background:linear-gradient(180deg,'+tier.bg+',rgba(0,20,40,0.97));cursor:pointer;text-align:center;transition:all .2s;border-radius:10px;box-shadow:0 0 '+_cardGlow+',inset 0 1px 0 '+tier.color+'22;';
+    card.style.cssText='width:148px;padding:11px 10px 14px;border:2px solid '+_cardBorderColor+';background:linear-gradient(180deg,'+tier.bg+',rgba(0,10,24,0.98));cursor:pointer;text-align:center;transition:all .2s;border-radius:10px;box-shadow:0 0 '+_cardGlow+',inset 0 1px 0 '+tier.color+'22;';
     if(isUltRank) card.style.animation='runUltCardGlow 1.5s ease-in-out infinite';
 
     // Rarity banner at top
@@ -32670,7 +33151,7 @@ function showLU(){
     // Name
     var nameDiv=document.createElement('div');
     nameDiv.style.cssText='font-family:Orbitron,sans-serif;font-size:9px;font-weight:700;color:'+tier.color+';letter-spacing:1px;margin-bottom:4px;text-shadow:0 0 6px '+tier.color+'66;';
-    nameDiv.textContent=u.name;
+    nameDiv.textContent=isUltRank&&u.ult?u.ult.name:u.name;
     card.appendChild(nameDiv);
 
     // Description
@@ -32724,10 +33205,22 @@ function showLU(){
     }
     card.appendChild(pips);
 
+    // The approved full-card artwork is the complete selectable card. Keep the
+    // existing DOM only as hidden semantic/mechanics data for the live upgrade.
+    skinRunUpgradeCard(card,u.id,isUltRank,tier.color,
+      (isUltRank?'Ultimate':tier.name+' '+rom)+' '+(isUltRank&&u.ult?u.ult.name:u.name)+' '+desc);
+    if(!isUltRank){
+      var rankBadge=document.createElement('div');
+      rankBadge.textContent='RANK '+rom;
+      rankBadge.style.cssText='position:absolute;top:3px;right:7px;z-index:2;padding:2px 5px;border:1px solid #aeb4bd;border-radius:3px;background:rgba(3,6,12,.9);color:#e1e5eb;font:6px Orbitron,sans-serif;letter-spacing:1px;pointer-events:none;box-shadow:0 0 5px rgba(210,220,235,.35);';
+      card.appendChild(rankBadge);
+    }
+
     // Hold-to-confirm: fill bar grows over 350ms, release early cancels
     var _holdTimer=null, _holdStart=0, _holdCancelled=false;
     var fillBar=document.createElement('div');
-    fillBar.style.cssText='position:absolute;bottom:0;left:0;height:3px;width:0%;background:'+tier.color+';border-radius:0 0 8px 8px;transition:none;pointer-events:none;box-shadow:0 0 6px '+tier.color+';';
+    var holdColor=isUltRank?tier.color:'#c7ccd4';
+    fillBar.style.cssText='position:absolute;bottom:0;left:0;height:3px;width:0%;background:'+holdColor+';border-radius:0 0 8px 8px;transition:none;pointer-events:none;box-shadow:0 0 6px '+holdColor+';';
     card.style.position='relative';card.style.overflow='hidden';
     card.appendChild(fillBar);
 
@@ -34688,9 +35181,9 @@ function _openDevEnemySpawner(bossOnly){
   if(!G||!G.running){ fmsg('DEV: START A RUN FIRST','#ff3366'); return; }
   var ENEMY_CATALOGUE=[
     {galaxy:-2,label:'S-0  SECTOR ZERO',color:'#4488ff',enemies:[
-      {name:'SCOUT DEBRIS',    fn:function(x,y){G.enemies.push({x:x,y:y,r:9, color:'#4488bb',hp:10, maxHp:10, dmg:5, spd:55, xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,galaxy:-2,aiType:'chase',_szWobble:0});}},
-      {name:'MEDIUM DEBRIS',   fn:function(x,y){G.enemies.push({x:x,y:y,r:13,color:'#336699',hp:18, maxHp:18, dmg:8, spd:40, xpVal:3,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,galaxy:-2,aiType:'chase',_szWobble:0});}},
-      {name:'HEAVY DEBRIS',    fn:function(x,y){G.enemies.push({x:x,y:y,r:16,color:'#224466',hp:30, maxHp:30, dmg:10,spd:28, xpVal:5,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,galaxy:-2,aiType:'chase',_szWobble:0});}}
+      {name:'LIGHT SENTINEL',  fn:function(x,y){G.enemies.push({x:x,y:y,r:9, color:'#4488bb',hp:10, maxHp:10, dmg:5, spd:55, xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,galaxy:-2,aiType:'chase',typeIdx:0,_szWobble:0});}},
+      {name:'ROUND SENTINEL',  fn:function(x,y){G.enemies.push({x:x,y:y,r:13,color:'#336699',hp:18, maxHp:18, dmg:8, spd:40, xpVal:3,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,galaxy:-2,aiType:'chase',typeIdx:1,_szWobble:0});}},
+      {name:'HEAVY GUARDIAN',  fn:function(x,y){G.enemies.push({x:x,y:y,r:16,color:'#224466',hp:30, maxHp:30, dmg:10,spd:28, xpVal:5,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,galaxy:-2,aiType:'chase',typeIdx:2,_szWobble:0});}}
     ]},
     {galaxy:0,label:'G1  LEVIATHAN FIELD',color:'#ff6600',enemies:[
       {name:'LEVIATHAN LARVA',  fn:function(x,y){var gd=(GALAXIES[0]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:12,color:'#00aaff',hp:Math.round((35+G.wave*10)*gd),maxHp:Math.round((35+G.wave*10)*gd),dmg:Math.round(8*1.2*gd),spd:Math.min(220,110+G.wave*5)*gd,xpVal:4,segs:2,aiType:'chase',flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:1});}},
@@ -35390,7 +35883,7 @@ function _openDevPanelInner(panel, content){
         btn.style.cssText='width:240px;font-size:11px;padding:12px 0;border-color:#bb88ff;color:#bb88ff;';
         btn.textContent=pk.id.toUpperCase();
         safeTap(btn,function(){
-          G.pickups.push({x:G.player.x+(Math.random()-.5)*120,y:G.player.y+(Math.random()-.5)*120,type:pk.id,life:12,pulse:0});
+          G.worldPickups.push({x:G.player.x+(Math.random()-.5)*120,y:G.player.y+(Math.random()-.5)*120,type:pk,bob:Math.random()*Math.PI*2,life:40});
           fmsg('DEV: SPAWNED '+pk.id.toUpperCase(),'#bb88ff');
           document.body.removeChild(sub);panel.style.display='none';
         });
@@ -36528,9 +37021,9 @@ function renderCollections(){
       +';display:flex;align-items:center;gap:12px;';
 
     if(discovered){
-      var _iconHtml=svgIcon(pk.icon).replace('width="28"','width="24"').replace('height="28"','height="24"');
+      var _iconHtml='<img src="assests/images/pickups/'+pk.id+'.png" alt="" style="width:42px;height:42px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 5px '+pk.color+'77);">';
       card.innerHTML=
-        '<div style="width:32px;height:32px;border-radius:8px;background:'+pk.color+'18;border:1px solid '+pk.color+'44;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:'+pk.color+';">'+_iconHtml+'</div>'
+        '<div style="width:48px;height:48px;border-radius:8px;background:'+pk.color+'0d;border:1px solid '+pk.color+'33;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:'+pk.color+';">'+_iconHtml+'</div>'
         +'<div style="flex:1;min-width:0;">'
           +'<div style="font-family:Orbitron,sans-serif;font-size:10px;font-weight:700;color:'+pk.color+';letter-spacing:1px;margin-bottom:3px;">'+pk.label+'</div>'
           +'<div style="font-size:9px;color:'+pk.color+'88;line-height:1.4;">'+(pk.desc||'')+(pk.dur>0?' · '+pk.dur+'s duration':'')+'</div>'
@@ -39265,7 +39758,9 @@ function tutCheckMining(){
     var _seed=10+_ti*7;
     for(var _vi=0;_vi<7;_vi++){var _va=(_vi/7)*Math.PI*2,_vr=_r*(.65+(_vi%2===0?0.3:0.1));_verts.push([Math.cos(_va)*_vr,Math.sin(_va)*_vr]);}
     var _ast={x:_tx,y:_ty,r:_r,verts:_verts,hp:_r*3,maxHp:_r*3,
-      rot:0,rotSpd:0,vx:0,vy:0,flashTimer:0,gemVal:3,
+      rot:Math.random()*Math.PI*2,rotSpd:(Math.random()-.5)*0.1,vx:0,vy:0,flashTimer:0,gemVal:3,
+      spriteVariant:_ti%4,visualScale:.92+Math.random()*.16,
+      floatPhase:Math.random()*Math.PI*2,floatSpeed:.65+Math.random()*.45,floatAmp:2.5+Math.random()*2.5,
       seed:_seed,_isTutAst:true,_tutRing:true};
     G.liveAsteroids.push(_ast);
     _tutAsts.push(_ast);
@@ -39413,6 +39908,15 @@ function tutCheckPauseTip(){ /* removed */ }
 // CHANNEL LOG
 // ══════════════════════════════════════════════════════════════════════════
 var CHANNEL_LOG = [
+  {
+    version:'v0.9.16 · SALVAGE SIGNAL',title:'THE VOID LEAVES GIFTS',color:'#00f5ff',entries:[
+      'PICKUP ART OVERHAUL — all 17 world pickups now use authored transparent SNES-style pixel sprites',
+      'VISUAL FAMILIES — crystal multipliers and hull repairs communicate their tiers through escalating silhouettes',
+      'CRYSTAL CACHE — the fixed +15 drop now awards 25 crystals plus 5 for every galaxy reached',
+      'COLLECTIONS UPGRADE — discovered pickup entries now display their full authored sprite art',
+      'MOBILE ASSETS — sprites are cropped, optimized, and nearest-neighbor scaled for crisp phone play'
+    ]
+  },
   {
     version:'v0.9.15 · GHOST SIGNAL',title:'THE STATION IS LISTENING',color:'#6994b8',entries:[
       'MACHINE REMNANT ART PASS — a colossal abandoned rogue-AI station now dominates the sector',
@@ -39918,7 +40422,7 @@ function rebuildMainMenu(){
     +'<button class="btn" id="mCLBtn" style="border-color:#31586c;color:#7295a6">CHANNEL LOG</button>'
     +'<button class="btn" id="menuSettingsBtn" style="border-color:#31586c;color:#7295a6">SETTINGS</button></div>'
     +'<div class="cmdCompanion" id="k0Companion"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0"><div class="cmdGreeting"><span class="k0Speaker" id="k0Speaker">K-0 // NAV UNIT</span><span class="k0Line" id="k0Line">ROUTE LOCKED. SYSTEMS NOMINAL.</span><span class="k0Hint">TAP K-0 TO TALK</span></div></div>'
-    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.15 · GHOST SIGNAL</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
+    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.16 · SALVAGE SIGNAL</span><button class="btn cmdDev" id="menuDevBtn">DEV</button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
   showMainMenu();playMenuMusic();

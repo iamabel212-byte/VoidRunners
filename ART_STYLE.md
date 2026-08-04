@@ -12,3 +12,11 @@ All new Void Runners sprites must use an early-1990s SNES-era pixel-art treatmen
 - Keep animation assets modular and economical when practical (for example, reusable body segments).
 
 The approved Leviathan Field worm atlas is the current style reference: `assests/images/leviathan-worm-snes-atlas-v1.png`.
+
+## Backgrounds
+
+Backgrounds must remain recognizably pixel art, but they are not restricted to the chunky SNES sprite resolution. Use finer pixel clusters, richer palettes, layered atmospheric texture, nuanced lighting, and higher environmental detail when it improves full-screen quality. Keep edges crisp and pixel-authored; avoid photorealism, vector-smooth surfaces, blurry upscaling, or generic digital-painting texture.
+
+Separate major depth elements into independent production layers whenever parallax is intended. A planet and its attached ring system should remain unified on one transparent layer, while the starfield belongs on its own opaque far-background layer.
+
+The world-pickup set under `assests/images/pickups/` is the reference for compact collectible art: strong silhouettes, dark mechanical framing, limited accent colors, transparent negative space, and no baked-in labels or numeric values.
