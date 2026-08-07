@@ -43,8 +43,10 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 #bbSparks{position:absolute;top:-6px;left:0;width:100%;height:34px;pointer-events:none;z-index:2;}
 #ab{position:fixed;bottom:130px;right:14px;display:flex;flex-direction:column;gap:8px;z-index:10;touch-action:none;}
 .abn{width:72px;height:72px;border-radius:50%;border:2px solid rgba(0,245,255,0.65);background:rgba(2,2,20,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 0 10px rgba(0,245,255,0.2),inset 0 0 12px rgba(0,245,255,0.05);}
-.abn .ic{font-size:26px;line-height:1;}.abn .cl{font-size:8px;font-family:'Orbitron',sans-serif;color:rgba(0,245,255,0.85);margin-top:2px;}
-.abn .co{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);}
+.abn .ic{font-size:26px;line-height:1;}.abn .cl{font-size:8px;font-family:'Orbitron',sans-serif;color:rgba(0,245,255,0.85);margin-top:2px;position:relative;z-index:5;}
+.abn .co{position:absolute;top:0;left:0;right:0;z-index:4;pointer-events:none;background:rgba(43,48,58,.72);backdrop-filter:grayscale(1) brightness(.42);-webkit-backdrop-filter:grayscale(1) brightness(.42);transition:height .08s linear;}
+.abn.cooling{border-color:#46505d!important;box-shadow:0 0 7px rgba(60,70,82,.25),inset 0 0 14px rgba(0,0,0,.7)!important;}
+.abn.cooling .cl{color:#c7d0da;text-shadow:0 1px 3px #000;}
 .abn.rdy{border-color:var(--c);box-shadow:0 0 14px rgba(0,245,255,0.35);}
 .abn.upg{border-color:var(--g);}.abn.upg.rdy{box-shadow:0 0 18px rgba(255,215,0,0.5);}
 #jz{position:fixed;bottom:20px;left:20px;width:140px;height:140px;z-index:10;touch-action:none;pointer-events:none;opacity:0;}
@@ -364,7 +366,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
 #ab{right:6px;bottom:184px;gap:6px;padding:8px 6px;border:1px solid rgba(0,245,255,.28);border-radius:18px;background:linear-gradient(180deg,rgba(2,17,35,.88),rgba(1,5,17,.82));box-shadow:0 0 18px rgba(0,0,0,.65),inset 0 0 15px rgba(0,245,255,.04);}
 .abn{width:62px;height:62px;border-width:2px;background:radial-gradient(circle,rgba(9,31,48,.92),rgba(1,5,18,.98) 70%);box-shadow:0 0 10px currentColor,inset 0 0 12px rgba(255,255,255,.035);}
 .abn .ic{font-size:23px;order:1}.abn .ic svg{width:25px;height:25px}.abn:after{content:attr(data-label);order:2;font:6px Orbitron,sans-serif;letter-spacing:.5px;margin-top:3px;max-width:55px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:currentColor}.abn .cl{order:3;font-size:6px;letter-spacing:-1px;margin-top:1px;max-width:55px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.abn[data-rank="0"] .cl{display:none}
-.abn .co{background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.48));}
+.abn .co{background:linear-gradient(180deg,rgba(58,64,75,.86),rgba(24,28,36,.72));}
 #sectorMeter{left:8px;right:auto;bottom:204px;width:min(220px,calc(100vw - 98px));padding:9px 10px 10px;border:1px solid rgba(0,245,255,.28);background:linear-gradient(145deg,rgba(3,20,36,.9),rgba(1,6,18,.86));clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
 #sectorMeterLbl{font-size:8px;letter-spacing:1px;margin-bottom:6px;color:#d8faff}
 #sectorMeterTrack{height:9px;border-radius:2px;background:rgba(0,0,8,.8);border-color:rgba(0,245,255,.28)}#sectorMeterFill{border-radius:1px;}
@@ -1473,11 +1475,15 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
   document.addEventListener('DOMContentLoaded',function(){var imgs=document.images;for(var i=0;i<imgs.length;i++)lockImage(imgs[i]);});
 })();
 
+// Global main-boss endurance tune. Mini-bosses remain independently balanced.
+const GLOBAL_BOSS_HP_MULT=0.70;
+
 function _makeDiamond(bx,by,pm){
   var _pm=pm||1;
+  var _diamondHp=Math.round(600000*_pm*GLOBAL_BOSS_HP_MULT);
   return {
     name:'THE DIAMOND', galaxy:7, isBoss:true, _g7Diamond:true, bossPhase:1,
-    r:90, hp:Math.round(600000*_pm), maxHp:Math.round(600000*_pm),
+    r:90, hp:_diamondHp, maxHp:_diamondHp,
     x:bx, y:by, spd:0, baseSpd:0, spinAngle:0, pulseT:0,
     shootCd:1.6, shootTimer:0, _attackIdx:0, _mirrorShards:[], color:'#cc88ff',
     dmg:Math.round(28*_pm), xpVal:0, coins:0,
@@ -1505,9 +1511,10 @@ function _makeDiamond(bx,by,pm){
 }
 function _makeHeart(bx,by,pm){
   var _pm=pm||1;
+  var _heartHp=Math.round(500000*_pm*GLOBAL_BOSS_HP_MULT);
   return {
     name:'THE HEART', galaxy:7, isBoss:true, _g7Heart:true, bossPhase:2,
-    r:65, hp:Math.round(500000*_pm), maxHp:Math.round(500000*_pm),
+    r:65, hp:_heartHp, maxHp:_heartHp,
     x:bx, y:by, spd:0, baseSpd:0, heartbeatT:0, shootCd:1.0, shootTimer:0, _attackIdx:0,
     color:'#ff2244', dmg:Math.round(32*_pm), xpVal:300, coins:100, enraged:false,
     shoot:function(g,e,p){
@@ -1924,6 +1931,21 @@ function cleanupAllOverlays(){
 var _resurrectCostCap = 64;
 function getResurrectCost(){ return Math.min(_resurrectCostCap,Math.pow(2,Math.max(0,_resurrectCount))); }
 let permData=lsG('vr_perm',{});
+// v0.9.47 migration: Quantum Timer moved from 25 ranks to 10. Refund every
+// removed rank at the exact legacy purchase price so established saves lose
+// neither crystals nor progression value.
+if(!lsG('vr_quantumTimer10Migrated',false)){
+  var _oldQuantumRank=Math.max(0,Math.floor(permData.p_abcd||0));
+  if(_oldQuantumRank>10){
+    var _quantumRefund=0;
+    for(var _qrr=11;_qrr<=Math.min(25,_oldQuantumRank);_qrr++)_quantumRefund+=Math.round(24*Math.pow(_qrr,2.3));
+    permData.p_abcd=10;
+    crystals+=_quantumRefund;
+    lsS('vr_perm',permData);lsS('vr_crystals',crystals);
+    window._quantumTimerMigrationRefund=_quantumRefund;
+  }
+  lsS('vr_quantumTimer10Migrated',true);
+}
 let persistLevel=lsG('vr_plevel',1);   // carries over between runs
 let persistXP=lsG('vr_pxp',0);
 let persistXPNext=lsG('vr_pxpnext',25);
@@ -7933,6 +7955,13 @@ var escortWingRankVIArt=new Image();
 escortWingRankVIArt.src='assests/images/escort-wing-rank-vi-v1.png';
 var escortMissileAtlasArt=new Image();
 escortMissileAtlasArt.src='assests/images/escort-missile-atlas-v1.png';
+// Authored Nova Burst sheets: eight left-to-right frames apiece. The regular
+// sheet scales with the card's live radius; Rank VI's every-third Supernova
+// uses its own larger cyan-violet collapse/detonation sequence.
+var novaBurstSpriteArt=new Image();
+novaBurstSpriteArt.src='assests/images/effects/nova-burst-sprites-v2.png';
+var novaSupernovaSpriteArt=new Image();
+novaSupernovaSpriteArt.src='assests/images/effects/nova-supernova-sprites-v2.png';
 
 function warpToGalaxy(gIdx){
   // Galaxy warps must never alter the purchased or currently equipped ship.
@@ -9120,7 +9149,7 @@ const PERM_DEFS={
     {id:'p_dmg',   icon:'crosshair',name:'PLASMA CORE',     desc:'+8% weapon dmg/rank',     maxRank:15,baseCost:100, cm:1.9,  ult:{name:'ANTIMATTER ROUNDS',desc:'Shots deal 30% splash damage in AoE',color:'#ff3366'}},
     {id:'p_cd',    icon:'gear',name:'OVERCLOCK',       desc:'-6% fire rate cd/rank',   maxRank:25,baseCost:100, cm:1.35, ult:{name:'OVERDRIVE',desc:'Every 8th shot fires a supercharged triple burst',color:'#ffcc22'}},
     {id:'p_pierce',icon:'pierce',name:'PHASE ROUNDS',    desc:'+1 pierce/rank',          maxRank:15,baseCost:150, cm:1.9,  ult:{name:'QUANTUM CASCADE',desc:'Shots gain +15% damage per enemy pierced',color:'#8844ff'}},
-    {id:'p_abcd',  icon:'clock',name:'QUANTUM TIMER',   desc:'-6% ability cd/rank',     maxRank:25,baseCost:75,  cm:1.35, galaxyReq:1, ult:{name:'TEMPORAL RIFT',desc:'Abilities have 20% chance to instantly reset',color:'#00ffcc'}},
+    {id:'p_abcd',  icon:'clock',name:'QUANTUM TIMER',   desc:'-5% ability cooldown/rank',maxRank:10,baseCost:100, cm:1.35, galaxyReq:1, ult:{name:'TEMPORAL RIFT',desc:'20% chance to instantly reset an ability · 8s proc lockout',color:'#00ffcc'}},
   ],
   ABILITIES:[
     {id:'p_dash',  icon:'dash',name:'WARP DRIVE',      desc:'Double-tap to dash through enemies.',shortDesc:'Dash — invincible + damages enemies',abilityStats:function(r){return r===0?'Not unlocked':r===1?'Short dash · brief i-frames':r===2?'Longer dash · pass-through damage':r===3?'Hard dash · shockwave on land · 0.75s i-frames':r===4?'Heavy dash · rips through enemies · purple burst':'VOID TEAR — deletes enemies · screen flash · max i-frames';}, maxRank:5,baseCost:100,cm:4.0},
@@ -9167,8 +9196,8 @@ function getPermStatLine(def, rank){
   } else if(id==='p_pierce'){
     result={cur:rank===0?'No pierce':rank+' pierce', nxt:nrank<=def.maxRank?nrank+' pierce':null};
   } else if(id==='p_abcd'){
-    var cur=rank===0?'+0% ability spd':'+'+Math.round((1-Math.pow(0.94,rank))*100)+'% faster abilities';
-    var nxt=nrank<=def.maxRank?'+'+Math.round((1-Math.pow(0.94,nrank))*100)+'% faster abilities':null;
+    var cur=rank===0?'+0% ability spd':'+'+Math.round((1-Math.pow(0.95,rank))*100)+'% faster abilities';
+    var nxt=nrank<=def.maxRank?'+'+Math.round((1-Math.pow(0.95,nrank))*100)+'% faster abilities':null;
     result={cur:cur, nxt:nxt};
   } else if(id==='p_pickdur'){
     var base=10;
@@ -9190,9 +9219,11 @@ function getPermStatLine(def, rank){
   return result;
 }
 function pRank(id){return permData[id]||0;}
+const QUANTUM_TIMER_COSTS=[100,200,400,700,1100,1700,2500,3500,5000,8000];
 function pCost(def){
   const r=pRank(def.id);
   if(r>=def.maxRank)return Infinity;
+  if(def.id==='p_abcd')return QUANTUM_TIMER_COSTS[r]||Infinity;
   // High-cm upgrades (Plasma Core, Phase Rounds, abilities) keep original exponential curve
   if(def.cm>=1.9) return Math.round(def.baseCost*Math.pow(def.cm,r));
   // Common upgrades use custom curve: steep early, flattens to ~100k at rank 25
@@ -9215,7 +9246,7 @@ function getBonus(){
     else if(d.id==='p_dmg'){b.dmg*=Math.pow(1.08,r);if(r>=d.maxRank)b.ult_dmg=true;}
     else if(d.id==='p_cd'){b.cd*=Math.pow(0.94,r);if(r>=d.maxRank)b.ult_cd=true;}
     else if(d.id==='p_pierce'){b.pierce+=r;if(r>=d.maxRank)b.ult_pierce=true;}
-    else if(d.id==='p_abcd'){b.abcd*=Math.pow(0.94,r);if(r>=d.maxRank)b.ult_abcd=true;}
+    else if(d.id==='p_abcd'){b.abcd*=Math.pow(0.95,Math.min(r,d.maxRank));if(r>=d.maxRank)b.ult_abcd=true;}
   }
   var sk=SKINS.find(function(s){return s.id===activeSkin;})||SKINS[0];
   if(sk&&sk.passive) sk.passive(b);
@@ -9668,7 +9699,7 @@ const UPGRADES=[
     apply:function(g){var r=g._upRanks.nova;
       if(r===1){g.nova.active=true;g.nova.dmg=80;g.nova.r=120;g.nova.cd=3.5;}
       else if(r<RUN_MAX_RANK){g.nova.dmg*=_RS.novaDmg[r-1];g.nova.r=Math.min(400,g.nova.r+_RS.novaR[r-1]);g.nova.cd*=_RS.novaCd[r-1];}},
-    ult:{name:'SUPERNOVA',desc:'Every 3rd nova pulls enemies inward then detonates 2×',color:'#ff6a00'}},
+    ult:{name:'SUPERNOVA',desc:'Every 3rd nova detonates 45% larger for 2× damage',color:'#9b59ff'}},
   {id:'magnet',name:'TRACTOR FIELD', icon:'magnet',maxRank:RUN_MAX_RANK,
     desc:'Increase crystal pull range',
     apply:function(g){var r=g._upRanks.magnet;if(r<RUN_MAX_RANK)g.player.pickR*=_RS.mag[r-1];},
@@ -9726,6 +9757,9 @@ const GALAXY_CARD_TARGETS=[5,6,7,8,9,10,11,6,4,0];
 // Once a galaxy's intended card count is reached, XP still slows enough to
 // protect the build curve but no longer collapses into a late-rank crawl.
 const GALAXY_SATURATED_XP_MULT=0.50;
+// Escort Wing may grow through Rank V in the opening galaxies, but its
+// screen-clearing Squadron ultimate joins the card pool at Meteor Storm Belt.
+const ESCORT_SQUADRON_UNLOCK_GALAXY=3;
 var _expeditionSaveTimer=null;
 var _pendingLevelUps=0;
 var _expeditionCardPicksByGalaxy={};
@@ -9861,8 +9895,13 @@ function continueQueuedLevelUps(){
 }
 function awardRunXP(g,rawAmount,scaleForGalaxy){
   if(!g||!g.player||rawAmount<=0)return 0;
-  var gain=rawAmount*(scaleForGalaxy===false?1:getGalaxyXPMult(g.galaxy))*getGalaxyXPSaturation(g.galaxy);
-  var p=g.player;p.xp+=gain;
+  var p=g.player;
+  // Neural Link is applied here once for every XP source. Enemy and mining
+  // orbs store raw values so the permanent multiplier can never double-dip.
+  var gain=rawAmount*(scaleForGalaxy===false?1:getGalaxyXPMult(g.galaxy))*getGalaxyXPSaturation(g.galaxy)*(p.xpMult||1);
+  // Slow the very fast opening without changing Rank 10+ progression.
+  if(p.level<10)gain*=0.80;
+  p.xp+=gain;
   _runStats.recordXP(gain);
   var levels=0;
   while(p.xp>=p.xpNext){
@@ -9933,17 +9972,17 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 
 const RUN_SYNERGIES=[
   {id:'bulwark',    name:'BULWARK',     color:'#ffd700', cards:['maxhp','orbit'],  desc:'The more Hull cards you stack, the harder your Defense Grid hits and the more it absorbs'},
-  {id:'swarm_lord', name:'SWARM LORD',  color:'#ff6a00', cards:['spread','escort'],desc:'Your drones copy your spread shot — more bolts, more chaos'},
+  {id:'swarm_lord', name:'TARGET PAINTER',color:'#ff6a00', cards:['spread','escort'],desc:'Scatter hits mark targets; regular frigate missiles consume marks for +35% damage and +20% blast radius'},
   {id:'bloodrush',  name:'BLOODRUSH',   color:'#ff3366', cards:['regen','dmg'],    desc:'Kill enemies while regenning and each kill heals you a little extra'},
   {id:'ghost_fleet',name:'GHOST FLEET', color:'#9b59ff', cards:['escort','nova'],  desc:'Every Nova pulse also damages enemies near your drones'},
   {id:'hunter_killer',name:'HUNTER-KILLER',color:'#ff4400',cards:['dmg','pierce'],desc:'Every enemy your shot pierces through takes bonus damage'},
   {id:'frenzy_core',name:'FRENZY CORE', color:'#ff0055', cards:['dmg','spd'],     desc:'Stay alive without getting hit and your damage keeps climbing'},
   {id:'needle_storm',name:'NEEDLE STORM',color:'#00f5ff',cards:['spd','pierce'],  desc:'Piercing shots leave a damage trail behind them as they fly through'},
   {id:'leech_field',name:'LEECH FIELD', color:'#39ff8a', cards:['magnet','regen'],desc:'HP orbs are worth more and fly to you faster'},
-  {id:'supernova',  name:'SUPERNOVA ENGINE',color:'#ffcc00',cards:['nova','dmg'], desc:'Nova pulses now hit as hard as your weapon instead of a flat number'},
+  {id:'supernova',  name:'SUPERNOVA ENGINE',color:'#ffcc00',cards:['nova','dmg'], desc:'Nova uses the higher of its normal damage or 140% weapon damage; every third pulse still doubles'},
   {id:'iron_tide',  name:'IRON TIDE',   color:'#88ccff', cards:['maxhp','regen','mvspd'],desc:'The faster you move, the faster you heal',triple:true},
-  {id:'void_fortress',name:'VOID FORTRESS',color:'#cc44ff',cards:['orbit','regen','maxhp'],desc:'Drop below 20% HP and all your defensive bonuses double',triple:true},
-  {id:'death_blossom',name:'DEATH BLOSSOM',color:'#ff2200',cards:['spread','spd','pierce'],desc:'Rapid spread shots pierce through every enemy in their path',triple:true},
+  {id:'void_fortress',name:'VOID FORTRESS',color:'#cc44ff',cards:['orbit','regen','maxhp'],desc:'Below 20% hull: +60% repair speed and 10% incoming damage resistance',triple:true},
+  {id:'death_blossom',name:'DEATH BLOSSOM',color:'#ff2200',cards:['spread','spd','pierce'],desc:'Outer plasma bolts pierce 3 extra enemies, losing 15% damage after each target',triple:true},
 ];
 
 function getActiveSynergies(ranks){
@@ -10088,7 +10127,7 @@ var PICKUP_SPRITES={};
 
 // ─── ABILITIES (all capped at 5) ───
 const ABILITIES=[
-  {id:'dash', icon:'dash', label:'WARP DASH', color:'#39ff8a', baseCd:4,
+  {id:'dash', icon:'dash', label:'WARP DASH', color:'#39ff8a', baseCd:5,
     use:function(g){
       var rank=pRank('p_dash'), p=g.player;
       var a;
@@ -10439,7 +10478,7 @@ var GALAXY_BOSSES=[
      var a=Math.atan2(p.y-e.y,p.x-e.x);
      for(var i=-3;i<=3;i++)g.bullets.push({x:e.x,y:e.y,vx:Math.cos(a+i*.2)*270,vy:Math.sin(a+i*.2)*270,dmg:e.dmg,size:8,pierce:0,pc:0,color:e.color,life:3,isEnemy:true,homing:false});
      e._droneTimer=(e._droneTimer||0)+1;
-     if(e._droneTimer%3===0){var gd=(GALAXIES[g.galaxy]||GALAXIES[0]).diff,da=Math.random()*Math.PI*2;g.enemies.push({x:e.x+Math.cos(da)*80,y:e.y+Math.sin(da)*80,r:9,spd:150*gd,hp:30*gd,maxHp:30*gd,dmg:8,color:'#44ddff',xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:0});}
+     if(e._droneTimer%3===0){var gd=(GALAXIES[g.galaxy]||GALAXIES[0]).diff,da=Math.random()*Math.PI*2;_pushRegularEnemy(g,{x:e.x+Math.cos(da)*80,y:e.y+Math.sin(da)*80,r:9,spd:150*gd,hp:30*gd,maxHp:30*gd,dmg:8,color:'#44ddff',xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:0});}
    }},
 
   // G1 ── VOID LEVIATHAN (Leviathan Field)
@@ -10600,7 +10639,7 @@ var GALAXY_BOSSES=[
          }
          // Always spawn a drifter when enraged
          var gd=(GALAXIES[g.galaxy]||GALAXIES[0]).diff,da=Math.random()*Math.PI*2;
-         g.enemies.push({x:e.x+Math.cos(da)*e.r,y:e.y+Math.sin(da)*e.r,r:12,spd:95*gd,hp:35*gd,maxHp:35*gd,dmg:10*gd,color:'#ff4400',xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:3,shoots:false,_spinning:false,_spinTimer:0,_spinCd:99999});
+         _pushRegularEnemy(g,{x:e.x+Math.cos(da)*e.r,y:e.y+Math.sin(da)*e.r,r:12,spd:95*gd,hp:35*gd,maxHp:35*gd,dmg:10*gd,color:'#ff4400',xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:3,shoots:false,_spinning:false,_spinTimer:0,_spinCd:99999});
          fmsg('⚠ FULL FURY','#ff2200');
 
        } else if(hpPct>0.66){
@@ -10613,7 +10652,7 @@ var GALAXY_BOSSES=[
        } else if(hpPct>0.33){
          // Phase 2 — double barrage + drifter
           for(var ei=0;ei<3;ei++){var eang=a+(ei-1)*0.35;for(var mi=0;mi<2;mi++){g.bullets.push({x:e.x,y:e.y,vx:Math.cos(eang+(Math.random()-.5)*.2)*(260+Math.random()*120),vy:Math.sin(eang+(Math.random()-.5)*.2)*(260+Math.random()*120),dmg:e.dmg,size:14,pierce:0,pc:0,color:'#ff6600',life:4,isEnemy:true,homing:false,isMolten:true,isMeteor:true,source:'cradle double barrage'});}}
-         if(Math.random()<0.6){var gd=(GALAXIES[g.galaxy]||GALAXIES[0]).diff,da=Math.random()*Math.PI*2;g.enemies.push({x:e.x+Math.cos(da)*e.r,y:e.y+Math.sin(da)*e.r,r:12,spd:80*gd,hp:30*gd,maxHp:30*gd,dmg:8*gd,color:'#aaaaaa',xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:3,shoots:false,_spinning:false,_spinTimer:0,_spinCd:99999});}
+         if(Math.random()<0.6){var gd=(GALAXIES[g.galaxy]||GALAXIES[0]).diff,da=Math.random()*Math.PI*2;_pushRegularEnemy(g,{x:e.x+Math.cos(da)*e.r,y:e.y+Math.sin(da)*e.r,r:12,spd:80*gd,hp:30*gd,maxHp:30*gd,dmg:8*gd,color:'#aaaaaa',xpVal:2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:3,shoots:false,_spinning:false,_spinTimer:0,_spinCd:99999});}
          fmsg('⚠ METEOR BARRAGE','#ff7700');
        } else {
          // Phase 3 — heavy barrage + eruption every 3rd
@@ -10665,7 +10704,7 @@ var GALAXY_BOSSES=[
          var pm4=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
          for(var si=0;si<2;si++){
            var sa2=Math.random()*Math.PI*2;
-           g.enemies.push({x:e.x+Math.cos(sa2)*80,y:e.y+Math.sin(sa2)*80,
+           _pushRegularEnemy(g,{x:e.x+Math.cos(sa2)*80,y:e.y+Math.sin(sa2)*80,
              r:10,spd:100*gd4,hp:(15+g.wave*5)*gd4*pm4,maxHp:(15+g.wave*5)*gd4*pm4,
              dmg:Math.round(6*gd4*pm4),color:'#44ddaa',xpVal:2,
              flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:4,
@@ -10726,7 +10765,7 @@ var GALAXY_BOSSES=[
          var pm4=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
          for(var si=0;si<3;si++){
            var sa=Math.random()*Math.PI*2;
-           g.enemies.push({x:e.x+Math.cos(sa)*70,y:e.y+Math.sin(sa)*70,
+           _pushRegularEnemy(g,{x:e.x+Math.cos(sa)*70,y:e.y+Math.sin(sa)*70,
              r:10,spd:100*gd4,hp:(15+g.wave*5)*gd4*pm4,maxHp:(15+g.wave*5)*gd4*pm4,
              dmg:Math.round(6*gd4*pm4),color:'#44ddaa',xpVal:2,
              flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:4,
@@ -11019,7 +11058,7 @@ var GALAXY_BOSSES=[
          var _gd6=(GALAXIES[6]||GALAXIES[0]).diff;
          for(var si6=0;si6<5;si6++){
            var sa6=Math.random()*Math.PI*2;
-           g.enemies.push({x:e.x+Math.cos(sa6)*100,y:e.y+Math.sin(sa6)*100,
+           _pushRegularEnemy(g,{x:e.x+Math.cos(sa6)*100,y:e.y+Math.sin(sa6)*100,
              r:10,spd:Math.min(160,(80+g.wave*8)*_gd6),
              hp:(35+g.wave*14)*_gd6,maxHp:(35+g.wave*14)*_gd6,
              dmg:Math.round(8*_gd6),color:'#cc3322',
@@ -11788,7 +11827,7 @@ function startArchitectTruthCinematic(g,e){
     cin.text.style.opacity='0';cin.ctx.fillStyle='#ffffff';cin.ctx.fillRect(0,0,cin.canvas.width,cin.canvas.height);
     setTimeout(function(){
       if(cin.wrap.parentNode)cin.wrap.parentNode.removeChild(cin.wrap);
-      g._bossCinema=false;g.paused=false;g.bossAlive=false;g.bossFought=true;
+      g._bossCinema=false;g.paused=false;g.bossAlive=false;g.bossFought=true;clearCurses();
       g.portal={x:e.x,y:e.y,r:55,angle:0,life:0,pulseT:0,galaxyTo:10};
       lsS('vr_architectResting',true);markGalaxyVisited(9);updatePrestigeUI();
       doPrestige();
@@ -16243,6 +16282,7 @@ function mkBoss(galaxyIdx,px,py){
   if(galaxyIdx===0 && !lsG('vr_firstBeamBought',false)){
     hp = Math.round(10000*pm*bossHpMult);
   }
+  hp=Math.max(1,Math.round(hp*GLOBAL_BOSS_HP_MULT));
   var a=Math.random()*Math.PI*2;
   return Object.assign({},def,{isBoss:true,hp:hp,maxHp:hp,spd:spd,dmg:Math.round(def.dmg*gd*pm*bossDmgMult),shootCd:(def.shootCd||2)*bossCdMult,
     galaxy:galaxyIdx,
@@ -16286,7 +16326,14 @@ function bossKillThreshold(wave){ return 30+wave*4; }
 
 // ─── LIVE ASTEROIDS ───
 function spawnLiveAsteroids(g,n){
+  if(!g||!g.liveAsteroids)return;
   var gIdx=g.galaxy||0;
+  var authoredTarget=Math.max(8,22+gIdx*3);
+  g._asteroidTarget=Math.max(g._asteroidTarget||0,authoredTarget);
+  // Delayed replacements and the population maintainer may overlap. Never
+  // allow either path to grow the field past its authored target.
+  n=Math.min(Math.max(0,n||0),Math.max(0,g._asteroidTarget-g.liveAsteroids.length));
+  if(n<=0)return;
   var gemScale=1+gIdx; // linear: galaxy 1=1x, galaxy 2=2x, etc.
   for(var i=0;i<n;i++){
     var m=200,x=m+Math.random()*(WORLD-m*2),y=m+Math.random()*(WORLD-m*2);
@@ -16418,6 +16465,9 @@ var _runStats = (function(){
 })()
 // Aetherwing passive: phase shift + ethereal form
 function awDmg(dmg,p){
+  // VOID FORTRESS is emergency hull protection, not another Defense Grid
+  // multiplier. It therefore cannot recreate the passive-ring invulnerability.
+  if(G&&G._voidFortressReduction>0)dmg*=(1-G._voidFortressReduction);
   // ── Amplifier: Dodge chance ──
   if(G&&G._ampDodge>0&&Math.random()<G._ampDodge){
     fmsg('DODGED!','#88ff88');if(G)burst(G,p.x,p.y,'#88ff88',6,40);return 0;
@@ -16563,7 +16613,7 @@ function newGame(){
     gun:{dmg:10*bon.dmg,cd:1.1*bon.cd,t:0,spd:420,size:3.5,pierce:bon.pierce,spread:0,homing:false,color:'#ffdd00',chain:false},
     orbit:{active:false,rank:0,dmg:14,angle:0,angSpd:1.8,r:90,sparks:[]},
     nova:{active:false,dmg:55,cd:3.8,t:0,r:115,color:'#ff3366'},
-    abilities:ABILITIES.map(function(a){return Object.assign({},a,{timer:0,effCd:function(){return a.baseCd*getBonus().abcd;}});}),
+    abilities:ABILITIES.map(function(a){return Object.assign({},a,{timer:0,effCd:function(){return Math.max(a.baseCd*0.5,a.baseCd*getBonus().abcd);}});}),
     rageActive:false,speedActive:false,adrActive:false,vampActive:false,
     _shockwaveBonusR:0,supernovaActive:null,
     activeBuffs:[],bullets:[],enemies:[],orbs:[],particles:[],miningLoot:[],plasmaImpacts:[],worldPickups:[],
@@ -16664,7 +16714,7 @@ function buildAB(){
   G.abilities.forEach(function(ab,i){
     var rank=pRank('p_'+ab.id);
     var btn=document.createElement('div');
-    btn.className='abn'+(rank>0?' upg':'')+' rdy';btn.style.borderColor=ab.color+'aa';btn.style.boxShadow='0 0 12px '+ab.color+'33,inset 0 0 10px '+ab.color+'11';btn.id='ab'+i;
+    btn.className='abn'+(rank>0?' upg':'')+' rdy';btn.style.setProperty('--ab-color',ab.color);btn.style.borderColor=ab.color+'aa';btn.style.boxShadow='0 0 12px '+ab.color+'33,inset 0 0 10px '+ab.color+'11';btn.id='ab'+i;
     btn.setAttribute('data-label',ab.label);btn.setAttribute('data-rank',rank);
     btn.innerHTML='<div class="ic" style="color:'+ab.color+'">'+svgIcon(ab.icon)+'</div><div class="cl" id="abl'+i+'">'+(rank>0?'★'.repeat(rank):ab.label)+'</div><div class="co" id="abo'+i+'" style="height:0%"></div>';
     btn.addEventListener('pointerdown',function(e){e.stopPropagation();useAb(i);});
@@ -16767,7 +16817,7 @@ function useAb(i){
   if(ab._empJammed){fmsg('⚡ '+ab.label+' JAMMED — EMP','#44ff88');return;}
   ab.use(G);ab.timer=ab.effCd();SFX.ability();incLS('abilitiesUsed');if(ab.id==='dash')incLS('dashesUsed');
   // ULTIMATE: Temporal Rift — 20% chance to instantly reset ability cooldown
-  if(pRank('p_abcd')>=25&&Math.random()<0.20){ab.timer=0;fmsg('⟳ TEMPORAL RIFT','#00ffcc');burst(G,G.player.x,G.player.y,'#00ffcc',10,80);}
+  if(pRank('p_abcd')>=10&&(G._temporalRiftLock||0)<=0&&Math.random()<0.20){ab.timer=0;G._temporalRiftLock=8;fmsg('⟳ TEMPORAL RIFT','#00ffcc');burst(G,G.player.x,G.player.y,'#00ffcc',10,80);}
 }
 
 function _playHpWarning(level){
@@ -16794,6 +16844,100 @@ function _playHpWarning(level){
   }catch(e){}
 }
 function dst(a,b){var dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy);}
+
+// ── HORDE MOVEMENT COORDINATOR ─────────────────────────────────────────────
+// Regular contact enemies use soft sectors around the player instead of every
+// unit steering at the player's exact center. These are preferences, not hard
+// reservations: the horde keeps moving and authored enemy state machines remain
+// in control. A small spatial hash keeps local separation from becoming O(n²).
+var HORDE_SECTOR_COUNT=12;
+var HORDE_GRID_CELL=128;
+function _isHordeManagedEnemy(e){
+  return !!(e&&!e.isBoss&&!e.isHerald&&!e.isWorm&&!e.isSeeker&&!e._isSplitHalf&&
+    (e.aiType==='chase'||e.aiType==='tank')&&!(e.aiType&&e.aiType.indexOf('g7_')===0));
+}
+function _hordeAngleStepDistance(a,b){
+  var d=Math.abs(a-b)%HORDE_SECTOR_COUNT;
+  return Math.min(d,HORDE_SECTOR_COUNT-d);
+}
+function _updateHordeCoordinator(g,dt){
+  g._hordeCoordT=(g._hordeCoordT||0)-dt;
+  if(g._hordeCoordT>0)return;
+  // Tactical choices do not need render-frame frequency. Keeping them at 4–5Hz
+  // is steadier visually and cheaper on phones.
+  g._hordeCoordT=_isMobile?.28:.20;
+  var p=g.player,list=[];
+  for(var i=0;i<g.enemies.length;i++){
+    var e=g.enemies[i];
+    if(!_isHordeManagedEnemy(e))continue;
+    var dx=e.x-p.x,dy=e.y-p.y;
+    e._hordeDist2=dx*dx+dy*dy;
+    e._hordeNaturalSector=Math.floor(((Math.atan2(dy,dx)+Math.PI*2)%(Math.PI*2))/(Math.PI*2)*HORDE_SECTOR_COUNT)%HORDE_SECTOR_COUNT;
+    if(e._hordeSector===undefined)e._hordeSector=e._hordeNaturalSector;
+    if(e._hordeOrbitDir===undefined)e._hordeOrbitDir=Math.random()<.5?-1:1;
+    list.push(e);
+  }
+  // Closest enemies receive immediate pressure positions first. Heavies consume
+  // two pressure points, keeping several large bodies from occupying one lane.
+  list.sort(function(a,b){return a._hordeDist2-b._hordeDist2;});
+  var occupied=[],innerBySector=[];
+  for(var s=0;s<HORDE_SECTOR_COUNT;s++){occupied[s]=0;innerBySector[s]=0;}
+  var pressureMax=8+Math.min(2,Math.floor((g.wave||1)/6));
+  var pressureUsed=0;
+  for(var li=0;li<list.length;li++){
+    var en=list[li],natural=en._hordeNaturalSector,old=en._hordeSector,best=natural,bestScore=1e9;
+    // Limit reassignment to nearby lanes so units flank rather than cut across
+    // the whole formation whenever the player changes direction.
+    for(var off=-3;off<=3;off++){
+      var sec=(natural+off+HORDE_SECTOR_COUNT)%HORDE_SECTOR_COUNT;
+      var score=occupied[sec]*1.15+_hordeAngleStepDistance(sec,natural)*.34+Math.random()*.08;
+      if(sec===old)score-=.48; // assignment hysteresis prevents visual jitter
+      if(score<bestScore){bestScore=score;best=sec;}
+    }
+    en._hordeSector=best;
+    var weight=en.aiType==='tank'||en.r>=22?2:1;
+    occupied[best]+=weight;
+    var closeEnough=en._hordeDist2<520*520;
+    en._hordeInner=closeEnough&&innerBySector[best]===0&&pressureUsed+weight<=pressureMax;
+    if(en._hordeInner){innerBySector[best]=1;pressureUsed+=weight;}
+  }
+  g._hordeSectorLoad=occupied;
+}
+function _rebuildEnemySpatialGrid(g){
+  var grid=Object.create(null),cs=HORDE_GRID_CELL;
+  for(var i=0;i<g.enemies.length;i++){
+    var e=g.enemies[i];
+    if(!e||e.isBoss||e.isWorm)continue;
+    var cx=Math.floor(e.x/cs),cy=Math.floor(e.y/cs),key=cx+','+cy;
+    (grid[key]||(grid[key]=[])).push(e);
+    e._hordeCellX=cx;e._hordeCellY=cy;
+  }
+  g._enemySpatialGrid=grid;
+}
+function _applyLocalEnemySeparation(g,en,dt){
+  var grid=g._enemySpatialGrid;
+  if(!grid)return;
+  var ecx=en._hordeCellX,ecy=en._hordeCellY;
+  if(ecx===undefined||ecy===undefined)return;
+  for(var oy=-1;oy<=1;oy++)for(var ox=-1;ox<=1;ox++){
+    var bucket=grid[(ecx+ox)+','+(ecy+oy)];
+    if(!bucket)continue;
+    for(var bi=0;bi<bucket.length;bi++){
+      var other=bucket[bi];
+      if(other===en||other.isBoss)continue;
+      var sdx=en.x-other.x,sdy=en.y-other.y,sd2=sdx*sdx+sdy*sdy;
+      var minD=(en.r+other.r)*2.35;
+      if(sd2<minD*minD&&sd2>.1){
+        var sd=Math.sqrt(sd2);
+        // Larger/heavier enemies yield less, making tanks part a crowd instead
+        // of jittering when surrounded by small units.
+        var yieldMult=(en.aiType==='tank'||en.r>=22)?.55:1;
+        var push=((minD-sd)/minD)*125*yieldMult*dt;
+        en.x+=sdx/sd*push;en.y+=sdy/sd*push;
+      }
+    }
+  }
+}
 function burst(g,x,y,color,n,spd){
   var _cap=_isMobile?150:500;
   if(g.particles&&g.particles.length>_cap)return;
@@ -16808,8 +16952,7 @@ function addOrb(g,e){
   if((g.galaxy||0)===7 && !window._g7Interior) return; // G7 Act1: no XP orbs (gravity eats them)
   var _xpPenalty=[1,0.95,0.90,0.85,0.75,0.65,0.55,0.45,0.35,0.25];
   var _xpMod=_xpPenalty[Math.max(0,Math.min(g.galaxy||0,9))]||1;
-  var _xpMult=g.player.xpMult||1;
-  var v=Math.round((e.xpVal||3)*_xpMult*_xpMod);
+  var v=Math.round((e.xpVal||3)*_xpMod);
   // Orb color and size scale with XP value
   var oc,os;
   if(v<=5){oc='#00f5ff';os=5;}       // cyan — small
@@ -16859,11 +17002,42 @@ function enemyBulletCount(g){
 }
 function canEnemyShoot(g){ return enemyBulletCount(g)<MAX_ENEMY_BULLETS; }
 
+// Expanded hordes arrive progressively rather than filling the screen at the
+// start of a galaxy. Wave 1 begins below the old 50-unit ceiling; wave 9 is the
+// first wave allowed to hold the complete 100-enemy population.
+function getRegularEnemyWaveCap(g){
+  if((g.galaxy||0)===-2)return 30; // keep the combat tutorial readable
+  var wave=Math.max(1,g.wave||1);
+  return Math.min(100,32+wave*8);
+}
+// Ranged populations remain at their old practical/per-type budgets while the
+// new capacity is reserved for physical horde pressure.
+var RANGED_ENEMY_CAP_BY_GALAXY=[4,6,10,10,10,12,8,0,0,0];
+function _isRangedPopulationEnemy(e){
+  return !!(e&&(e.shoots||e.isCrystal||e.isOuroboros||e.aiType==='magma'||e.aiType==='sniper'||
+    e.isSpitter||e.isHivebug||e.isTentaclaw||e.isCryoDrone||e.isEyeballDrone));
+}
+function _rangedPopulationCount(g){
+  var n=0;
+  for(var i=0;i<g.enemies.length;i++)if(!g.enemies[i].isBoss&&_isRangedPopulationEnemy(g.enemies[i]))n++;
+  return n;
+}
+function _pushRegularEnemy(g,e){
+  var regular=0;
+  for(var i=0;i<g.enemies.length;i++)if(!g.enemies[i].isBoss)regular++;
+  if(regular>=getRegularEnemyWaveCap(g))return false;
+  if(_isRangedPopulationEnemy(e)){
+    var gi=Math.max(0,Math.min(9,g.galaxy||0));
+    if(_rangedPopulationCount(g)>=(RANGED_ENEMY_CAP_BY_GALAXY[gi]||0))return false;
+  }
+  g.enemies.push(e);return true;
+}
+
 function spawnBioNebulaPack(){
   var g=G,p=g.player;
   var live=0;
   for(var li=0;li<g.enemies.length;li++)if(!g.enemies[li].isBoss&&g.enemies[li].galaxy===4)live++;
-  if(live>=32)return;
+  if(live>=getRegularEnemyWaveCap(g))return;
 
   // Every arrival has a recognizable job: screen, pincer, battery, or ambush.
   // This gives Bio-Nebula a hunting-ecosystem rhythm instead of a random trickle.
@@ -16882,7 +17056,7 @@ function spawnBioNebulaPack(){
   var moving=Math.sqrt(pvx*pvx+pvy*pvy)>20;
   var base=(moving&&Math.random()<.68)?Math.atan2(pvy,pvx):Math.random()*Math.PI*2;
   var distance=330+Math.random()*70;
-  for(var bi=0;bi<pack.length&&live+bi<34;bi++){
+  for(var bi=0;bi<pack.length&&live+bi<getRegularEnemyWaveCap(g);bi++){
     var spread=(bi-(pack.length-1)*.5)*.16;
     spawnEnemy({bioType:pack[bi],bioAngle:base+spread,bioDistance:distance+Math.abs(spread)*70,bioPack:true});
   }
@@ -16896,8 +17070,8 @@ function spawnEnemy(opts){
     g._cdxEnemyUnlocked=true;
     unlockCodexEnemy(g.galaxy);
   }
-  // Hard cap — no more than 50 enemies on screen at once
-  if(g.enemies.filter(function(e){return !e.isBoss;}).length>=50) return;
+  // Wave-staged hard cap — grows from 40 to 100 regular enemies by wave 9.
+  if(g.enemies.filter(function(e){return !e.isBoss;}).length>=getRegularEnemyWaveCap(g)) return;
 
   // ── SECTOR ZERO: slow drifting debris scouts, 1-hit, no shooting ──
   if(g.galaxy===-2){
@@ -16914,7 +17088,7 @@ function spawnEnemy(opts){
     var _szPool=g.wave<3?[0,0,0,1]:g.wave<6?[0,0,1,1,2]:[0,1,1,2,2];
     var _szTypeIdx=_szPool[Math.floor(Math.random()*_szPool.length)];
     var _szT=_szTypes[_szTypeIdx];
-    g.enemies.push({
+    _pushRegularEnemy(g,{
       x:x,y:y,r:_szT.r,spd:_szT.spd,hp:_szT.hp,maxHp:_szT.hp,
       dmg:_szT.dmg,color:_szT.color,xpVal:_szT.xpVal,
       flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:999,
@@ -16926,17 +17100,37 @@ function spawnEnemy(opts){
   }
   var gd=(GALAXIES[g.galaxy||0]||GALAXIES[0]).diff;
   var pm=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
-  // Flanking spawn: bias toward player's movement direction + spread
+  // Spawn director: retain forward/rear pressure while preferring less crowded
+  // angular sectors. This prevents consecutive packs from feeding one blob.
   var _pvx=g.joystick.dx*p.spd,_pvy=g.joystick.dy*p.spd;
   var _pSpd=Math.sqrt(_pvx*_pvx+_pvy*_pvy);
   var a;
-  if(_pSpd>20){
-    // Player is moving — spawn ahead of them 60% of the time
-    var _moveAng=Math.atan2(_pvy,_pvx);
-    if(Math.random()<0.6) a=_moveAng+(Math.random()-0.5)*1.2; // ahead ±35°
-    else a=_moveAng+Math.PI+(Math.random()-0.5)*1.8; // behind ±50°
-  } else {
-    a=Math.random()*Math.PI*2;
+  if(!(opts&&typeof opts.bioAngle==='number')){
+    var _spawnSectors=12,_spawnLoads=[];
+    for(var _ssi=0;_ssi<_spawnSectors;_ssi++)_spawnLoads[_ssi]=0;
+    for(var _sei=0;_sei<g.enemies.length;_sei++){
+      var _see=g.enemies[_sei];if(_see.isBoss)continue;
+      var _sea=(Math.atan2(_see.y-p.y,_see.x-p.x)+Math.PI*2)%(Math.PI*2);
+      _spawnLoads[Math.floor(_sea/(Math.PI*2)*_spawnSectors)%_spawnSectors]++;
+    }
+    var _desiredAng=Math.random()*Math.PI*2;
+    if(_pSpd>20){
+      var _moveAng=Math.atan2(_pvy,_pvx);
+      _desiredAng=Math.random()<.55?_moveAng:_moveAng+Math.PI;
+    }
+    var _desiredSec=Math.floor(((_desiredAng+Math.PI*2)%(Math.PI*2))/(Math.PI*2)*_spawnSectors)%_spawnSectors;
+    var _bestSpawnSec=0,_bestSpawnScore=1e9;
+    for(var _ss=0;_ss<_spawnSectors;_ss++){
+      var _stepD=Math.min(Math.abs(_ss-_desiredSec),_spawnSectors-Math.abs(_ss-_desiredSec));
+      var _ssa=(_ss+.5)/_spawnSectors*Math.PI*2;
+      var _probeX=p.x+Math.cos(_ssa)*360,_probeY=p.y+Math.sin(_ssa)*360;
+      var _edgePenalty=(_probeX<45||_probeX>WORLD-45||_probeY<45||_probeY>WORLD-45)?4:0;
+      var _repeatPenalty=g._lastEnemySpawnSector===_ss?.8:0;
+      var _score=_spawnLoads[_ss]*1.65+_stepD*.17+_edgePenalty+_repeatPenalty+Math.random()*.32;
+      if(_score<_bestSpawnScore){_bestSpawnScore=_score;_bestSpawnSec=_ss;}
+    }
+    g._lastEnemySpawnSector=_bestSpawnSec;
+    a=(_bestSpawnSec+.5)/_spawnSectors*Math.PI*2+(Math.random()-.5)*.28;
   }
   if(opts&&typeof opts.bioAngle==='number')a=opts.bioAngle;
   var d=(opts&&typeof opts.bioDistance==='number')?opts.bioDistance:280+Math.random()*180;
@@ -16965,8 +17159,8 @@ function spawnEnemy(opts){
     // Wave-gated pool
     var wpool=g.wave<3?[0]:g.wave<4?[0,0,1]:g.wave<6?[0,0,1,2]:g.wave<8?[0,0,1,2,3]:[0,0,1,2,3,4];
     if(c>=4)wpool.push(4);if(c>=7)wpool.push(3,4);
-    // Per-type caps: Larva=12, Magma=5, Ironclad=3, Crystal=4, Ouroboros=2
-    var _wCaps=[12,5,3,4,2];
+    // Expanded contact horde; projectile Crystal/Ouroboros limits stay intact.
+    var _wCaps=[52,24,18,4,2];
     var _wCounts=[0,0,0,0,0];
     for(var _wci=0;_wci<g.enemies.length;_wci++){
       var _wce=g.enemies[_wci];
@@ -17010,7 +17204,7 @@ function spawnEnemy(opts){
     // Elite
     var isElite=(g.eliteTimer||0)<=0;
     if(isElite){ var _wp=getGalaxyExpeditionPressure(1);g.eliteTimer=_wp.eliteInterval;enemy.hp*=10;enemy.maxHp=enemy.hp;enemy.dmg*=1.65;enemy.spd*=1.15;enemy.r=Math.round(enemy.r*1.3);enemy.isElite=true;enemy.xpVal*=4;enemy.color='#ffd700'; }
-    g.enemies.push(enemy);
+    _pushRegularEnemy(g,enemy);
     return;
   }
 
@@ -17036,8 +17230,8 @@ function spawnEnemy(opts){
     // Wave-gated pool
     var dPool=g.wave<3?[0]:g.wave<4?[0,0,1]:g.wave<6?[0,0,1,2]:g.wave<8?[0,0,1,2,3]:[0,0,1,2,3,4];
     if(c>=4)dPool.push(4);if(c>=7)dPool.push(3,4);
-    // Per-type caps: Crab=10, Seeker=6, Sniper=3, Heavy=3, Bomb=4
-    var _dCaps=[10,6,3,3,4];
+    // Crab/Seeker bodies scale up; all three bullet-producing limits stay intact.
+    var _dCaps=[60,32,3,3,4];
     var _dCounts=[0,0,0,0,0];
     for(var _dci=0;_dci<g.enemies.length;_dci++){
       var _dce=g.enemies[_dci];
@@ -17080,7 +17274,7 @@ function spawnEnemy(opts){
     // Elite
     var isElite=(g.eliteTimer||0)<=0;
     if(isElite){var _dp=getGalaxyExpeditionPressure(2);g.eliteTimer=_dp.eliteInterval;enemy.hp*=9;enemy.maxHp=enemy.hp;enemy.dmg*=1.75;enemy.spd*=1.15;enemy.r=Math.round(enemy.r*1.3);enemy.isElite=true;enemy.xpVal*=4;enemy.color='#ffd700';}
-    g.enemies.push(enemy);
+    _pushRegularEnemy(g,enemy);
     return;
   }
 
@@ -17105,8 +17299,8 @@ function spawnEnemy(opts){
     ];
     // Wave-gated pool — T0 only early, elite types gate in progressively
     var g3Pool=g.wave<2?[0,0,0]:g.wave<4?[0,0,1,1]:g.wave<6?[0,1,1,2,2]:g.wave<8?[0,1,2,2,3,3]:[0,1,2,3,3,4,4];
-    // Per-type caps
-    var g3Caps=[14,6,4,3,2];
+    // Magma eruptions and sniper fire retain their previous limits.
+    var g3Caps=[55,6,4,28,12];
     var g3Counts=[0,0,0,0,0];
     for(var g3i=0;g3i<g.enemies.length;g3i++){
       var g3e=g.enemies[g3i];
@@ -17126,7 +17320,7 @@ function spawnEnemy(opts){
     });
     var isElite=(g.eliteTimer||0)<=0&&g3idx<4; // no elite Void Tanks
     if(isElite){g.eliteTimer=getGalaxyExpeditionPressure(3).eliteInterval;enemy.hp*=14;enemy.maxHp=enemy.hp;enemy.dmg=Math.round(enemy.dmg*1.2);enemy.spd*=1.28;enemy.r=Math.round(enemy.r*1.3);enemy.isElite=true;enemy.xpVal*=5;enemy.color='#ffd700';}
-    g.enemies.push(enemy);
+    _pushRegularEnemy(g,enemy);
     return;
   }
 
@@ -17148,8 +17342,8 @@ function spawnEnemy(opts){
     // The ecosystem shows its teeth immediately; later waves change pack
     // composition rather than withholding the interesting enemies for minutes.
     var jPool=g.wave<2?[0,0,1]:g.wave<4?[0,1,1,2]:g.wave<6?[0,1,2,3,4]:[0,1,1,2,2,3,3,4,4];
-    // Per-type caps: Drifter=14, Voidcrab=6, Spitter=4, Hivebug=3, Tentaclaw=3
-    var _jCaps=[14,6,4,3,3];
+    // Ranged Spitter/Hivebug/Tentaclaw limits stay at 4/3/3.
+    var _jCaps=[60,32,4,3,3];
     var _jCounts=[0,0,0,0,0];
     for(var _jci=0;_jci<g.enemies.length;_jci++){
       var _jce=g.enemies[_jci];
@@ -17201,7 +17395,7 @@ function spawnEnemy(opts){
         _sporeSpawnT:0,_sporeSpawnCd:5,
       };
     }
-    g.enemies.push(enemy);
+    _pushRegularEnemy(g,enemy);
     return;
   }
 
@@ -17238,7 +17432,7 @@ function spawnEnemy(opts){
       enemy.hp*=5;enemy.maxHp=enemy.hp;enemy.dmg*=1.7;enemy.spd*=1.28;
       enemy.r=Math.round(enemy.r*1.3);enemy.isElite=true;enemy.xpVal*=4;enemy.color='#ffd700';
     }
-    g.enemies.push(enemy);
+    _pushRegularEnemy(g,enemy);
     return;
   }
 
@@ -17293,7 +17487,7 @@ function spawnEnemy(opts){
       enemy.hp*=9;enemy.maxHp=enemy.hp;enemy.dmg*=1.35;enemy.spd*=1.22;
       enemy.r=Math.round(enemy.r*1.3);enemy.isElite=true;enemy.xpVal*=4;enemy.color='#ffd700';
     }
-    g.enemies.push(enemy);
+    _pushRegularEnemy(g,enemy);
     return;
   }
 
@@ -17317,8 +17511,8 @@ function spawnEnemy(opts){
   ];
   var pool=g.wave<3?[0]:g.wave<4?[0,0,1]:g.wave<6?[0,0,1,2]:g.wave<8?[0,0,1,2,3]:[0,0,1,2,3,4];
   if(c>=4)pool.push(4,4);if(c>=7)pool.push(3,3);
-  // Per-type caps: Scout=15, Cruiser=5, Gunner=4, Heavy=2, Kamikaze=4
-  var _typeCaps=[15,5,4,2,4];
+  // Only the Gunner remains at its old ranged cap.
+  var _typeCaps=[60,28,4,12,24];
   var _typeCounts=[0,0,0,0,0];
   for(var _tci=0;_tci<g.enemies.length;_tci++){
     var _tce=g.enemies[_tci];
@@ -17343,7 +17537,7 @@ function spawnEnemy(opts){
     enemy.r=Math.round(enemy.r*1.3);enemy.isElite=true;enemy.xpVal*=4;
     enemy.color='#ffd700';
   }
-  g.enemies.push(enemy);
+  _pushRegularEnemy(g,enemy);
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -18349,7 +18543,7 @@ function hitE(g,e,dmg,damageSource){
       }
       SFX.bossDie();
       triggerBossDeathFlash(e.color||'#ffffff');
-      g.bossAlive=false;g.bossFought=true;g.killsForBoss=0;
+      g.bossAlive=false;g.bossFought=true;g.killsForBoss=0;clearCurses();
       clearPersistentBossCheckpoint();
       // With galaxy-local card builds, a post-boss card would disappear at the
       // portal. Bosses now award the permanent skill point below instead.
@@ -18498,7 +18692,7 @@ function hitE(g,e,dmg,damageSource){
         var pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
         for(var _fi=0;_fi<3;_fi++){
           var _fa=_fi/3*Math.PI*2+Math.random()*0.8;
-          g.enemies.push({
+          _pushRegularEnemy(g,{
             x:e.x+Math.cos(_fa)*20,y:e.y+Math.sin(_fa)*20,
             r:5,spd:320*gd0,hp:5*gd0*pm0,maxHp:5*gd0*pm0,dmg:Math.round(4*gd0*pm0),
             color:'#ffcc22',xpVal:1,flashTimer:0,frozen:0,isBoss:false,spinAngle:Math.random()*6,
@@ -18539,7 +18733,7 @@ function hitE(g,e,dmg,damageSource){
           var gd6=(GALAXIES[6]||GALAXIES[0]).diff;var pm6=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
           for(var fts=0;fts<ftSpawn;fts++){
             var fta=fts/ftSpawn*Math.PI*2+Math.random()*0.5;
-            g.enemies.push({
+            _pushRegularEnemy(g,{
               x:e.x+Math.cos(fta)*30,y:e.y+Math.sin(fta)*30,
               r:10,spd:Math.min(220,80+g.wave*8)*gd6,hp:(25+g.wave*10)*gd6*pm6,maxHp:(25+g.wave*10)*gd6*pm6,
               dmg:Math.round(8*gd6*pm6),color:'#cc3322',xpVal:3,
@@ -18601,7 +18795,7 @@ function hitE(g,e,dmg,damageSource){
       // Relic: ring resonance
       if(g._ringResonance>0&&Math.random()<0.25*g._ringResonance){g.particles.push({type:'ring',x:p.x,y:p.y,radius:0,maxR:120+g._ringResonance*30,life:.5,maxLife:.5,color:'#9b59ff'});for(var ri=0;ri<g.enemies.length;ri++){if(!g.enemies[ri].isBoss&&dst(p,g.enemies[ri])<140)hitE(g,g.enemies[ri],40*g._ringResonance);}}
       // Relic: spiral core — bonus XP orb
-      if(g._spiralCore>0&&Math.random()<g._spiralCore){g.orbs.push({x:e.x,y:e.y,val:Math.round(e.xpVal*(g.player.xpMult||1)*2),life:15});}
+      if(g._spiralCore>0&&Math.random()<g._spiralCore){g.orbs.push({x:e.x,y:e.y,val:Math.round(e.xpVal*2),life:15});}
       // Relic: parasite swarm
       if(g._parasiteChance>0&&Math.random()<g._parasiteChance){
         var da=g.player.aimAngle;
@@ -18643,7 +18837,7 @@ function hitE(g,e,dmg,damageSource){
       var _pm4h=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
       for(var _hsi=0;_hsi<3;_hsi++){
         var _hsa=Math.random()*Math.PI*2;
-        g.enemies.push({x:e.x+Math.cos(_hsa)*35,y:e.y+Math.sin(_hsa)*35,
+        _pushRegularEnemy(g,{x:e.x+Math.cos(_hsa)*35,y:e.y+Math.sin(_hsa)*35,
           r:10,spd:Math.min(155,82+g.wave*5)*_gd4h,
           hp:(18+g.wave*7)*_gd4h*_pm4h,maxHp:(18+g.wave*7)*_gd4h*_pm4h,
           dmg:Math.round(7*_gd4h*_pm4h),color:'#44ddaa',xpVal:2,
@@ -18670,13 +18864,17 @@ function tickSynergyEffects(g, dt){
 
   // ── BULWARK: Hull Upgrade + Defense Grid ──
   if(syn.bulwark && g.orbit && g.orbit.active){
-    var _bwStacks=g._upRanks.maxhp||0;
+    // Rank VI is Iron Curtain, not another Hull stat rank. Bulwark therefore
+    // scales from the five authored Hull ranks and tops out at +6 percentage
+    // points of passive absorption.
+    var _bwStacks=Math.min(g._upRanks.maxhp||0,RUN_MAX_RANK-1);
     g._bulwarkDmgMult=1+_bwStacks*0.08;   // +8% ring dmg per Hull card rank (was 10%)
-    g._bulwarkAbsorbBonus=Math.min(0.08, _bwStacks*0.016);
+    g._bulwarkAbsorbBonus=Math.min(0.06, _bwStacks*0.012);
   } else { g._bulwarkDmgMult=1; g._bulwarkAbsorbBonus=0; }
 
-  // ── SWARM LORD: Scatter Shot + Escort Wing ──
-  g._swarmLordActive=!!syn.swarm_lord;
+  // ── TARGET PAINTER: Scatter Shot + Escort Wing ──
+  // Keep the legacy synergy id so expedition saves made before the rename work.
+  g._targetPainterActive=!!syn.swarm_lord;
 
   // ── BLOODRUSH: Nano-Bots + Plasma Boost ──
   g._bloodrushActive=!!syn.bloodrush;
@@ -18714,7 +18912,8 @@ function tickSynergyEffects(g, dt){
   else { g._ironTideRegenBonus=0; }
 
   // ── VOID FORTRESS: Defense Grid + Nano-Bots + Hull Upgrade ──
-  g._voidFortressActive=!!(syn.void_fortress && p.hp<p.maxHp*0.20); // +60% defense at low HP
+  g._voidFortressActive=!!(syn.void_fortress && p.hp<p.maxHp*0.20);
+  g._voidFortressReduction=g._voidFortressActive?0.10:0;
 
   // ── DEATH BLOSSOM: Scatter Shot + Turbo Charge + Phase Shot ──
   g._deathBlossomActive=!!syn.death_blossom;
@@ -18967,7 +19166,7 @@ function update(dt){
         g.bossAlive=true;
         stopMusic(); // stop S0 pre-boss track — silence during cinematic dialogue
         g.enemies.push({
-          x:_sbx,y:_sby,r:42,spd:22,hp:1000,maxHp:1000,
+          x:_sbx,y:_sby,r:42,spd:22,hp:700,maxHp:700,
           dmg:8,color:'#224466',xpVal:20,
           flashTimer:0,frozen:0,isBoss:true,spinAngle:0,
           shootTimer:0,galaxy:-2,aiType:'chase',typeIdx:3,
@@ -20005,7 +20204,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       }
       // ── Normal fire ──
       else {
-        for(var ai=0;ai<angs.length;ai++){var aa=p.aimAngle+angs[ai];var _apxMult=(activeSkin==='tyrannox'&&p._apexStacks>0)?(1+p._apexStacks*0.06):1;var _isSpread=angs.length>1&&ai>0;var _pulseActive=activeBeam==='pulse';var _spreadPower=_isSpread?(g._spreadDmgMult||1):1;var _spreadSize=_isSpread?(g._spreadSizeMult||1):1;g.bullets.push({x:p.x,y:p.y,vx:Math.cos(aa)*gun.spd,vy:Math.sin(aa)*gun.spd,dmg:gun.dmg*(g.rageActive?2:1)*_apxMult*(g._frenzyMult||1)*_spreadPower,size:gun.size*_spreadSize,pierce:(_isSpread&&g._deathBlossomActive)?3:gun.pierce,pc:0,color:_pulseActive?'#29a8ff':gun.color,life:2.2,isEnemy:false,homing:gun.homing,target:closest,chain:gun.chain,blackhole:false,_isSpread:_isSpread,_pulsePlasma:_pulseActive,_pulseSide:_isSpread});}
+        for(var ai=0;ai<angs.length;ai++){var aa=p.aimAngle+angs[ai];var _apxMult=(activeSkin==='tyrannox'&&p._apexStacks>0)?(1+p._apexStacks*0.06):1;var _isSpread=angs.length>1&&ai>0;var _pulseActive=activeBeam==='pulse';var _spreadPower=_isSpread?(g._spreadDmgMult||1):1;var _spreadSize=_isSpread?(g._spreadSizeMult||1):1;g.bullets.push({x:p.x,y:p.y,vx:Math.cos(aa)*gun.spd,vy:Math.sin(aa)*gun.spd,dmg:gun.dmg*(g.rageActive?2:1)*_apxMult*(g._frenzyMult||1)*_spreadPower,size:gun.size*_spreadSize,pierce:(_isSpread&&g._deathBlossomActive)?gun.pierce+3:gun.pierce,pc:0,color:_pulseActive?'#29a8ff':gun.color,life:2.2,isEnemy:false,homing:gun.homing,target:closest,chain:gun.chain,blackhole:false,_isSpread:_isSpread,_pulsePlasma:_pulseActive,_pulseSide:_isSpread});}
       }
       // ── Amplifier: Double Tap ──
       if(g._ampDblShot>0&&Math.random()<g._ampDblShot){for(var ai2=0;ai2<angs.length;ai2++){var aa2=p.aimAngle+angs[ai2]+(Math.random()-0.5)*0.15;var _dblSide=angs.length>1&&ai2>0;var _dblPulse=activeBeam==='pulse';g.bullets.push({x:p.x,y:p.y,vx:Math.cos(aa2)*gun.spd*0.95,vy:Math.sin(aa2)*gun.spd*0.95,dmg:gun.dmg*0.7*(g.rageActive?2:1),size:gun.size*0.8,pierce:gun.pierce,pc:0,color:_dblPulse?'#29a8ff':'#ffcc44',life:2.0,isEnemy:false,homing:gun.homing,target:closest,chain:gun.chain,blackhole:false,_pulsePlasma:_dblPulse,_pulseSide:_dblSide});}}
@@ -20043,9 +20242,17 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       if(!g._devPlayerAttacksDisabled)es.shootT+=dt;
       if(!g._devPlayerAttacksDisabled&&es.shootT>=es.shootCd&&g.enemies.length>0){
         es.shootT=0;
-        // Find closest enemy
-        var closest=null,cDist=99999;
-        for(var ei3=0;ei3<g.enemies.length;ei3++){var ed=dst(es,g.enemies[ei3]);if(ed<cDist){cDist=ed;closest=g.enemies[ei3];}}
+        // Find the closest enemy, but let Target Painter redirect regular
+        // frigate fire toward the closest currently marked target.
+        var closest=null,cDist=99999,_paintedClosest=null,_paintedDist=99999;
+        for(var ei3=0;ei3<g.enemies.length;ei3++){
+          var _escortCandidate=g.enemies[ei3],ed=dst(es,_escortCandidate);
+          if(ed<cDist){cDist=ed;closest=_escortCandidate;}
+          if(g._targetPainterActive&&(_escortCandidate._escortMarkUntil||0)>(g.time||0)&&ed<_paintedDist){
+            _paintedDist=ed;_paintedClosest=_escortCandidate;
+          }
+        }
+        if(_paintedClosest)closest=_paintedClosest;
         if(closest){
           var ea=Math.atan2(closest.y-es.y,closest.x-es.x);
           var _explodeR=es.explodeR||60;
@@ -20053,6 +20260,12 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           // Frigates follow current weapon output instead of snapshotting the
           // gun when the card was selected. Later Plasma Boost ranks matter.
           var _escDmg=g.gun.dmg*(es.dmgMult||1.1)*(es.upgradeMult||1);
+          var _paintedEscortShot=!!(g._targetPainterActive&&closest===_paintedClosest);
+          if(_paintedEscortShot){
+            closest._escortMarkUntil=0;
+            _escDmg*=1.35;
+            _explodeR*=1.20;
+          }
           // Push a missile bullet with explosion payload
           g.bullets.push({
             x:es.x,y:es.y,
@@ -20064,7 +20277,8 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
             _escMissile:true,
             _explodeR:_explodeR,
             _firePatch:_firePatch,
-            _escDmg:_escDmg
+            _escDmg:_escDmg,
+            _targetPainterShot:_paintedEscortShot
           });
         }
       }
@@ -20110,7 +20324,10 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     }
     // ── Bullet blocking ──
     var _orAbsorb=[0,0.08,0.13,0.18,0.23,0.29,0.35,0.41,0.47,0.52,0.52];
-    var _orAbsorbRate=Math.min(0.58,_orAbsorb[Math.min(_orRank,RUN_MAX_RANK)]+(g._bulwarkAbsorbBonus||0));
+    // Rank VI unlocks Nova Ring but adds no hidden passive absorption. Rank V
+    // supplies the 29% base cap; max Bulwark raises that to 35%.
+    var _orPassiveRank=Math.min(_orRank,RUN_MAX_RANK-1);
+    var _orAbsorbRate=Math.min(0.35,_orAbsorb[_orPassiveRank]+(g._bulwarkAbsorbBonus||0));
     // The ultimate blocks fully only during its visible Nova Ring flare.
     if(g._rUltSawActive)_orAbsorbRate=1;
     for(var obi=g.bullets.length-1;obi>=0;obi--){
@@ -20119,12 +20336,20 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       var _obdx=_ob.x-p.x,_obdy=_ob.y-p.y;
       var _obdist=Math.sqrt(_obdx*_obdx+_obdy*_obdy);
       if(Math.abs(_obdist-_orR)<_orThick+(_ob.size||4)){
-        _or.sparks.push({x:_ob.x,y:_ob.y,life:0.35,color:_orRingColor(_orRank)});
-        _or.sparks.push({x:_ob.x,y:_ob.y,life:0.2,color:'#ffffff'});
         if(_orAbsorbRate>=1.0){
+          // The visible Rank VI flare fully blocks any projectile it catches,
+          // including one that previously crossed the passive ring.
+          _or.sparks.push({x:_ob.x,y:_ob.y,life:0.35,color:_orRingColor(_orRank)});
+          _or.sparks.push({x:_ob.x,y:_ob.y,life:0.2,color:'#ffffff'});
           // Full block — remove bullet entirely
           g.bullets.splice(obi,1);
-        } else {
+        } else if(!_ob._defenseGridAbsorbed){
+          // Passive absorption is applied once per projectile. Previously this
+          // ran every frame inside the ring and unintentionally erased about
+          // 97% of a bullet at Rank VI + Bulwark instead of the authored 43%.
+          _ob._defenseGridAbsorbed=true;
+          _or.sparks.push({x:_ob.x,y:_ob.y,life:0.35,color:_orRingColor(_orRank)});
+          _or.sparks.push({x:_ob.x,y:_ob.y,life:0.2,color:'#ffffff'});
           // Partial absorption — reduce damage, let bullet through
           _ob.dmg=_ob.dmg*(1-_orAbsorbRate);
           if(_ob.dmg<=0) g.bullets.splice(obi,1);
@@ -20159,16 +20384,20 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     // RUN ULT: Supernova — every 3rd nova pulls enemies inward then 2× damage
     var _isSuperNova=false;
     if((g._upRanks.nova||0)>=RUN_MAX_RANK){g._rUltSupernovaCount=(g._rUltSupernovaCount||0)+1;if(g._rUltSupernovaCount>=3){g._rUltSupernovaCount=0;_isSuperNova=true;}}
-    var _novaDmg=_isSuperNova?g.nova.dmg*2:g.nova.dmg;
-    if(g.nova._supernovaOverride) _novaDmg=g.nova._supernovaOverride; // SUPERNOVA ENGINE synergy
-    for(var ni=0;ni<g.enemies.length;ni++)if(dst(p,g.enemies[ni])<g.nova.r)hitE(g,g.enemies[ni],_novaDmg);
-    // KNOCKBACK: scales with nova rank — R1=80, grows to R9=320, R10=400
+    // SUPERNOVA ENGINE establishes a weapon-scaled floor; it can never lower
+    // the authored Nova value. Apply the every-third-pulse multiplier last.
+    var _novaBaseDmg=Math.max(g.nova.dmg,g.nova._supernovaOverride||0);
+    var _novaDmg=_isSuperNova?_novaBaseDmg*2:_novaBaseDmg;
+    var _novaEffectR=_isSuperNova?g.nova.r*1.45:g.nova.r;
+    for(var ni=0;ni<g.enemies.length;ni++)if(dst(p,g.enemies[ni])<_novaEffectR)hitE(g,g.enemies[ni],_novaDmg);
+    // KNOCKBACK: scales with Nova rank; the Rank VI detonation also covers
+    // the same 45%-larger radius shown by its authored sprite.
     var _novaR=g._upRanks.nova||0;
-    var _kbForce=80+(_novaR-1)*30; // R1=80, R2=110 ... R9=320, R10+ capped at 400
+    var _kbForce=80+(_novaR-1)*30;
     if(_isSuperNova) _kbForce*=1.8;
     for(var _kbi=0;_kbi<g.enemies.length;_kbi++){
       var _kbe=g.enemies[_kbi];
-      if(!_kbe.isBoss&&dst(p,_kbe)<g.nova.r){
+      if(!_kbe.isBoss&&dst(p,_kbe)<_novaEffectR){
         var _kbAng=Math.atan2(_kbe.y-p.y,_kbe.x-p.x);
         _kbe._kbVx=(_kbe._kbVx||0)+Math.cos(_kbAng)*_kbForce;
         _kbe._kbVy=(_kbe._kbVy||0)+Math.sin(_kbAng)*_kbForce;
@@ -20184,10 +20413,10 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         }
       }
     }
-    g.particles.push({type:'ring',x:p.x,y:p.y,radius:0,maxR:g.nova.r,life:.4,maxLife:.4,color:_isSuperNova?'#ff6a00':g.nova.color});
-    burst(g,p.x,p.y,_isSuperNova?'#ff6a00':g.nova.color,_isSuperNova?20:14,_isSuperNova?180:130);
-    if(_isSuperNova)fmsg('★ SUPERNOVA','#ff6a00');
+    g._novaSpriteFx={start:g.time||0,dur:_isSuperNova?.80:.56,r:_novaEffectR,supernova:_isSuperNova};
+    if(_isSuperNova)fmsg('★ SUPERNOVA','#9b59ff');
   }}
+  if(g._novaSpriteFx&&(g.time-g._novaSpriteFx.start)>=g._novaSpriteFx.dur)g._novaSpriteFx=null;
 
   if(g.supernovaActive){var sn=g.supernovaActive;sn.life-=dt;sn.radius+=dt*(sn.maxR/.8);
     // gravity pull removed
@@ -20294,9 +20523,15 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       for(var bei=0;bei<g.enemies.length;bei++){if(dst(b,g.enemies[bei])<b.size+g.enemies[bei].r){
         // ULTIMATE: Quantum Cascade — +15% damage per enemy already pierced
         var _bDmg=b.dmg;if(pRank('p_pierce')>=15&&b.pc>0)_bDmg=b.dmg*(1+b.pc*0.15);
+        // DEATH BLOSSOM keeps its three-target crowd-clearing identity without
+        // carrying full damage through an unlimited formation.
+        if(g._deathBlossomActive&&b._isSpread&&b.pc>0)_bDmg*=Math.max(0.55,1-b.pc*0.15);
         // HUNTER-KILLER synergy: +20% dmg per pierce hit
         if(g._hunterKillerBonus&&b.pc>0) _bDmg*=(1+g._hunterKillerBonus*b.pc);
         hitE(g,g.enemies[bei],_bDmg,'beam');
+        // TARGET PAINTER: side plasma marks refresh but never stack. Regular
+        // frigate missiles consume the mark; Squadron deliberately ignores it.
+        if(g._targetPainterActive&&b._isSpread)g.enemies[bei]._escortMarkUntil=(g.time||0)+3;
         if(b._pulsePlasma){
           if(!g.plasmaImpacts)g.plasmaImpacts=[];
           if(g.plasmaImpacts.length<24)g.plasmaImpacts.push({x:b.x,y:b.y,life:.25,maxLife:.25,side:!!b._pulseSide});
@@ -20318,8 +20553,8 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         // NEEDLE STORM synergy: pierce shots leave a damage trail
         if(g._needleStormActive&&b.pierce>0&&b.pc>0){if(!g._ghostZones)g._ghostZones=[];g._ghostZones.push({x:b.x,y:b.y,dmg:_bDmg*0.25,life:0.8,r:22,color:'#00f5ff'});}
         if((g._upRanks.spread||0)>=RUN_MAX_RANK&&g.gun.spread>0){for(var shi=0;shi<g.enemies.length;shi++){var _sh=g.enemies[shi];if(_sh!==g.enemies[bei]&&dst(b,_sh)<70){hitE(g,_sh,_bDmg*0.4);burst(g,_sh.x,_sh.y,'#29a8ff',2,25);}}}
-        // DEATH BLOSSOM synergy: spread bullets pierce all
-        if(g._deathBlossomActive&&b._isSpread) b.pierce=Math.max(b.pierce,3);
+        // DEATH BLOSSOM synergy: outer spread bolts pierce three extra targets
+        if(g._deathBlossomActive&&b._isSpread) b.pierce=Math.max(b.pierce,(g.gun.pierce||0)+3);
         b.pc++;if(b.pc>b.pierce){bhit=true;break;}}}
       
       if(!bhit){
@@ -20387,7 +20622,23 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
   }
 
   // Ability cooldowns UI
-  for(var abi=0;abi<g.abilities.length;abi++){var ab=g.abilities[abi];if(ab.timer>0){var _surgeMult=g.voidSurgeActive?3:1;ab.timer=Math.max(0,ab.timer-dt*_surgeMult);var pct=(ab.timer/ab.effCd())*100;var ov2=document.getElementById('abo'+abi);var abtn=document.getElementById('ab'+abi);var albl=document.getElementById('abl'+abi);var rank=pRank('p_'+ab.id);if(ov2)ov2.style.height=pct+'%';if(abtn)abtn.className='abn'+(rank>0?' upg':'')+(ab.timer===0?' rdy':'');if(abtn)abtn.style.boxShadow=g.voidSurgeActive?'0 0 14px #ffaa00,inset 0 0 6px #ffaa0033':'';if(albl)albl.textContent=ab.timer>0?ab.timer.toFixed(1)+'s':(rank>0?'★'.repeat(rank):ab.label);}}
+  if((g._temporalRiftLock||0)>0)g._temporalRiftLock=Math.max(0,g._temporalRiftLock-dt);
+  for(var abi=0;abi<g.abilities.length;abi++){
+    var ab=g.abilities[abi];
+    if(ab.timer>0){
+      var _surgeMult=g.voidSurgeActive?3:1;
+      ab.timer=Math.max(0,ab.timer-dt*_surgeMult);
+      var pct=Math.max(0,Math.min(100,(ab.timer/ab.effCd())*100));
+      var ov2=document.getElementById('abo'+abi),abtn=document.getElementById('ab'+abi),albl=document.getElementById('abl'+abi);
+      var rank=pRank('p_'+ab.id),_abilityReady=ab.timer===0;
+      // The gray veil covers the uncharged portion from the top. As its height
+      // shrinks, the authored ability color is revealed from bottom to top.
+      if(ov2)ov2.style.height=pct+'%';
+      if(abtn)abtn.className='abn'+(rank>0?' upg':'')+(_abilityReady?' rdy':' cooling');
+      if(abtn)abtn.style.boxShadow=g.voidSurgeActive?'0 0 14px #ffaa00,inset 0 0 6px #ffaa0033':'';
+      if(albl)albl.textContent=_abilityReady?(rank>0?'★'.repeat(rank):ab.label):ab.timer.toFixed(1)+'s';
+    }
+  }
 
   // Spawn enemies — STOP during boss fight, big events; REDUCE during modifier events
   // No spawning during boss fight OR after boss dies (until next galaxy loads)
@@ -20408,7 +20659,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         }else if((g.galaxy||0)===6){
           // Final-loop horde pressure: authored mixed packs replace the generic
           // single spawn. A hard cap keeps the phone build intense but stable.
-          var _crimsonCap=_isMobile?55:82;
+          var _crimsonCap=getRegularEnemyWaveCap(g);
           var _crimsonPack=1+(g.wave>=2?1:0)+(g.wave>=5?1:0)+(g.wave>=9?1:0);
           if(g.wave>=4&&Math.random()<.55)_crimsonPack++;
           if(g.wave>=8&&Math.random()<.45)_crimsonPack++;
@@ -20429,6 +20680,11 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       }
     }
   }
+
+  // Update the shared horde picture once, then use local grid neighborhoods for
+  // separation. Authored enemies still run their own state machines below.
+  _updateHordeCoordinator(g,dt);
+  _rebuildEnemySpatialGrid(g);
 
   // Update enemies
   for(var eni=g.enemies.length-1;eni>=0;eni--){
@@ -20582,7 +20838,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           burst(g,en.x,en.y,'#4488ff',20,180);
           burst(g,en.x,en.y,'#88ccff',12,120);
           g.enemies.splice(eni,1);
-          g.bossAlive=false; g.bossFought=true;
+          g.bossAlive=false; g.bossFought=true; clearCurses();
           var _bemS0=document.getElementById('bossEndMarker');if(_bemS0)_bemS0.style.display='none';
           // Hide boss bar
           var _szBbD=document.getElementById('bb');
@@ -21198,7 +21454,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
             en._ecRound=(en._ecRound||1)+1;
             // HP for each round
             var _rHp=[0,200000,500000,900000,900000];
-            var _newHp=(_rHp[en._ecRound]||900000)*en._ecPm;
+            var _newHp=(_rHp[en._ecRound]||900000)*en._ecPm*GLOBAL_BOSS_HP_MULT;
             en.maxHp=_newHp; en.hp=_newHp;
             // Reset attack timers
             en._ecPulseT=0;en._ecVoltT=0;en._ecVoidT=0;
@@ -21834,7 +22090,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         var _pm0k=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
         for(var _fk=0;_fk<3;_fk++){
           var _fka=_fk/3*Math.PI*2+Math.random()*0.8;
-          g.enemies.push({x:en.x+Math.cos(_fka)*20,y:en.y+Math.sin(_fka)*20,
+          _pushRegularEnemy(g,{x:en.x+Math.cos(_fka)*20,y:en.y+Math.sin(_fka)*20,
             r:5,spd:320*_gd0k,hp:5*_gd0k*_pm0k,maxHp:5*_gd0k*_pm0k,dmg:Math.round(4*_gd0k*_pm0k),
             color:'#ffcc22',xpVal:1,flashTimer:0,frozen:0,isBoss:false,spinAngle:Math.random()*6,
             shootTimer:0,typeIdx:4,galaxy:g.galaxy||0,kamikaze:false,aiType:'chase',_isShard:true,_shardLife:2.5});
@@ -22069,7 +22325,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
             // Spawn 2 smaller fast halves
             for(var spi=0;spi<2;spi++){
               var spAngle=Math.atan2(p.y-en.y,p.x-en.x)+(spi===0?-0.5:0.5);
-              g.enemies.push({
+              _pushRegularEnemy(g,{
                 x:en.x+(spi===0?-20:20),y:en.y,
                 r:Math.round(en.r*0.65),
                 spd:en.spd*1.6,
@@ -22139,7 +22395,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           var pm4=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
           for(var sdi=0;sdi<3;sdi++){
             var sa4=Math.random()*Math.PI*2;
-            g.enemies.push({
+            _pushRegularEnemy(g,{
               x:en.x+Math.cos(sa4)*50,y:en.y+Math.sin(sa4)*50,
               r:9,spd:Math.min(180,100+g.wave*5)*gd4,
               hp:(15+g.wave*5)*gd4*pm4,maxHp:(15+g.wave*5)*gd4*pm4,
@@ -22644,8 +22900,31 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       var _directAng=Math.atan2(_edy,_edx);
       var _pvx2=g.joystick.dx*p.spd,_pvy2=g.joystick.dy*p.spd;
 
-      // ── Chase contact rhythm: touch → hold 1s → orbit out → re-engage ──
-      if(en.aiType==='chase'&&!en.isBoss&&!en.isWorm&&!en._isSplitHalf&&!en.isSeeker){
+      // ── Shared horde positions ──
+      // Contact units pursue distributed points around the player. Inner units
+      // remain true contact threats; reserve units circle just outside and fill
+      // openings instead of stacking on the exact same coordinate.
+      if(_isHordeManagedEnemy(en)){
+        var _hs=en._hordeSector===undefined?en._hordeNaturalSector:en._hordeSector;
+        var _hsAng=((_hs===undefined?0:_hs)+.5)/HORDE_SECTOR_COUNT*Math.PI*2;
+        if(en._hordeSectorBias===undefined)en._hordeSectorBias=(Math.random()-.5)*.18;
+        _hsAng+=en._hordeSectorBias;
+        var _hCenterX=p.x+(en.aiType==='tank'?_pvx2*.20:0);
+        var _hCenterY=p.y+(en.aiType==='tank'?_pvy2*.20:0);
+        var _contactR=Math.max(6,en.r+p.r-2);
+        var _reserveR=en.aiType==='tank'?155+en.r*.45:112+en.r*.55;
+        var _hTargetR=en._hordeInner?_contactR:_reserveR;
+        var _hTargetX=_hCenterX+Math.cos(_hsAng)*_hTargetR;
+        var _hTargetY=_hCenterY+Math.sin(_hsAng)*_hTargetR;
+        var _htdx=_hTargetX-en.x,_htdy=_hTargetY-en.y;
+        var _htd2=_htdx*_htdx+_htdy*_htdy;
+        if(!en._hordeInner&&_htd2<28*28){
+          eang=_directAng+Math.PI*.5*(en._hordeOrbitDir||1);
+        }else{
+          eang=Math.atan2(_htdy,_htdx);
+        }
+      // Legacy fallback for special chase units excluded from coordination.
+      } else if(en.aiType==='chase'&&!en.isBoss&&!en.isWorm&&!en._isSplitHalf&&!en.isSeeker){
         var _contactDist=en.r+p.r+4;
         var _orbitDist=_contactDist+60;
         // State machine: 'chase' → 'hold' → 'orbit' → 'chase'
@@ -22798,20 +23077,8 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       if(en._kbTimer<=0){en._kbVx=0;en._kbVy=0;}
     }
     en.x+=Math.cos(eang)*en.spd*spdMult*dt;en.y+=Math.sin(eang)*en.spd*spdMult*dt;
-    // Anti-clump: push away from nearby enemies
-    if(!en.isBoss&&!en.isWorm){
-      for(var si=0;si<g.enemies.length;si++){
-        var other=g.enemies[si];if(other===en||other.isBoss)continue;
-        var sdx=en.x-other.x,sdy=en.y-other.y;
-        var sd2=sdx*sdx+sdy*sdy;
-        var minD=(en.r+other.r)*2.5;
-        if(sd2<minD*minD&&sd2>0.1){
-          var sd=Math.sqrt(sd2);
-          var push=((minD-sd)/minD)*120*dt;
-          en.x+=sdx/sd*push;en.y+=sdy/sd*push;
-        }
-      }
-    }
+    // Anti-clump only inspects the enemy's local spatial neighborhood.
+    if(!en.isBoss&&!en.isWorm)_applyLocalEnemySeparation(g,en,dt);
     // Worm segment trailing
     // ── G0 ENEMY MECHANICS ──
     // Kamikaze shards expire after their lifetime
@@ -23090,6 +23357,15 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
 
   // Update live asteroids
   for(var lasi=0;lasi<g.liveAsteroids.length;lasi++){var las=g.liveAsteroids[lasi];las.rot+=las.rotSpd*dt;las.x+=las.vx*dt;las.y+=las.vy*dt;if(las.x<50)las.vx=Math.abs(las.vx);if(las.x>WORLD-50)las.vx=-Math.abs(las.vx);if(las.y<50)las.vy=Math.abs(las.vy);if(las.y>WORLD-50)las.vy=-Math.abs(las.vy);if(las.flashTimer>0)las.flashTimer-=dt;}
+  // Maintain the authored field population. Chain Drill and Singularity can
+  // remove several rocks at once, so replace shortages gradually in small
+  // batches instead of letting the field permanently empty or suddenly pop in.
+  g._asteroidRefillT=(g._asteroidRefillT||0)+dt;
+  if(g._asteroidRefillT>=2.5&&!g.bossAlive&&!g.portal){
+    g._asteroidRefillT=0;
+    var _astTarget=g._asteroidTarget||Math.max(8,22+(g.galaxy||0)*3);
+    if(g.liveAsteroids.length<_astTarget)spawnLiveAsteroids(g,Math.min(2,_astTarget-g.liveAsteroids.length));
+  }
   // If tutorial asteroid label ref was destroyed by other means, clean up
   if(g._tutAstRef&&g._tutAstLabel&&g.liveAsteroids.indexOf(g._tutAstRef)<0){
     if(g._tutAstLabel.parentNode) g._tutAstLabel.parentNode.removeChild(g._tutAstLabel);
@@ -23137,7 +23413,8 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         miningTouch.active=false;miningTouch.astIdx=-1;
         var mb=document.getElementById('miningBar');if(mb)mb.style.display='none';
         var mf=document.getElementById('miningFill');if(mf)mf.style.width='0%';
-        setTimeout(function(){if(G)spawnLiveAsteroids(G,1);},3000+Math.random()*5000);
+        var _minedGame=g;
+        setTimeout(function(){if(G===_minedGame&&_minedGame.running)spawnLiveAsteroids(_minedGame,1);},3000+Math.random()*5000);
       }
       // Store laser endpoints for rendering
       g.miningLaser={sx:p.x,sy:p.y,ex:mAst.x,ey:mAst.y,life:0.12};
@@ -23330,8 +23607,8 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         Math.max(200,Math.min(WORLD-200,p.y+Math.sin(_ecAngle)*380)));
       // Override mkBoss HP — round 1 is 200k base, scaled only by prestige (not galaxy diff)
       var _ecPm2=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
-      _ecBoss.hp=Math.round(200000*_ecPm2);
-      _ecBoss.maxHp=Math.round(200000*_ecPm2);
+      _ecBoss.hp=Math.round(200000*_ecPm2*GLOBAL_BOSS_HP_MULT);
+      _ecBoss.maxHp=Math.round(200000*_ecPm2*GLOBAL_BOSS_HP_MULT);
       g.enemies.push(_ecBoss);
       g.bossAlive=true;
       stopMusic();
@@ -23481,7 +23758,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       showFCLine(["Look, I respect the commitment.","Truly. This is embarrassing for me personally.","Finish it."],'#88ddff');
     }
   }
-  if((g._upRanks.escort||0)>=RUN_MAX_RANK&&g.escorts&&g.escorts.length>0&&g.enemies.length>0){
+  if((g.galaxy||0)>=ESCORT_SQUADRON_UNLOCK_GALAXY&&(g._upRanks.escort||0)>=RUN_MAX_RANK&&g.escorts&&g.escorts.length>0&&g.enemies.length>0){
     g._escortSqT=(g._escortSqT||0)+dt;
     if(g._escortSqT>=8){ g._escortSqT=0; g._escortSqBarrage=true; }
   }
@@ -32676,8 +32953,8 @@ function drawBossShape(ctx,e,col,t){
       ctx.shadowColor=_sp.color; ctx.fillStyle=_sp.color;
       ctx.beginPath(); ctx.arc(_sp.x-cx-_px2,_sp.y-cy-_py2,3+_spa*4,0,Math.PI*2); ctx.fill();
     }
-    // R10 flare pulse
-    if(_ork>=10&&g._rUltSawActive){
+    // Rank VI Nova Ring flare pulse
+    if(_ork>=RUN_MAX_RANK&&g._rUltSawActive){
       ctx.globalAlpha=0.18*Math.sin(gtime*20);
       ctx.shadowBlur=40; ctx.shadowColor='#cc44ff';
       ctx.strokeStyle='#cc44ff'; ctx.lineWidth=_oWidth*3;
@@ -32688,6 +32965,27 @@ function drawBossShape(ctx,e,col,t){
   }
   // Render ghost rail damage zones
   if(g._ghostZones){for(var gri=0;gri<g._ghostZones.length;gri++){var gz2=g._ghostZones[gri];ctx.save();ctx.globalAlpha=gz2.life/1.5*0.5;ctx.shadowBlur=(_isMobile?5:18);ctx.shadowColor='#00ffaa';ctx.fillStyle='#00ffaa';ctx.beginPath();ctx.arc(gz2.x-cx,gz2.y-cy,gz2.r,0,Math.PI*2);ctx.fill();ctx.restore();}}
+
+  // Nova Burst sprite animation. Both production atlases are mechanically
+  // packed into eight exact square cells with their energy origin locked to
+  // cell center, preventing drift and neighboring-frame bleed.
+  if(g._novaSpriteFx){
+    var _nfx=g._novaSpriteFx,_nAge=(g.time-_nfx.start),_nProg=Math.max(0,Math.min(.999,_nAge/_nfx.dur));
+    var _nImg=_nfx.supernova?novaSupernovaSpriteArt:novaBurstSpriteArt;
+    if(_nImg.complete&&_nImg.naturalWidth){
+      var _nFrames=8,_nCell=_nImg.naturalWidth/_nFrames;
+      var _nFrame=Math.min(_nFrames-1,Math.floor(_nProg*_nFrames));
+      // The atlas intentionally leaves transparent room around its thin ring.
+      // These fixed compensation values align the visible arc with the exact
+      // damage radius without making the artwork thick or obstructive.
+      var _nAtlasScale=_nfx.supernova?1.26:1.31;
+      var _nD=_nfx.r*2*_nAtlasScale,_nX=p.x-cx-_nD*.5,_nY=p.y-cy-_nD*.5;
+      ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=_nfx.supernova?.72:.60;
+      ctx.shadowBlur=_isMobile?0:3;ctx.shadowColor=_nfx.supernova?'#9b59ff':'#00d9ff';
+      ctx.drawImage(_nImg,_nFrame*_nCell,0,_nCell,_nImg.naturalHeight,_nX,_nY,_nD,_nD);
+      ctx.shadowBlur=0;ctx.restore();
+    }
+  }
 
   // Supernova glow
   if(g.supernovaActive){var sn2=g.supernovaActive,snx=p.x-cx,sny=p.y-cy;ctx.save();ctx.globalAlpha=.3;var grad=ctx.createRadialGradient(snx,sny,0,snx,sny,sn2.radius);grad.addColorStop(0,'rgba(255,180,0,0.7)');grad.addColorStop(.6,'rgba(255,80,0,0.15)');grad.addColorStop(1,'transparent');ctx.fillStyle=grad;ctx.beginPath();ctx.arc(snx,sny,sn2.radius,0,Math.PI*2);ctx.fill();ctx.restore();}
@@ -34300,13 +34598,17 @@ function showLU(){
   panel.querySelector('.sub').textContent='SELECT AN EXPEDITION UPGRADE'+_buildProgress;
   var uc=document.getElementById('uc');uc.innerHTML='';
   var _numChoices=pRank('p_xp')>=25?4:3;
-  // Filter out maxed (rank 10) upgrades and unowned beam upgrades
+  // Filter out maxed upgrades, unowned beam upgrades, and ultimates that have
+  // not reached their authored galaxy yet.
   var available=UPGRADES.filter(function(u){
     if((G._upRanks[u.id]||0)>=(u.maxRank||RUN_MAX_RANK)) return false;
     if(u.beamReq && (beamRanks[u.beamReq]||0)<1) return false;
+    if(u.id==='escort'&&(G._upRanks.escort||0)>=RUN_MAX_RANK-1&&(G.galaxy||0)<ESCORT_SQUADRON_UNLOCK_GALAXY) return false;
     return true;
   });
-  if(available.length===0) available=[].concat(UPGRADES); // fallback
+  if(available.length===0) available=UPGRADES.filter(function(u){
+    return !(u.id==='escort'&&(G.galaxy||0)<ESCORT_SQUADRON_UNLOCK_GALAXY);
+  }); // emergency fallback still respects the Squadron galaxy gate
   // Structured offers: one specialization card, one synergy-oriented card,
   // then a free-pool option. Choices stay unique and never force a class.
   var pool=[],_wPool=available.slice();
@@ -41856,7 +42158,7 @@ function rebuildMainMenu(){
     +'<button class="btn cmdUtilityButton" id="mCLBtn" aria-label="Channel Log"><img class="cmdButtonArt" src="assests/images/menu/button-channel-log-v1.png" alt="" draggable="false"><span class="cmdLiveLabel">CHANNEL LOG</span></button>'
     +'<button class="btn cmdUtilityButton" id="menuSettingsBtn" aria-label="Settings"><img class="cmdButtonArt" src="assests/images/menu/button-settings-v1.png" alt="" draggable="false"><span class="cmdLiveLabel">SETTINGS</span></button></div>'
     +'<div class="cmdCompanion" id="k0Companion" role="button" tabindex="0" aria-label="Talk to K-0"><img class="navK0Sprite" src="assests/images/nav-unit-k0.png" alt="NAV UNIT K-0" draggable="false"><div class="cmdGreeting"><span class="k0Speaker" id="k0Speaker">NAV UNIT</span><span class="k0Line" id="k0Line">ROUTE LOCKED. SYSTEMS NOMINAL.</span><span class="k0Hint">TAP K-0 TO TALK</span></div></div>'
-    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.42 · CRIMSON PERSONALITIES</span><button class="btn cmdDev" id="menuDevBtn" aria-label="Dev Mode"><img class="cmdButtonArt" src="assests/images/menu/button-dev-mode-v1.png" alt="" draggable="false"><span class="cmdLiveLabel">DEV MODE</span></button></div>'
+    +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.53 · WAVE HORDES</span><button class="btn cmdDev" id="menuDevBtn" aria-label="Dev Mode"><img class="cmdButtonArt" src="assests/images/menu/button-dev-mode-v1.png" alt="" draggable="false"><span class="cmdLiveLabel">DEV MODE</span></button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
   showMainMenu();playMenuMusic();
@@ -43013,12 +43315,19 @@ var CURSE_CARDS=[
 function rollCurse(){ return CURSE_CARDS[Math.floor(Math.random()*CURSE_CARDS.length)]; }
 
 function getActiveCurses(){
-  try{ return JSON.parse(lsG('vr_curses','[]')); }catch(e){ return []; }
+  try{
+    var curses=JSON.parse(lsG('vr_curses','[]'));
+    if(!Array.isArray(curses))return [];
+    if(curses.length>1){curses=curses.slice(0,1);lsS('vr_curses',JSON.stringify(curses));}
+    return curses;
+  }catch(e){ return []; }
 }
 function addCurse(curse){
   var curses=getActiveCurses();
-  curses.push({id:curse.id});
-  lsS('vr_curses',JSON.stringify(curses));
+  if(curses.length>0)return false;
+  lsS('vr_curses',JSON.stringify([{id:curse.id}]));
+  _updateCurseHUD();
+  return true;
 }
 function clearCurses(){
   try{ localStorage.removeItem('vr_curses'); }catch(e){}
@@ -43051,8 +43360,8 @@ function _updateCurseHUD(){
 
 
 function rollAmplifier(){
-  // 10% chance to roll a curse
-  if(Math.random()<0.10) return Object.assign({},rollCurse(),{isCurse:true});
+  // 10% chance to roll a curse, but a pilot can carry only one at a time.
+  if(getActiveCurses().length===0&&Math.random()<0.10) return Object.assign({},rollCurse(),{isCurse:true});
   var amps=JSON.parse(lsG('vr_amplifiers','[]'));
   var stackCounts={};
   amps.forEach(function(a){stackCounts[a.id]=(stackCounts[a.id]||0)+1;});
@@ -43114,7 +43423,7 @@ function getMiningXPValue(g){
   var idx=Math.max(0,Math.min(9,g.galaxy||0));
   var base=[3,3,4,4,4,5,5,5,6,6][idx];
   var penalty=[1,.95,.90,.85,.75,.65,.55,.45,.35,.25][idx];
-  return Math.max(1,Math.round(base*(g.player.xpMult||1)*penalty));
+  return Math.max(1,Math.round(base*penalty));
 }
 function spawnMiningXPOrb(g,x,y){
   var value=getMiningXPValue(g);if(value<=0)return;
