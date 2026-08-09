@@ -1393,6 +1393,7 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;}
           <div class="drBossBtn" data-boss="sz" style="color:#4488ff;">SENTINEL PRIME <span style="color:#334;font-size:7px;">S0</span></div>
           <div class="drBossBtn" data-boss="1"  style="color:#ff6600;">LEVIATHAN WYRM <span style="color:#334;font-size:7px;">G1</span></div>
           <div class="drBossBtn" data-boss="2"  style="color:#44ff88;">NULL ARBITER <span style="color:#334;font-size:7px;">G2</span></div>
+          <div class="drBossBtn" data-boss="mr" style="color:#ffad4f;">THE ROADIE <span style="color:#334;font-size:7px;">G3 MINI</span></div>
           <div class="drBossBtn" data-boss="3"  style="color:#ff8833;">THE CRADLE <span style="color:#334;font-size:7px;">G3</span></div>
           <div class="drBossBtn" data-boss="gh" style="color:#39ff14;">THE GERMINAL <span style="color:#334;font-size:7px;">G4 HERALD</span></div>
           <div class="drBossBtn" data-boss="4"  style="color:#9b59ff;">VOID BLOOM <span style="color:#334;font-size:7px;">G4</span></div>
@@ -1995,6 +1996,20 @@ function cleanupAllOverlays(){
 var _resurrectCostCap = 64;
 function getResurrectCost(){ return Math.min(_resurrectCostCap,Math.pow(2,Math.max(0,_resurrectCount))); }
 let permData=lsG('vr_perm',{});
+// Neural Link now has ten meaningful ranks instead of overwhelming temporary
+// card pacing across twenty-five. Refund removed ranks at legacy prices.
+if(!lsG('vr_neuralLink10Migrated',false)){
+  var _oldNeuralRank=Math.max(0,Math.floor(permData.p_xp||0));
+  if(_oldNeuralRank>10){
+    var _neuralRefund=0;
+    for(var _nxr=11;_nxr<=Math.min(25,_oldNeuralRank);_nxr++)_neuralRefund+=Math.max(50,Math.round(24*Math.pow(_nxr,2.3)));
+    permData.p_xp=10;
+    crystals+=_neuralRefund;
+    lsS('vr_perm',permData);lsS('vr_crystals',crystals);
+    window._neuralLinkMigrationRefund=_neuralRefund;
+  }
+  lsS('vr_neuralLink10Migrated',true);
+}
 // v0.9.47 migration: Quantum Timer moved from 25 ranks to 10. Refund every
 // removed rank at the exact legacy purchase price so established saves lose
 // neither crystals nor progression value.
@@ -2297,11 +2312,11 @@ const SECTOR_ZERO={name:'SECTOR ZERO',sky:'#00020e',nebHue:215,starTint:[80,140,
 const GALAXIES=[
   {name:'DRIFT SECTOR',     sky:'#01020d',nebHue:210,starTint:[0,200,255],   acc:'#00f5ff',diff:1.0,  twist:'meteor_shower',requiredKillsToBoss:100, bossIcon:'0'},
   {name:'LEVIATHAN FIELD',  sky:'#04020e',nebHue:280,starTint:[130,60,255],  acc:'#8844ff',diff:1.8,  twist:'leviathan',    requiredKillsToBoss:300, bossIcon:'1'},
-  {name:'MACHINE REMNANT',  sky:'#020208',nebHue:220,starTint:[80,120,255],  acc:'#4499ff',diff:2.2,  twist:'formation',    requiredKillsToBoss:500, bossIcon:'2'},
-  {name:'METEOR STORM BELT',sky:'#0e0600',nebHue:20, starTint:[255,120,20],  acc:'#ff7700',diff:2.8,  twist:'meteors',      requiredKillsToBoss:700, bossIcon:'3'},
-  {name:'BIO-NEBULA',       sky:'#030e02',nebHue:120,starTint:[80,255,100],  acc:'#44ff88',diff:5.2,  twist:'poison',       requiredKillsToBoss:900, bossIcon:'voidBloom'},
-  {name:'CRYO RING',        sky:'#01080e',nebHue:195,starTint:[100,200,255], acc:'#88ddff',diff:3.8,  twist:'freeze',       requiredKillsToBoss:1100,bossIcon:'5'},
-  {name:'CRIMSON HUSK',     sky:'#080002',nebHue:0,  starTint:[255,60,40],   acc:'#cc2200',diff:6.5,  twist:'emp',          requiredKillsToBoss:1600,bossIcon:'6'},
+  {name:'MACHINE REMNANT',  sky:'#020208',nebHue:220,starTint:[80,120,255],  acc:'#4499ff',diff:2.2,  twist:'formation',    requiredKillsToBoss:800, bossIcon:'2'},
+  {name:'METEOR STORM BELT',sky:'#0e0600',nebHue:20, starTint:[255,120,20],  acc:'#ff7700',diff:2.8,  twist:'meteors',      requiredKillsToBoss:1000,bossIcon:'3'},
+  {name:'BIO-NEBULA',       sky:'#030e02',nebHue:120,starTint:[80,255,100],  acc:'#44ff88',diff:5.2,  twist:'poison',       requiredKillsToBoss:1200,bossIcon:'voidBloom'},
+  {name:'CRYO RING',        sky:'#01080e',nebHue:195,starTint:[100,200,255], acc:'#88ddff',diff:3.8,  twist:'freeze',       requiredKillsToBoss:1400,bossIcon:'5'},
+  {name:'CRIMSON HUSK',     sky:'#080002',nebHue:0,  starTint:[255,60,40],   acc:'#cc2200',diff:6.5,  twist:'emp',          requiredKillsToBoss:1800,bossIcon:'6'},
   {name:'GRAVITON ABYSS',   sky:'#000000',nebHue:260,starTint:[100,80,255],  acc:'#6655ff',diff:8.5,  twist:'gravity',      requiredKillsToBoss:2640,bossIcon:'7'},
   {name:'MIRROR EXPANSE',   sky:'#020208',nebHue:180,starTint:[180,255,220], acc:'#aaffdd',diff:11.0, twist:'mirror',       requiredKillsToBoss:1,   bossIcon:'8'},
   {name:'THE VOID HEART',   sky:'#000000',nebHue:0,  starTint:[255,255,255], acc:'#ffffff',diff:14.0, twist:'voidheart',    requiredKillsToBoss:4160,bossIcon:'9'},
@@ -2316,17 +2331,19 @@ function getGalaxyArrivalPoint(idx){
 // multiplier used by bosses and authored encounters. This prevents late-game
 // movement speed from scaling at the same rate as health.
 const GALAXY_COMBAT_BALANCE=[
-  {hp:1.10,dmg:1.00,spd:1.00,projectile:1.00,spawn:1.00},
+  // Drift remains busy and readable, but its opening enemies no longer punish
+  // a fresh build with late-sector movement and contact pressure.
+  {hp:1.10,dmg:.80,spd:.80,projectile:1.00,spawn:1.00},
   {hp:1.60,dmg:1.22,spd:1.05,projectile:1.05,spawn:.96},
   {hp:2.05,dmg:1.50,spd:1.10,projectile:1.12,spawn:.91},
-  // Meteor is the first true post-Machine wall: enemies survive long enough
-  // to execute their mechanics, hit hard, and arrive in dangerous mixes.
-  {hp:4.75,dmg:2.15,spd:1.35,projectile:1.42,spawn:.60},
-  {hp:2.90,dmg:2.08,spd:1.18,projectile:1.24,spawn:.84},
-  {hp:3.35,dmg:2.42,spd:1.22,projectile:1.30,spawn:.81},
+  // Post-Machine balance assumes Pulse IV and a developed permanent loadout.
+  // Each complete survival galaxy now climbs instead of dropping after Meteor.
+  {hp:3.60,dmg:2.10,spd:1.18,projectile:1.25,spawn:.78},
+  {hp:4.20,dmg:2.35,spd:1.20,projectile:1.30,spawn:.76},
+  {hp:5.00,dmg:2.65,spd:1.24,projectile:1.36,spawn:.70},
   // Crimson is the final complete survival loop. Its difficulty comes from
   // durable coordinated hordes and fast pattern pressure, not one-shot hits.
-  {hp:6.25,dmg:3.15,spd:1.38,projectile:1.55,spawn:.52},
+  {hp:6.25,dmg:3.15,spd:1.32,projectile:1.48,spawn:.58},
   {hp:4.20,dmg:3.25,spd:1.30,projectile:1.34,spawn:.86},
   {hp:4.80,dmg:4.00,spd:1.36,projectile:1.40,spawn:.84},
   {hp:5.50,dmg:4.80,spd:1.42,projectile:1.46,spawn:.82}
@@ -2349,9 +2366,9 @@ const GALAXY_EXPEDITION_PRESSURE=[
   {midWave:4,midFormation:.10,lateWave:7,lateFormation:.12,eliteInterval:0,  bossHp:1.15,bossDmg:1.00,bossCd:1.00},
   {midWave:3,midFormation:.14,lateWave:6,lateFormation:.18,eliteInterval:105,bossHp:1.20,bossDmg:1.03,bossCd:.98},
   {midWave:3,midFormation:.18,lateWave:6,lateFormation:.24,eliteInterval:88, bossHp:1.28,bossDmg:1.05,bossCd:.96},
-  {midWave:2,midFormation:.38,lateWave:4,lateFormation:.56,eliteInterval:38, bossHp:1.25,bossDmg:1.05,bossCd:.95},
-  {midWave:3,midFormation:.22,lateWave:6,lateFormation:.29,eliteInterval:66, bossHp:1.35,bossDmg:1.06,bossCd:.94},
-  {midWave:3,midFormation:.25,lateWave:5,lateFormation:.33,eliteInterval:58, bossHp:1.45,bossDmg:1.08,bossCd:.92},
+  {midWave:3,midFormation:.28,lateWave:6,lateFormation:.42,eliteInterval:52, bossHp:1.25,bossDmg:1.05,bossCd:.95},
+  {midWave:3,midFormation:.32,lateWave:6,lateFormation:.46,eliteInterval:48, bossHp:1.35,bossDmg:1.06,bossCd:.94},
+  {midWave:3,midFormation:.38,lateWave:5,lateFormation:.52,eliteInterval:42, bossHp:1.45,bossDmg:1.08,bossCd:.92},
   {midWave:2,midFormation:.52,lateWave:4,lateFormation:.72,eliteInterval:32, bossHp:2.10,bossDmg:1.16,bossCd:.82}
 ];
 function getGalaxyExpeditionPressure(idx){return GALAXY_EXPEDITION_PRESSURE[idx]||null;}
@@ -2370,14 +2387,118 @@ function getGalaxyCrystalMiningMult(idx){idx=Math.max(0,Math.min(9,Number(idx)||
 function getGalaxyCrystalCacheReward(idx){idx=Math.max(0,Math.min(9,Number(idx)||0));return GALAXY_CRYSTAL_CACHE_REWARD[idx]||25;}
 function getGalaxyBossCrystalReward(idx,fallback){idx=Math.max(0,Math.min(9,Number(idx)||0));return GALAXY_BOSS_CRYSTAL_REWARD[idx]||fallback||25;}
 function getGalaxyMiniBossCrystalReward(idx){idx=Math.max(0,Math.min(9,Number(idx)||0));return GALAXY_MINIBOSS_CRYSTAL_REWARD[idx]||50;}
+// Machine Remnant prototypes seamless, kill-driven threat protocols. These are
+// director states inside one uninterrupted level, never separate rooms.
+const MACHINE_THREAT_PROTOCOLS=[
+  {name:'INCURSION',      hp:1.00,dmg:1.00,xp:.65,formation:.00},
+  {name:'REINFORCEMENT',  hp:1.08,dmg:1.08,xp:.80,formation:.10},
+  {name:'LOCKDOWN',       hp:1.15,dmg:1.12,xp:1.00,formation:.20},
+  {name:'EXTERMINATION',  hp:1.22,dmg:1.18,xp:1.15,formation:.34},
+  {name:'FINAL PROTOCOL', hp:1.30,dmg:1.25,xp:1.30,formation:.50}
+];
+function getMachineThreatProtocol(g){
+  if(!g||Number(g.galaxy)!==2)return null;
+  var threshold=Math.max(1,getEffectiveBossKillRequirement(2));
+  var idx=Math.max(0,Math.min(4,Math.floor(((g.killsForBoss||0)/threshold)*5)));
+  return {index:idx,data:MACHINE_THREAT_PROTOCOLS[idx]};
+}
+function updateMachineThreatProtocol(g){
+  var protocol=getMachineThreatProtocol(g);
+  if(!protocol)return null;
+  if(g._machineProtocol!==protocol.index){
+    g._machineProtocol=protocol.index;
+    showWA('PROTOCOL '+['I','II','III','IV','V'][protocol.index]+' \u00b7 '+protocol.data.name,'#4499ff');
+    fmsg('MACHINE THREAT LEVEL '+(protocol.index+1),'#77bbff');
+  }
+  return protocol;
+}
+function spawnMachineWarden(g,p,threshold){
+  if(!g||!p||g._heraldAlive||g._heraldFought)return false;
+  g._heraldAlive=true;
+  // The midpoint is a clean authored duel. Regular pressure resumes shortly
+  // after the Warden falls, still inside the same uninterrupted expedition.
+  for(var wi=g.enemies.length-1;wi>=0;wi--){
+    if(!g.enemies[wi].isBoss){burst(g,g.enemies[wi].x,g.enemies[wi].y,g.enemies[wi].color,4,55);g.enemies.splice(wi,1);}
+  }
+  g.bullets=[];
+  // Enter from the player's inward side so the duel cannot begin pinned to a
+  // world boundary. A little variation keeps repeated encounters from matching.
+  var angle=Math.atan2(WORLD*.5-p.y,WORLD*.5-p.x)+(Math.random()-.5)*.55;
+  var prestige=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
+  var hp=Math.round(GALAXY_BOSSES[2].baseHp*GALAXIES[2].diff*prestige*.20);
+  var warden={
+    isHerald:true,isMachineWarden:true,isBoss:false,
+    name:'SALVAGE WARDEN',galaxy:2,typeIdx:-1,
+    x:Math.max(240,Math.min(WORLD-240,p.x+Math.cos(angle)*390)),
+    y:Math.max(240,Math.min(WORLD-240,p.y+Math.sin(angle)*390)),
+    r:62,hp:hp,maxHp:hp,spd:76,dmg:38,color:'#ff8a24',xpVal:0,
+    flashTimer:0,frozen:0,spinAngle:0,shootTimer:0,aiType:'chase',
+    phaseShield:true,_mwState:'shield',_mwStateT:0,_mwShotT:.45,
+    _mwCharge:0,_mwLockAngle:0,_mwClampFired:false,_mwVolleyLeft:0,_mwVolleyGap:0,
+    _mwOrbitDir:Math.random()<.5?-1:1,_mwPlateRot:0
+  };
+  setBossCheckpoint('mini',threshold);
+  g.enemies.push(warden);
+  g.paused=true;resetJoystick();
+  var bb=document.getElementById('bb'),bf=document.getElementById('bf2'),label=document.getElementById('bbl'),tier=document.getElementById('btr');
+  if(bb){bb.style.display='block';bb.style.opacity='1';bb.style.marginLeft='0';}
+  if(bf){bf.style.width='100%';bf.style.background='linear-gradient(90deg,#6b2e08,#ff8a24,#ffd06a)';bf.style.boxShadow='0 0 14px rgba(255,138,36,.65)';}
+  if(label){label.textContent='SALVAGE WARDEN | '+hp.toLocaleString()+' / '+hp.toLocaleString();label.style.color='#ffad4f';label.style.textShadow='0 0 9px #ff6a00';}
+  if(tier)tier.style.display='none';
+  showWA('MIDPOINT INTERCEPT \u00b7 SALVAGE WARDEN','#ff8a24');
+  fmsg('ORBITAL PLATES SHIELD THE CORE','#ffbf66');
+  setTimeout(function(){if(G===g&&g.running&&!window._luOpen){g.paused=false;resetJoystick();}},1250);
+  return true;
+}
+function spawnMeteorRoadie(g,p,threshold){
+  if(!g||!p||g._heraldAlive||g._heraldFought)return false;
+  g._heraldAlive=true;
+  // The Roadie takes the stage alone. Clearing regular pressure also prevents
+  // off-screen ranged fire from obscuring its authored bullet-hell openings.
+  for(var ri=g.enemies.length-1;ri>=0;ri--){
+    if(!g.enemies[ri].isBoss){burst(g,g.enemies[ri].x,g.enemies[ri].y,g.enemies[ri].color,4,58);g.enemies.splice(ri,1);}
+  }
+  g.bullets=[];
+  var angle=Math.atan2(WORLD*.5-p.y,WORLD*.5-p.x)+(Math.random()-.5)*.42;
+  var prestige=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow(1.15,prestigeCount),2.5):1;
+  // Slightly more than one quarter of The Cradle's encounter budget after its
+  // galaxy multiplier: intentionally tougher than the Machine Warden.
+  var hp=Math.round(GALAXY_BOSSES[3].baseHp*GALAXIES[3].diff*prestige*.24);
+  var roadie={
+    isHerald:true,isMiniBoss:true,isMeteorRoadie:true,isBoss:false,
+    name:'THE ROADIE',galaxy:3,typeIdx:-1,
+    x:Math.max(250,Math.min(WORLD-250,p.x+Math.cos(angle)*410)),
+    y:Math.max(250,Math.min(WORLD-250,p.y+Math.sin(angle)*410)),
+    r:72,hp:hp,maxHp:hp,spd:88,dmg:52,color:'#ff7a22',xpVal:0,
+    flashTimer:0,frozen:0,spinAngle:0,shootTimer:0,aiType:'chase',
+    _roadiePhase:1,_roadieOrbit:Math.random()*Math.PI*2,_roadieOrbitDir:Math.random()<.5?-1:1,
+    _roadieRhythmT:.9,_roadieConeT:2.0,_roadieSlamT:3.5,_roadieSlamCharge:0,
+    _roadieSlamAngle:0,_roadieBeatFlip:false,_roadieShieldFlash:0,_roadiePhaseFlash:false
+  };
+  setBossCheckpoint('mini',threshold);
+  g.enemies.push(roadie);
+  g.paused=true;resetJoystick();
+  var bb=document.getElementById('bb'),bf=document.getElementById('bf2'),label=document.getElementById('bbl'),tier=document.getElementById('btr');
+  if(bb){bb.style.display='block';bb.style.opacity='1';bb.style.marginLeft='0';}
+  if(bf){bf.style.width='100%';bf.style.background='linear-gradient(90deg,#421300,#ff6a18,#b968ff)';bf.style.boxShadow='0 0 16px rgba(255,106,24,.7)';}
+  if(label){label.textContent='THE ROADIE | '+hp.toLocaleString()+' / '+hp.toLocaleString();label.style.color='#ffad4f';label.style.textShadow='0 0 10px #ff5a00,0 0 16px #8d38ff';}
+  if(tier)tier.style.display='none';
+  showWA('MIDPOINT HEADLINER \u00b7 THE ROADIE','#ff7a22');
+  fmsg('CHAINED METEORS GUARD THE AMPLIFIER','#d58aff');
+  setTimeout(function(){if(G===g&&g.running&&!window._luOpen){g.paused=false;resetJoystick();}},1450);
+  return true;
+}
 function normalizeRegularEnemyForGalaxy(enemy,idx){
   if(!enemy||enemy.isBoss||enemy.isHerald||enemy._galaxyBalanceApplied)return;
   var legacy=(GALAXIES[idx]||GALAXIES[0]).diff||1;
   var bal=getGalaxyCombatBalance(idx);
+  var machine=(idx===2&&typeof G!=='undefined')?getMachineThreatProtocol(G):null;
+  var phaseHp=machine?machine.data.hp:1;
+  var phaseDmg=machine?machine.data.dmg:1;
   var hpRatio=enemy.maxHp>0?enemy.hp/enemy.maxHp:1;
-  enemy.maxHp=Math.max(1,enemy.maxHp*(bal.hp/legacy));
+  enemy.maxHp=Math.max(1,enemy.maxHp*(bal.hp/legacy)*phaseHp);
   enemy.hp=Math.max(1,enemy.maxHp*hpRatio);
-  enemy.dmg=Math.max(1,enemy.dmg*(bal.dmg/legacy));
+  enemy.dmg=Math.max(1,enemy.dmg*(bal.dmg/legacy)*phaseDmg);
   enemy.spd=Math.max(1,enemy.spd*(bal.spd/legacy));
   enemy._galaxyBalanceApplied=true;
 }
@@ -3346,6 +3467,8 @@ var bgBioNebulaAssets=null;
 var bgCryoRingAssets=null;
 var bgCrimsonHuskAssets=null;
 var machineRemnantEnemyAtlas=null;
+var machineRemnantWardenSprite=null;
+var meteorRoadieSprite=null;
 var meteorStormEnemyAtlas=null;
 var meteorDrifterAnimationAtlas=null;
 var mineableAsteroidAtlas=null;
@@ -3749,6 +3872,18 @@ function _loadMachineRemnantEnemyAtlas(){
   machineRemnantEnemyAtlas=new Image();
   machineRemnantEnemyAtlas.src='assests/images/machine-remnant-enemies-snes-atlas-v1.png';
   return machineRemnantEnemyAtlas;
+}
+function _loadMachineRemnantWardenSprite(){
+  if(machineRemnantWardenSprite)return machineRemnantWardenSprite;
+  machineRemnantWardenSprite=new Image();
+  machineRemnantWardenSprite.src='assests/images/machine-remnant-salvage-warden-v1.png';
+  return machineRemnantWardenSprite;
+}
+function _loadMeteorRoadieSprite(){
+  if(meteorRoadieSprite)return meteorRoadieSprite;
+  meteorRoadieSprite=new Image();
+  meteorRoadieSprite.src='assests/images/meteor-roadie-miniboss-v1.png';
+  return meteorRoadieSprite;
 }
 function _loadMeteorStormEnemyAtlas(){
   if(meteorStormEnemyAtlas)return meteorStormEnemyAtlas;
@@ -9236,7 +9371,7 @@ const PERM_DEFS={
     {id:'p_spd',     icon:'rocket',   name:'ION DRIVE',         desc:'+5% speed/rank',             maxRank:25,baseCost:75,  cm:1.35, ult:{name:'AFTERBURN',desc:'Moving damages nearby enemies every 0.5s',color:'#ff6a00'}},
     {id:'p_regen',   icon:'lightning',name:'NANO REPAIR',       desc:'+1/sec early; diminishing after rank 10',maxRank:25,baseCost:100, cm:1.35, ult:{name:'OVERGROWTH',desc:'Can overheal to 130% max hull',color:'#39ff8a'}},
     {id:'p_magnet',  icon:'magnet',   name:'TRACTOR BEAM',      desc:'+20% crystal range/rank',    maxRank:25,baseCost:50,  cm:1.35, ult:{name:'GRAVITY WELL',desc:'Auto-vacuum all pickups every 8s',color:'#9b59ff'}},
-    {id:'p_xp',      icon:'xpstar',   name:'NEURAL LINK',       desc:'+5% XP gain/rank',          maxRank:25,baseCost:50,  cm:1.35, ult:{name:'SYNAPSE STORM',desc:'Level ups offer 4 choices instead of 3',color:'#00f5ff'}},
+    {id:'p_xp',      icon:'xpstar',   name:'NEURAL LINK',       desc:'+5% XP gain/rank',          maxRank:10,baseCost:50,  cm:1.35, ult:{name:'SYNAPSE STORM',desc:'Level ups offer 4 choices instead of 3',color:'#00f5ff'}},
     {id:'p_pickdur', icon:'clock',    name:'TEMPORAL ANCHOR',   desc:'+2s pickup duration/rank',   maxRank:25,baseCost:100, cm:1.35, ult:{name:'TIME LOCK',desc:'Buff timers freeze during boss fights',color:'#ff88ff'}},
   ],
   WEAPONS:[
@@ -9276,8 +9411,8 @@ function getPermStatLine(def, rank){
     var nxt=nrank<=def.maxRank?'+'+Math.round((Math.pow(1.20,nrank)-1)*100)+'% pickup range':null;
     result={cur:cur, nxt:nxt};
   } else if(id==='p_xp'){
-    var cur=rank===0?'+0% XP':'+'+Math.round((Math.pow(1.10,rank)-1)*100)+'% XP';
-    var nxt=nrank<=def.maxRank?'+'+Math.round((Math.pow(1.10,nrank)-1)*100)+'% XP':null;
+    var cur=rank===0?'+0% XP':'+'+Math.round((Math.pow(1.05,rank)-1)*100)+'% XP';
+    var nxt=nrank<=def.maxRank?'+'+Math.round((Math.pow(1.05,nrank)-1)*100)+'% XP':null;
     result={cur:cur, nxt:nxt};
   } else if(id==='p_dmg'){
     var cur=rank===0?'+0% dmg':'+'+Math.round((Math.pow(1.08,rank)-1)*100)+'% weapon dmg';
@@ -9312,7 +9447,7 @@ function getPermStatLine(def, rank){
   }
   return result;
 }
-function pRank(id){return permData[id]||0;}
+function pRank(id){var rank=permData[id]||0;return id==='p_xp'?Math.min(10,rank):rank;}
 const QUANTUM_TIMER_COSTS=[100,200,400,700,1100,1700,2500,3500,5000,8000];
 function pCost(def){
   const r=pRank(def.id);
@@ -9822,7 +9957,7 @@ const UPGRADES=[
         }
       }
     },
-    ult:{name:'SQUADRON',desc:'All frigates simultaneously launch a full barrage — one missile per enemy on screen',color:'#ff6a00'}},
+    ult:{name:'SQUADRON',desc:'Every 12 seconds, all frigates bombard up to 12 priority targets',color:'#ff6a00'}},
   // ── BEAM-SPECIFIC TEMP UPGRADES ──────────────────────────────────────────
   {id:'overcharge',name:'OVERCHARGE',icon:'lightning',maxRank:RUN_MAX_RANK, beamReq:'volt',
     desc:'Volt nodes grow larger and strike harder',
@@ -9846,11 +9981,13 @@ const UPGRADES=[
 // post-boss close/reopen from carrying the defeated galaxy's rank forward.
 const EXPEDITION_BUILD_SCHEMA=4;
 const EXPEDITION_BUILD_KEY='vr_expeditionBuild';
-const GALAXY_XP_MULT=[1.00,1.45,1.90,2.45,3.10,3.85,4.70,5.65,6.70,7.90];
+// Deep-sector XP rises enough to offset tougher enemies without letting a
+// developed Neural Link finish an entire temporary build near the entrance.
+const GALAXY_XP_MULT=[1.00,1.45,1.90,1.85,2.25,2.65,3.10,5.65,6.70,7.90];
 const GALAXY_CARD_TARGETS=[5,6,7,8,9,10,11,6,4,0];
 // Once a galaxy's intended card count is reached, XP still slows enough to
 // protect the build curve but no longer collapses into a late-rank crawl.
-const GALAXY_SATURATED_XP_MULT=0.50;
+const GALAXY_SATURATED_XP_MULT=0.30;
 // Escort Wing may grow through Rank V in the opening galaxies, but its
 // screen-clearing Squadron ultimate joins the card pool at Meteor Storm Belt.
 const ESCORT_SQUADRON_UNLOCK_GALAXY=3;
@@ -9970,7 +10107,7 @@ function recordGalaxyCardPick(galaxy){
   _expeditionCardPicksByGalaxy[galaxy]=getGalaxyCardPicks(galaxy)+1;
   var target=getGalaxyCardTarget(galaxy);
   if(target>0&&_expeditionCardPicksByGalaxy[galaxy]===target){
-    fmsg('BUILD TARGET REACHED · XP FLOW 50%','#ffd700');
+    fmsg('BUILD TARGET REACHED · XP FLOW 30%','#ffd700');
   }
   saveExpeditionBuild();
 }
@@ -9992,9 +10129,12 @@ function awardRunXP(g,rawAmount,scaleForGalaxy){
   var p=g.player;
   // Neural Link is applied here once for every XP source. Enemy and mining
   // orbs store raw values so the permanent multiplier can never double-dip.
-  var gain=rawAmount*(scaleForGalaxy===false?1:getGalaxyXPMult(g.galaxy))*getGalaxyXPSaturation(g.galaxy)*(p.xpMult||1);
-  // Slow the very fast opening without changing Rank 10+ progression.
-  if(p.level<10)gain*=0.80;
+  var _machineXP=getMachineThreatProtocol(g);
+  var _machineXPMult=_machineXP?_machineXP.data.xp:1;
+  var gain=rawAmount*(scaleForGalaxy===false?1:getGalaxyXPMult(g.galaxy))*getGalaxyXPSaturation(g.galaxy)*(p.xpMult||1)*_machineXPMult;
+  // Preserve exciting early choices, but stop permanent XP investment from
+  // erasing the opening build phase. Rank 10+ retains the authored curve.
+  if(p.level<10)gain*=0.65;
   p.xp+=gain;
   _runStats.recordXP(gain);
   var levels=0;
@@ -10170,7 +10310,7 @@ const PICKUPS=[
   {id:'rage',   icon:'comet',    label:'SOLAR FLARE',     color:'#ff6a00',dur:10, desc:'Double your weapon damage for 10 seconds',                      onGet:function(g){g.rageActive=true;},        onEnd:function(g){g.rageActive=false;}},
   {id:'speed',  icon:'rocket',   label:'HYPERDRIVE',      color:'#39ff8a',dur:10, desc:'Massively boost your movement speed for 10 seconds',             onGet:function(g){g.speedActive=true;},       onEnd:function(g){g.speedActive=false;}},
   {id:'freeze', icon:'freeze',   label:'TIME DILATION',   color:'#88ddff',dur:10, desc:'Slow all enemies and bullets to a crawl for 10 seconds',         onGet:function(g){g._slowMo=true;g._slowMoTimer=99;},onEnd:function(g){g._slowMo=false;g._slowMoTimer=0;}},
-  {id:'nuke',   icon:'nuke',     label:'WARP NUKE',       color:'#ccff33',dur:0,  desc:'Instantly destroy all nearby enemies in a large radius',         onGet:function(g){if(g._devPlayerAttacksDisabled){fmsg('DEV: PLAYER ATTACKS OFF','#ffcc44');return;}var p=g.player;for(var i=g.enemies.length-1;i>=0;i--){var e=g.enemies[i];if(!e.isBoss&&dst(p,e)<340){burst(g,e.x,e.y,e.color,14,120);addOrb(g,e);g.enemies.splice(i,1);g.kills++;g.killsForBoss=(g.killsForBoss||0)+1;
+  {id:'nuke',   icon:'nuke',     label:'WARP NUKE',       color:'#ccff33',dur:0,  desc:'Instantly destroy all nearby enemies in a large radius',         onGet:function(g){if(g._devPlayerAttacksDisabled){fmsg('DEV: PLAYER ATTACKS OFF','#ffcc44');return;}var p=g.player;for(var i=g.enemies.length-1;i>=0;i--){var e=g.enemies[i];if(!e.isBoss&&!e.isHerald&&dst(p,e)<340){burst(g,e.x,e.y,e.color,14,120);addOrb(g,e);g.enemies.splice(i,1);g.kills++;g.killsForBoss=(g.killsForBoss||0)+1;
       if(activeSkin==='arbiter'){
         g._scrapKills=(g._scrapKills||0)+1;
         if(g._scrapKills>=15){
@@ -10462,7 +10602,7 @@ const ABILITIES=[
           // Damage all enemies in radius
           for(var i=gref.enemies.length-1;i>=0;i--){
             var e=gref.enemies[i],d=dst(p,e);
-            if(d<r){
+            if(d<r&&!e.isHerald){
               var dm=dmgBase*(1-d/(r+50));
               e._novaStunned=false;
               // R5: burn DoT on survivors
@@ -10499,7 +10639,7 @@ const ABILITIES=[
         // R0/R1 — basic instant blast, no pull
         for(var i=g.enemies.length-1;i>=0;i--){
           var e=g.enemies[i],d=dst(p,e);
-          if(d<r){
+          if(d<r&&!e.isHerald){
             var dm=dmgBase*(1-d/(r+50));
             e.hp-=dm;e.flashTimer=0.15;
             if(e.hp<=0&&!e.isBoss){
@@ -16649,6 +16789,40 @@ function resetTempUpgrades(){
   applyBeamToGun();
 }
 
+function devResetRankAndTempCards(){
+  if(!G||!G.running||!G.player){fmsg('DEV: START A RUN FIRST','#ffcc44');return false;}
+  // Remove every temporary build record before rebuilding permanent stats.
+  clearExpeditionBuild();
+  G._tempBuildEnded=false;
+  _pendingLevelUps=0;
+  window._luOpen=false;
+  resetTempUpgrades();
+  G.player.level=1;G.player.xp=0;G.player.xpNext=25;
+  persistLevel=1;persistXP=0;persistXPNext=25;
+  lsS('vr_plevel',1);lsS('vr_pxp',0);lsS('vr_pxpnext',25);
+  var _devLvl=document.getElementById('lvl');if(_devLvl)_devLvl.textContent='1';
+  var _devXp=document.getElementById('xpF');if(_devXp)_devXp.style.width='0%';
+  var _devLu=document.getElementById('lup');if(_devLu)_devLu.style.display='none';
+
+  // A later checkpoint restore must not resurrect the build that was just
+  // cleared. Keep its encounter location/progress while replacing build data.
+  var _devCp=window._runBossCheckpoint;
+  if(_devCp&&_devCp.galaxy===(G.galaxy||0)){
+    var _oldCpX=_devCp.player&&_devCp.player.x,_oldCpY=_devCp.player&&_devCp.player.y;
+    _devCp.player=_checkpointClone(G.player);
+    if(Number.isFinite(_oldCpX))_devCp.player.x=_oldCpX;
+    if(Number.isFinite(_oldCpY))_devCp.player.y=_oldCpY;
+    _devCp.gun=_checkpointClone(G.gun);_devCp.orbit=_checkpointClone(G.orbit);_devCp.nova=_checkpointClone(G.nova);
+    _devCp.upRanks={};_devCp.activeSynergies={};_devCp.lockedSynergies={};_devCp.pendingChoices=0;
+    _devCp.cardPicksByGalaxy={};_devCp.bossCardsClaimed={};_devCp.miniBossCardsClaimed={};
+    _devCp.starterCardClaimed=false;_devCp.starterCardChoicePending=false;_devCp.miniBossCardChoicePending=false;
+    lsS('vr_bossCheckpoint',_devCp);
+  }
+  saveExpeditionBuild();
+  fmsg('DEV: RANK + TEMP CARDS RESET','#ffcc44');
+  return true;
+}
+
 function newGame(){
   _resurrectCount=0;
   window._resurrectForfeited=false;
@@ -16717,7 +16891,7 @@ function newGame(){
     liveAsteroids:[],gemMult:1,galaxy:currentGalaxy,
     spawnT:0,spawnRate:getGalaxyInitialSpawnRate(currentGalaxy),pickupT:0,pickupInterval:10,
     joystick:{dx:0,dy:0},killStreak:0,killStreakT:0,bossAlive:false,bossFought:false,crystalsRun:0,_dailyContractSeenKills:0,
-    miningLaser:null,killsForBoss:0,eliteTimer:(getGalaxyExpeditionPressure(currentGalaxy)&&getGalaxyExpeditionPressure(currentGalaxy).eliteInterval)||120,_heraldAlive:false,_heraldFought:false,_heraldResumeTimer:0,
+    miningLaser:null,killsForBoss:0,eliteTimer:(getGalaxyExpeditionPressure(currentGalaxy)&&getGalaxyExpeditionPressure(currentGalaxy).eliteInterval)||120,_heraldAlive:false,_heraldFought:false,_heraldResumeTimer:0,_machineProtocol:-1,
     _devPlayerAttacksDisabled:false,
     
     relics:[],portal:null,_upRanks:{},_activeSynergies:{},_lockedSynergies:{},
@@ -17426,7 +17600,7 @@ function spawnEnemy(opts){
     // Tiers: 0=Jelly Drifter, 1=Voidcrab, 2=Spitter, 3=Hivebug, 4=Tentaclaw
     var jTiers=[
       // T0 — JELLY DRIFTER: intro enemy, poison trail
-      {r:14, color:'#44ddaa', hp:(180+g.wave*15)*gd*pm,  dmg:Math.round(14*gd*pm), xpVal:4,  spd:Math.min(200, 100+g.wave*2),   isDrifter:true},
+      {r:14, color:'#44ddaa', hp:(180+g.wave*15)*gd*pm,  dmg:Math.round(14*gd*pm), xpVal:4,  spd:Math.min(800, 400+g.wave*8),   isDrifter:true},
       // T1 — TOXIC VOIDCRAB: armored rusher, poison on contact, puddles on death
       {r:17, color:'#aaff33', hp:(90+g.wave*28)*gd*pm, dmg:Math.round(16*gd*pm), xpVal:12, spd:Math.min(130,60+g.wave*3),  isVoidCrab:true},
       // T2 — VENOMOUS SPITTER: kiting ranged, slow homing venom + acid ball
@@ -18324,7 +18498,7 @@ function updateBlackHole(g, dt){
       var ef=bh.pullStrength*1.4*Math.pow(1-ed/bh.pullR,1.2);
       e.x+=(edx/ed)*ef*dt;
       e.y+=(edy/ed)*ef*dt;
-      if(ed<bh.r*0.8&&!e.isBoss){
+      if(ed<bh.r*0.8&&!e.isBoss&&!e.isHerald){
         burst(g,e.x,e.y,'#6655ff',10,90);
         addOrb(g,e);
         g.enemies.splice(ei,1);
@@ -18520,8 +18694,44 @@ function hitE(g,e,dmg,damageSource){
       burst(g,e.x+(Math.random()-.5)*e.r,e.y+(Math.random()-.5)*e.r,'#ff8833',2,30);
     }
   }
-  // Phase shield blocks all damage
-  if(e.phaseShield){
+  // SALVAGE WARDEN plates are physical angular shields, not blanket
+  // invulnerability. Aim through any of the three rotating gaps to hit its core.
+  if(e.isMachineWarden&&e.phaseShield){
+    var _mwHitAngle=Math.atan2(g.player.y-e.y,g.player.x-e.x);
+    var _mwShieldRot=(e._mwPlateRot===undefined?(g.time||0)*.72:e._mwPlateRot);
+    var _mwPlateBlocked=false;
+    for(var _mwpi=0;_mwpi<3;_mwpi++){
+      var _mwPlateAngle=_mwShieldRot+_mwpi*Math.PI*2/3;
+      var _mwAngleDiff=Math.atan2(Math.sin(_mwHitAngle-_mwPlateAngle),Math.cos(_mwHitAngle-_mwPlateAngle));
+      if(Math.abs(_mwAngleDiff)<.42){_mwPlateBlocked=true;break;}
+    }
+    if(_mwPlateBlocked){
+      burst(g,e.x+Math.cos(_mwHitAngle)*e.r*1.05,e.y+Math.sin(_mwHitAngle)*e.r*1.05,'#ffad4f',4,55);
+      e._mwPlateFlash=.12;
+      return;
+    }
+  }
+  // THE ROADIE: four chained satellites are real angular armor. Roughly
+  // three quarters of the ring remains open, so positioning matters without
+  // ever making the miniboss globally invulnerable.
+  if(e.isMeteorRoadie&&(e._roadiePhase||1)===1){
+    var _rdHitAngle=Math.atan2(g.player.y-e.y,g.player.x-e.x);
+    var _rdOrbit=e._roadieOrbit||0,_rdBlocked=false;
+    for(var _rdi=0;_rdi<4;_rdi++){
+      var _rdOrbAngle=_rdOrbit+_rdi*Math.PI*.5;
+      var _rdDiff=Math.atan2(Math.sin(_rdHitAngle-_rdOrbAngle),Math.cos(_rdHitAngle-_rdOrbAngle));
+      if(Math.abs(_rdDiff)<.24){_rdBlocked=true;break;}
+    }
+    if(_rdBlocked){
+      burst(g,e.x+Math.cos(_rdHitAngle)*e.r*1.42,e.y+Math.sin(_rdHitAngle)*e.r*1.42,'#b968ff',5,68);
+      e._roadieShieldFlash=.14;
+      return;
+    }
+  }
+  // The fully exposed core rewards the player for committing to the opening.
+  if(e.isMachineWarden&&!e.phaseShield)dmg*=1.35;
+  // Phase shield blocks all damage for encounters that still use a full shell.
+  if(e.phaseShield&&!e.isMachineWarden){
     // G0 crack shield: TAP ONLY — bullets bounce off completely
     if(e.galaxy===0 && e._crackShield){
       burst(g,e.x,e.y,'#88aaff',2,30);return;
@@ -18578,6 +18788,39 @@ function hitE(g,e,dmg,damageSource){
   // ── Amplifier: Lifesteal ──
 
   if(e.hp<=0){
+    // THE ROADIE DEATH: clear its remaining stage hazards, preserve the temp
+    // build at the midpoint, and guarantee the promised card choice.
+    if(e.isMeteorRoadie){
+      g._heraldAlive=false;g._heraldFought=true;g._heraldResumeTimer=1.8;
+      g.bullets=g.bullets.filter(function(_rdb){return !_rdb.isEnemy;});
+      var _rdBar=document.getElementById('bb');
+      if(_rdBar){_rdBar.style.transition='opacity .45s';_rdBar.style.opacity='0';setTimeout(function(){if(_rdBar){_rdBar.style.display='none';_rdBar.style.opacity='1';_rdBar.style.transition='';}},500);}
+      for(var _rdd=0;_rdd<26;_rdd++){(function(delay){setTimeout(function(){burst(g,e.x+(Math.random()-.5)*170,e.y+(Math.random()-.5)*125,delay%3===0?'#ffffff':(delay%2?'#b968ff':'#ff6a18'),8,155);},delay*32);})(_rdd);}
+      burst(g,e.x,e.y,'#ffffff',22,185);
+      var _rdReward=getGalaxyMiniBossCrystalReward(g.galaxy||0);
+      crystals+=_rdReward;g.crystalsRun=(g.crystalsRun||0)+_rdReward;_runStats.addGems(_rdReward,'miniboss');lsS('vr_crystals',crystals);
+      fmsg('THE ROADIE ENCORE CANCELLED +'+_rdReward+' CRYSTALS','#ffad4f');
+      var _rdIndex=g.enemies.indexOf(e);if(_rdIndex!==-1)g.enemies.splice(_rdIndex,1);
+      queueMiniBossCardReward(g);
+      setBossCheckpoint('postmini',Math.floor(getEffectiveBossKillRequirement(g.galaxy||0)*.5),true);
+      return;
+    }
+    // SALVAGE WARDEN DEATH: keep Machine Remnant rewards and effects separate
+    // from Bio-Nebula's Germinal even though both occupy the mini-boss slot.
+    if(e.isMachineWarden){
+      g._heraldAlive=false;g._heraldFought=true;g._heraldResumeTimer=1.5;
+      var _mwBar=document.getElementById('bb');
+      if(_mwBar){_mwBar.style.transition='opacity .45s';_mwBar.style.opacity='0';setTimeout(function(){if(_mwBar){_mwBar.style.display='none';_mwBar.style.opacity='1';_mwBar.style.transition='';}},500);}
+      for(var _mwd=0;_mwd<18;_mwd++){(function(delay){setTimeout(function(){burst(g,e.x+(Math.random()-.5)*120,e.y+(Math.random()-.5)*90,delay%2?'#ff8a24':'#ff4db8',7,130);},delay*35);})(_mwd);}
+      burst(g,e.x,e.y,'#ffffff',16,150);
+      var _mwReward=getGalaxyMiniBossCrystalReward(g.galaxy||0);
+      crystals+=_mwReward;g.crystalsRun=(g.crystalsRun||0)+_mwReward;_runStats.addGems(_mwReward,'miniboss');lsS('vr_crystals',crystals);
+      fmsg('SALVAGE WARDEN DISMANTLED +'+_mwReward+' CRYSTALS','#ffad4f');
+      var _mwIndex=g.enemies.indexOf(e);if(_mwIndex!==-1)g.enemies.splice(_mwIndex,1);
+      queueMiniBossCardReward(g);
+      setBossCheckpoint('postmini',Math.floor(getEffectiveBossKillRequirement(g.galaxy||0)*.5),true);
+      return;
+    }
     // ── HERALD DEATH ──
     if(e.isHerald){
       g._heraldAlive=false;
@@ -19039,7 +19282,11 @@ function tickRewindSystem(g,dt){
 }
 function update(dt){
   _diagUpdateCount++;
-  var g=G;g.time+=dt;g.waveTimer+=dt;
+  var g=G;g.time+=dt;
+  // Encounter time must not become invisible wave difficulty. Preserve the
+  // partial wave timer and resume it only after normal expedition play returns.
+  var _waveClockActive=!g.bossAlive&&!g._heraldAlive&&!g.bossFought&&!g.portal;
+  if(_waveClockActive)g.waveTimer+=dt;
   if(tickRewindSystem(g,dt))return;
   var p=g.player,c=chaos();
   _runStats.tick(dt,g,p);
@@ -19203,7 +19450,7 @@ function update(dt){
     if(g._leviathanTimer>8){g._leviathanTimer=0;fmsg('VOID SHIMMER','#8844ff');}
   }
 
-  if(g.waveTimer>=g.waveInterval&&(G.galaxy||0)!==7&&!window._devRoom){
+  if(_waveClockActive&&g.waveTimer>=g.waveInterval&&(G.galaxy||0)!==7&&!window._devRoom){
     g.waveTimer=0;g.wave++;
     g.spawnRate=(g.galaxy===4)
       ?Math.max(.95,g.spawnRate*(.96-c*.001))
@@ -19279,6 +19526,7 @@ function update(dt){
     } else {
     var thresh=getEffectiveBossKillRequirement(g.galaxy||0);
     var kw=g.killsForBoss||0;
+    updateMachineThreatProtocol(g);
     var sm=document.getElementById('sectorMeter');
     var smf=document.getElementById('sectorMeterFill');
     var smc=document.getElementById('sectorMeterCount');
@@ -19319,6 +19567,17 @@ function update(dt){
     }
     // ── HERALD spawn: G4+ only, at 50% threshold, once per galaxy visit ──
     var _hThresh=Math.floor(thresh*0.5);
+    // Machine Remnant midpoint mini-boss: the same map continues after the
+    // duel, with the post-fight checkpoint preserving the temporary build.
+    if((g.galaxy||0)===2&&!g._heraldFought&&!g._heraldAlive&&kw>=_hThresh){
+      spawnMachineWarden(g,p,_hThresh);
+    }
+    // Meteor Storm Belt midpoint mini-boss: a harder authored duel with its
+    // own checkpoint and guaranteed card choice.
+    if((g.galaxy||0)===3&&!g._heraldFought&&!g._heraldAlive&&kw>=_hThresh){
+      spawnMeteorRoadie(g,p,_hThresh);
+    }
+    // Bio-Nebula's Germinal remains an independently authored encounter.
     if((g.galaxy||0)>=4&&(g.galaxy||0)!==5&&(g.galaxy||0)!==6&&(g.galaxy||0)!==7&&(g.galaxy||0)!==8&&(g.galaxy||0)!==9&&!g._heraldFought&&!g._heraldAlive&&kw>=_hThresh){
       g._heraldAlive=true;
       // Clear regular enemies silently
@@ -20381,11 +20640,21 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
         }
       }
     }
-    // SQUADRON ult — barrage every enemy
+    // SQUADRON ult — a bounded priority barrage. Keeping this target-limited
+    // prevents clustered explosion overlap from scaling quadratically with the
+    // late-game 100-enemy screen cap while preserving the authored impact.
     if(!g._devPlayerAttacksDisabled&&g._escortSqBarrage){
       g._escortSqBarrage=false;
-      for(var _sqi=0;_sqi<g.enemies.length;_sqi++){
-        var _sqe=g.enemies[_sqi];
+      var _sqTargets=g.enemies.slice().sort(function(a,b){
+        function _sqPriority(e){
+          var _sqHp=e.maxHp||e.hp||0;
+          return (e.isBoss?10000000:0)+(e.isHerald||e.isMiniBoss?5000000:0)+
+            (e.isElite||e.elite?2000000:0)+(e.shoots?1000000:0)+_sqHp;
+        }
+        return _sqPriority(b)-_sqPriority(a);
+      }).slice(0,12);
+      for(var _sqi=0;_sqi<_sqTargets.length;_sqi++){
+        var _sqe=_sqTargets[_sqi];
         var _sqSrc=g.escorts[_sqi%g.escorts.length];
         if(!_sqSrc) continue;
         var _sqa=Math.atan2(_sqe.y-_sqSrc.y,_sqe.x-_sqSrc.x);
@@ -20519,7 +20788,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
   if(g.supernovaActive){var sn=g.supernovaActive;sn.life-=dt;sn.radius+=dt*(sn.maxR/.8);
     // gravity pull removed
     g.particles.push({type:'ring',x:p.x,y:p.y,radius:Math.max(0,sn.radius-8),maxR:sn.radius+10,life:.12,maxLife:.12,color:'#ff3366'});
-    if(sn.life<=0){for(var xi=g.enemies.length-1;xi>=0;xi--){var xe=g.enemies[xi],xd=dst(p,xe);if(xd<sn.maxR){var xm=480*(1-xd/(sn.maxR+50));xe.hp-=xm;xe.flashTimer=.2;if(xe.hp<=0&&!xe.isBoss){burst(g,xe.x,xe.y,xe.color,18,150);addOrb(g,xe);g.enemies.splice(xi,1);g.kills++;g.killsForBoss=(g.killsForBoss||0)+1;}}}g.particles.push({type:'ring',x:p.x,y:p.y,radius:0,maxR:sn.maxR,life:.8,maxLife:.8,color:'#ff6a00'});burst(g,p.x,p.y,'#ff6a00',55,320);g.supernovaActive=null;}
+    if(sn.life<=0){for(var xi=g.enemies.length-1;xi>=0;xi--){var xe=g.enemies[xi],xd=dst(p,xe);if(xd<sn.maxR&&!xe.isHerald){var xm=480*(1-xd/(sn.maxR+50));xe.hp-=xm;xe.flashTimer=.2;if(xe.hp<=0&&!xe.isBoss){burst(g,xe.x,xe.y,xe.color,18,150);addOrb(g,xe);g.enemies.splice(xi,1);g.kills++;g.killsForBoss=(g.killsForBoss||0)+1;}}}g.particles.push({type:'ring',x:p.x,y:p.y,radius:0,maxR:sn.maxR,life:.8,maxLife:.8,color:'#ff6a00'});burst(g,p.x,p.y,'#ff6a00',55,320);g.supernovaActive=null;}
   }
 
   // Bullets
@@ -20778,6 +21047,10 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
           for(var _cpi6=0;_cpi6<_crimsonPack;_cpi6++)spawnEnemy();
         }else{
           spawnEnemy();
+          // Machine protocols grow mixed formations gradually while preserving
+          // the existing global horde and ranged-projectile safety caps.
+          var _machinePressure=getMachineThreatProtocol(g);
+          if(_machinePressure&&Math.random()<_machinePressure.data.formation)spawnEnemy();
           if(g.wave>2&&Math.random()<.5)spawnEnemy();if(g.wave>5&&Math.random()<.4)spawnEnemy();
           if(g.wave>8&&Math.random()<.35)spawnEnemy();
           // Persistent-build pressure arrives through authored mixed formations,
@@ -20804,7 +21077,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     // Nova stun — blocks movement and AI
     if(en._stunTimer>0){en._stunTimer-=dt;if(en._stunTimer<=0){en._novaStunned=false;}else{continue;}}
     // Burn DoT from R5 nova
-    if(en._burnTimer>0){en._burnTimer-=dt;en.hp-=en._burnDmg*dt;en.flashTimer=0.05;if(en.hp<=0&&!en.isBoss){burst(g,en.x,en.y,en.color,10,100);addOrb(g,en);g.enemies.splice(eni,1);g.kills++;continue;}}
+    if(en._burnTimer>0&&!en.isHerald){en._burnTimer-=dt;en.hp-=en._burnDmg*dt;en.flashTimer=0.05;if(en.hp<=0&&!en.isBoss){burst(g,en.x,en.y,en.color,10,100);addOrb(g,en);g.enemies.splice(eni,1);g.kills++;continue;}}
     if(en.frozen>0){en.frozen-=dt;continue;}
     // Time Dilation — slow multiplier
     var _tdMult=1;
@@ -23130,7 +23403,127 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
       else if(en.isFrostShard)eang+=_cryoTurn*(.3+Math.sin(gtime*7+en.y*.01)*.24);
       else if(en.isGlacierGolem&&en._slamCharging)eang+=_cryoTurn*.55;
     }
-    if(en.isHerald){
+    // SALVAGE WARDEN: alternating armored plate pressure and a short exposed-core window.
+    if(en.isMachineWarden){
+      en._mwStateT=(en._mwStateT||0)+dt;
+      en._mwShotT=(en._mwShotT||0)-dt;
+      en._mwPlateRot=(en._mwPlateRot||0)+dt*.72;
+      en._mwPlateFlash=Math.max(0,(en._mwPlateFlash||0)-dt);
+      var _mwToPlayer=Math.atan2(p.y-en.y,p.x-en.x),_mwDist=dst(p,en);
+      var _mwEdge=en.x<210||en.y<210||en.x>WORLD-210||en.y>WORLD-210;
+      if(_mwEdge){
+        eang=Math.atan2(WORLD*.5-en.y,WORLD*.5-en.x);en.spd=118;
+      }else if(_mwDist>340){
+        eang=_mwToPlayer;en.spd=96;
+      }else if(_mwDist<260){
+        eang=_mwToPlayer+Math.PI;en.spd=88;
+      }else{
+        eang=_mwToPlayer+(Math.PI*.5*(en._mwOrbitDir||1));en.spd=en._mwState==='shield'?78:58;
+      }
+      if(en._mwState==='shield'){
+        en.phaseShield=true;
+        if(en._mwShotT<=0&&canEnemyShoot(g)){
+          en._mwShotT=.85;
+          en._mwBurstFlip=!en._mwBurstFlip;
+          for(var _mwr=0;_mwr<12;_mwr++){
+            var _mwra=(_mwr/12)*Math.PI*2+(en._mwBurstFlip?Math.PI/12:0)+en._mwPlateRot*.35;
+            g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_mwra)*280,vy:Math.sin(_mwra)*280,
+              dmg:46,size:8,pierce:0,pc:0,color:_mwr%3===0?'#ff4db8':'#ff8a24',life:2.65,isEnemy:true,
+              homing:false,maxHullPct:.08,_tdOwnerClass:'miniboss',source:'warden plate burst'});
+          }
+          burst(g,en.x,en.y,'#ff8a24',10,105);
+        }
+        if(en._mwStateT>=3.8){
+          en._mwState='exposed';en._mwStateT=0;en.phaseShield=false;
+          en._mwCharge=.85;en._mwLockAngle=_mwToPlayer;en._mwClampFired=false;en._mwVolleyLeft=2;en._mwVolleyGap=0;
+          en._mwOrbitDir*=-1;
+          fmsg('SALVAGE WARDEN CORE EXPOSED','#ffad4f');
+        }
+      }else{
+        en.phaseShield=false;
+        if(en._mwCharge>0){
+          en._mwCharge-=dt;
+          if(en._mwCharge>.25)en._mwLockAngle=Math.atan2(p.y-en.y,p.x-en.x);
+        }else if(en._mwVolleyLeft>0){
+          en._mwVolleyGap-=dt;
+          if(en._mwVolleyGap<=0&&canEnemyShoot(g)){
+            for(var _mwl=-1;_mwl<=1;_mwl++){
+              var _mwla=en._mwLockAngle+_mwl*.13;
+              g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_mwla)*700,vy:Math.sin(_mwla)*700,
+                dmg:58,size:10,pierce:0,pc:0,color:_mwl===0?'#ff4db8':'#ff9b35',life:1.8,
+                isEnemy:true,homing:false,maxHullPct:.11,_tdOwnerClass:'miniboss',source:'warden clamp volley'});
+            }
+            en._mwVolleyLeft--;en._mwVolleyGap=.22;en._mwClampFired=en._mwVolleyLeft<=0;
+            burst(g,en.x,en.y,'#ff4db8',11,115);
+          }
+        }
+        if(en._mwStateT>=3.2&&en._mwVolleyLeft<=0){
+          en._mwState='shield';en._mwStateT=0;en.phaseShield=true;en._mwShotT=.38;
+          fmsg('ORBITAL PLATES RELOCKED','#ff8a24');
+        }
+      }
+    }
+    // THE ROADIE: mobile bullet-hell pressure with four readable shield nodes.
+    // Phase two breaks the chains, removes the armor, and accelerates the set.
+    if(en.isMeteorRoadie){
+      var _rdPhase2=en.hp/en.maxHp<=.5;
+      if(_rdPhase2&&en._roadiePhase!==2){
+        en._roadiePhase=2;en._roadiePhaseFlash=true;en._roadieRhythmT=.25;en._roadieConeT=.8;en._roadieSlamT=1.6;
+        burst(g,en.x,en.y,'#b968ff',28,190);showWA('SECOND SET \u00b7 CHAINS BROKEN','#b968ff');fmsg('THE SATELLITES HAVE BROKEN FREE','#ffad4f');
+      }
+      en._roadieOrbit=(en._roadieOrbit||0)+dt*(_rdPhase2?1.75:1.08)*(en._roadieOrbitDir||1);
+      en._roadieShieldFlash=Math.max(0,(en._roadieShieldFlash||0)-dt);
+      var _rdToPlayer=Math.atan2(p.y-en.y,p.x-en.x),_rdDist=dst(p,en);
+      var _rdEdge=en.x<250||en.y<250||en.x>WORLD-250||en.y>WORLD-250;
+      if(_rdEdge){eang=Math.atan2(WORLD*.5-en.y,WORLD*.5-en.x);en.spd=136;}
+      else if(_rdDist>400){eang=_rdToPlayer;en.spd=_rdPhase2?112:100;}
+      else if(_rdDist<285){eang=_rdToPlayer+Math.PI;en.spd=_rdPhase2?108:94;}
+      else{eang=_rdToPlayer+Math.PI*.5*(en._roadieOrbitDir||1);en.spd=_rdPhase2?92:74;}
+
+      en._roadieRhythmT-=dt;en._roadieConeT-=dt;en._roadieSlamT-=dt;
+      if(en._roadieRhythmT<=0&&canEnemyShoot(g)){
+        en._roadieRhythmT=_rdPhase2?.78:1.08;en._roadieBeatFlip=!en._roadieBeatFlip;
+        var _rdCount=_rdPhase2?20:18,_rdSpeed=_rdPhase2?385:315;
+        for(var _rdbi=0;_rdbi<_rdCount;_rdbi++){
+          // Two opposite rests create visible dodge lanes in every beat ring.
+          if((!_rdPhase2&&(_rdbi===4||_rdbi===5||_rdbi===13||_rdbi===14))||(_rdPhase2&&(_rdbi===5||_rdbi===15)))continue;
+          var _rdba=(_rdbi/_rdCount)*Math.PI*2+(en._roadieBeatFlip?Math.PI/_rdCount:0)+(en._roadieOrbit||0)*.12;
+          g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_rdba)*_rdSpeed,vy:Math.sin(_rdba)*_rdSpeed,
+            dmg:_rdPhase2?66:54,size:_rdPhase2?9:8,pierce:0,pc:0,color:_rdbi%2?'#ff6a18':'#b968ff',life:2.8,
+            isEnemy:true,homing:false,maxHullPct:_rdPhase2?.085:.07,_tdOwnerClass:'miniboss',source:'roadie downbeat'});
+        }
+        burst(g,en.x,en.y,en._roadieBeatFlip?'#ff6a18':'#b968ff',12,120);
+      }
+      if(en._roadieConeT<=0&&canEnemyShoot(g)){
+        en._roadieConeT=_rdPhase2?2.15:2.75;
+        var _rdAim=Math.atan2((p.y+(p.vy||0)*.22)-en.y,(p.x+(p.vx||0)*.22)-en.x);
+        var _rdLanes=_rdPhase2?7:5;
+        for(var _rdli=0;_rdli<_rdLanes;_rdli++){
+          var _rdla=_rdAim+(_rdli-(_rdLanes-1)*.5)*.15;
+          g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_rdla)*500,vy:Math.sin(_rdla)*500,
+            dmg:_rdPhase2?80:70,size:10,pierce:0,pc:0,color:'#d58aff',life:2.15,isEnemy:true,homing:false,
+            maxHullPct:_rdPhase2?.12:.10,_tdOwnerClass:'miniboss',source:'roadie feedback cone'});
+        }
+      }
+      if(en._roadieSlamCharge>0){
+        en._roadieSlamCharge-=dt;
+        if(en._roadieSlamCharge>.28)en._roadieSlamAngle=Math.atan2(p.y-en.y,p.x-en.x);
+        if(en._roadieSlamCharge<=0&&canEnemyShoot(g)){
+          var _rdOffsets=_rdPhase2?[-.34,0,.34]:[-.22,.22];
+          for(var _rdoi=0;_rdoi<_rdOffsets.length;_rdoi++){
+            var _rdoa=en._roadieSlamAngle+_rdOffsets[_rdoi];
+            g.bullets.push({x:en.x,y:en.y,vx:Math.cos(_rdoa)*560,vy:Math.sin(_rdoa)*560,
+              dmg:_rdPhase2?110:96,size:_rdPhase2?24:21,pierce:0,pc:0,color:'#ff5a10',life:2.6,isEnemy:true,
+              homing:false,isMeteor:true,maxHullPct:_rdPhase2?.18:.15,_tdOwnerClass:'miniboss',source:'roadie wrecking ball'});
+          }
+          burst(g,en.x,en.y,'#ffad4f',18,165);
+        }
+      }else if(en._roadieSlamT<=0){
+        en._roadieSlamT=_rdPhase2?4.15:5.1;en._roadieSlamCharge=_rdPhase2?.72:.9;
+        en._roadieSlamAngle=Math.atan2(p.y-en.y,p.x-en.x);fmsg('WRECKING BALLS INBOUND','#ffad4f');
+      }
+    }
+    if(en.isHerald&&!en.isMachineWarden&&!en.isMeteorRoadie){
       en._hPhaseT=(en._hPhaseT||0)+dt;
       var _hDistP=dst(p,en);
       // Phase machine: drift → stop+charge → spore burst → short lunge → repeat
@@ -23565,7 +23958,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
     var _hBf=document.getElementById('bf2');
     var _hBbl=document.getElementById('bbl');
     if(_hEn&&_hBf) _hBf.style.width=Math.max(0,_hEn.hp/_hEn.maxHp*100)+'%';
-    if(_hEn&&_hBbl) _hBbl.innerHTML='THE GERMINAL | '+Math.ceil(Math.max(0,_hEn.hp)).toLocaleString()+' / '+_hEn.maxHp.toLocaleString();
+    if(_hEn&&_hBbl) _hBbl.innerHTML=(_hEn.isMachineWarden?'SALVAGE WARDEN':(_hEn.isMeteorRoadie?'THE ROADIE':'THE GERMINAL'))+' | '+Math.ceil(Math.max(0,_hEn.hp)).toLocaleString()+' / '+_hEn.maxHp.toLocaleString();
   }
 
   // XP orbs
@@ -23872,7 +24265,7 @@ var _pm0=(typeof prestigeCount!=='undefined'&&prestigeCount>0)?Math.min(Math.pow
   }
   if((g.galaxy||0)>=ESCORT_SQUADRON_UNLOCK_GALAXY&&(g._upRanks.escort||0)>=RUN_MAX_RANK&&g.escorts&&g.escorts.length>0&&g.enemies.length>0){
     g._escortSqT=(g._escortSqT||0)+dt;
-    if(g._escortSqT>=8){ g._escortSqT=0; g._escortSqBarrage=true; }
+    if(g._escortSqT>=12){ g._escortSqT=0; g._escortSqBarrage=true; }
   }
 
   // ── ICE METEORS update ──
@@ -28726,6 +29119,72 @@ function render(){
     // Draw head / body shape
     ctx.save();ctx.translate(sx,sy);
     ctx.shadowBlur=e.isBoss?24:e.isWorm?4:12;ctx.shadowColor=col;
+    // Salvage Warden uses its approved static sprite; authored animation comes later.
+    if(e.isMachineWarden){
+      var _mwImg=_loadMachineRemnantWardenSprite();
+      var _mwPulse=.5+.5*Math.sin(gtime*5);
+      var _mwW=e.r*4.3,_mwH=_mwW*846/1078;
+      ctx.imageSmoothingEnabled=false;
+      ctx.shadowColor=e.phaseShield?'#ff8a24':'#ff4db8';ctx.shadowBlur=e.phaseShield?18:10;
+      if(_mwImg&&_mwImg.complete&&_mwImg.naturalWidth)ctx.drawImage(_mwImg,-_mwW/2,-_mwH/2,_mwW,_mwH);
+      else{ctx.fillStyle='#2b2638';ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);ctx.fill();}
+      ctx.shadowBlur=0;
+      if(e.phaseShield){
+        ctx.save();ctx.rotate(e._mwPlateRot||0);ctx.strokeStyle='rgba(255,138,36,'+(.58+.24*_mwPulse)+')';ctx.lineWidth=(e._mwPlateFlash||0)>0?7:4;
+        for(var _mwp=0;_mwp<3;_mwp++){
+          var _mwpa=_mwp*Math.PI*2/3;
+          ctx.beginPath();ctx.arc(0,0,e.r*1.65,_mwpa-.42,_mwpa+.42);ctx.stroke();
+          ctx.fillStyle=_mwp===1?'#ff4db8':'#ffad4f';ctx.beginPath();ctx.arc(Math.cos(_mwpa)*e.r*1.65,Math.sin(_mwpa)*e.r*1.65,5,0,Math.PI*2);ctx.fill();
+        }
+        ctx.restore();
+      }else{
+        ctx.strokeStyle='rgba(255,173,79,'+(.55+.4*_mwPulse)+')';ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(0,0,e.r*.46,0,Math.PI*2);ctx.stroke();
+      }
+      if((e._mwCharge||0)>0){
+        ctx.save();ctx.rotate(e._mwLockAngle||0);ctx.setLineDash([12,8]);ctx.strokeStyle='rgba(255,77,184,'+(.55+.35*_mwPulse)+')';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(e.r*.35,0);ctx.lineTo(Math.max(W,H)*1.4,0);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      }
+      if(e.flashTimer>0){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.48;ctx.fillStyle='#fff';ctx.fillRect(-_mwW/2,-_mwH/2,_mwW,_mwH);}
+      ctx.restore();
+      continue;
+    }
+    // The Roadie uses the approved cutout while its chained satellite armor is
+    // drawn independently so the defensive gaps and phase break remain legible.
+    if(e.isMeteorRoadie){
+      var _rdImg=_loadMeteorRoadieSprite(),_rdP2=(e._roadiePhase||1)>=2;
+      var _rdPulse=.5+.5*Math.sin(gtime*5.4),_rdW=e.r*5.0,_rdH=_rdW*836/1060;
+      var _rdOrbR=_rdP2?e.r*2.55:e.r*1.66;
+      ctx.imageSmoothingEnabled=false;ctx.shadowColor=_rdP2?'#b968ff':'#ff6a18';ctx.shadowBlur=_rdP2?20:14;
+      if(_rdImg&&_rdImg.complete&&_rdImg.naturalWidth)ctx.drawImage(_rdImg,-_rdW/2,-_rdH/2,_rdW,_rdH);
+      else{ctx.fillStyle='#3a241d';ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);ctx.fill();}
+      ctx.shadowBlur=0;
+      for(var _rdDraw=0;_rdDraw<4;_rdDraw++){
+        var _rdDrawA=(e._roadieOrbit||0)+_rdDraw*Math.PI*.5;
+        var _rdDrawX=Math.cos(_rdDrawA)*_rdOrbR,_rdDrawY=Math.sin(_rdDrawA)*_rdOrbR;
+        ctx.strokeStyle=_rdP2?'rgba(185,104,255,.38)':'rgba(86,58,45,.82)';ctx.lineWidth=_rdP2?2:3;
+        ctx.beginPath();ctx.moveTo(Math.cos(_rdDrawA)*e.r*.72,Math.sin(_rdDrawA)*e.r*.72);ctx.lineTo(_rdDrawX,_rdDrawY);ctx.stroke();
+        ctx.save();ctx.translate(_rdDrawX,_rdDrawY);ctx.rotate(gtime*(_rdP2?2.6:1.4)*(e._roadieOrbitDir||1));
+        ctx.shadowColor=_rdP2?'#b968ff':'#ff6a18';ctx.shadowBlur=_isMobile?4:10;
+        ctx.fillStyle='#2b1b16';ctx.beginPath();
+        for(var _rdRock=0;_rdRock<=7;_rdRock++){
+          var _rdRockA=_rdRock/7*Math.PI*2,_rdRockR=e.r*(_rdP2?.24:.27)*([1,.84,.96,.78,.91,.82,.95][_rdRock%7]);
+          if(_rdRock===0)ctx.moveTo(Math.cos(_rdRockA)*_rdRockR,Math.sin(_rdRockA)*_rdRockR);else ctx.lineTo(Math.cos(_rdRockA)*_rdRockR,Math.sin(_rdRockA)*_rdRockR);
+        }
+        ctx.closePath();ctx.fill();ctx.strokeStyle='#ff6a18';ctx.lineWidth=2;ctx.stroke();
+        ctx.fillStyle='#8f45e8';ctx.rotate(.45);ctx.fillRect(-4,-7,8,14);ctx.restore();
+        if(!_rdP2){
+          ctx.strokeStyle='rgba(255,122,34,'+(.52+.34*_rdPulse)+')';ctx.lineWidth=(e._roadieShieldFlash||0)>0?6:3;
+          ctx.beginPath();ctx.arc(_rdDrawX,_rdDrawY,e.r*.36,0,Math.PI*2);ctx.stroke();
+        }
+      }
+      if((e._roadieSlamCharge||0)>0){
+        ctx.save();ctx.rotate(e._roadieSlamAngle||0);ctx.setLineDash([14,9]);ctx.strokeStyle='rgba(255,173,79,'+(.62+.3*_rdPulse)+')';ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(e.r*.55,0);ctx.lineTo(Math.max(W,H)*1.45,0);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      }
+      if(e.flashTimer>0){ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.42;ctx.fillStyle='#fff';ctx.fillRect(-_rdW/2,-_rdH/2,_rdW,_rdH);}
+      ctx.restore();continue;
+    }
     // ── HERALD render ──
     if(e.isHerald){
       var _hpPct=e.hp/e.maxHp;
@@ -34722,7 +35181,7 @@ function showLU(){
   var _buildProgress=_galaxyTarget>0?' · GALAXY BUILD '+getGalaxyCardPicks(G.galaxy)+' / '+_galaxyTarget:'';
   panel.querySelector('.sub').textContent='SELECT AN EXPEDITION UPGRADE'+_buildProgress;
   var uc=document.getElementById('uc');uc.innerHTML='';
-  var _numChoices=pRank('p_xp')>=25?4:3;
+  var _numChoices=pRank('p_xp')>=10?4:3;
   // Filter out maxed upgrades, unowned beam upgrades, and ultimates that have
   // not reached their authored galaxy yet.
   var available=UPGRADES.filter(function(u){
@@ -35629,7 +36088,7 @@ function tryResurrect(){
       var _hbfEl=document.getElementById('bf2');
       var _hbblEl=document.getElementById('bbl');
       if(_herald2&&_hbfEl) _hbfEl.style.width=Math.max(0,_herald2.hp/_herald2.maxHp*100)+'%';
-      if(_herald2&&_hbblEl) _hbblEl.innerHTML='THE GERMINAL | '+Math.ceil(Math.max(0,_herald2.hp)).toLocaleString()+' / '+_herald2.maxHp.toLocaleString();
+      if(_herald2&&_hbblEl) _hbblEl.innerHTML=(_herald2.isMachineWarden?'SALVAGE WARDEN':(_herald2.isMeteorRoadie?'THE ROADIE':'THE GERMINAL'))+' | '+Math.ceil(Math.max(0,_herald2.hp)).toLocaleString()+' / '+_herald2.maxHp.toLocaleString();
     } else {
       if(_el_bb) _el_bb.style.display='none';
       if(_el_sm) _el_sm.style.display=(G.galaxy||0)===7?'none':'block';
@@ -36883,6 +37342,9 @@ function _initDevRoomDock(){
         G.killsForBoss=51; G._szBossSpawned=false; G.enemies=[];
         setBossCheckpoint('main',50);
         fmsg('DEV: SENTINEL PRIME INCOMING','#4488ff');
+      } else if(boss==='mr'){
+        spawnMeteorRoadie(G,G.player,Math.floor(getEffectiveBossKillRequirement(3)*.5));
+        fmsg('DEV: THE ROADIE SPAWNED','#ffad4f');
       } else if(boss==='gh'){
         var _hDef=GALAXY_BOSSES[Math.min(G.galaxy||0,GALAXY_BOSSES.length-1)];
         var _hHp=Math.round(_hDef.baseHp*0.2),_hA=Math.random()*Math.PI*2;
@@ -36978,7 +37440,7 @@ function _openDevEnemySpawner(bossOnly){
       {name:'VOID TANK',           fn:function(x,y){var gd=(GALAXIES[2]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:28,color:'#882244',hp:Math.round((350+G.wave*70)*gd),maxHp:Math.round((350+G.wave*70)*gd),dmg:Math.round(35*gd),spd:Math.min(65,20+G.wave*2)*gd,xpVal:22,aiType:'tank',isVoidTank:true,_reflectWindow:0,_reflectCd:5,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:4,galaxy:3});}}
     ]},
     {galaxy:3,label:'G4  BIO-NEBULA',color:'#39ff14',enemies:[
-      {name:'JELLY DRIFTER',    fn:function(x,y){var gd=(GALAXIES[3]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:14,color:'#66ff99',hp:Math.round((40+G.wave*12)*gd),maxHp:Math.round((40+G.wave*12)*gd),dmg:Math.round(10*gd),spd:Math.min(140,55+G.wave*4)*gd,xpVal:5,aiType:'chase',isJelly:true,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:4,_poisonTrailT:0});}},
+      {name:'JELLY DRIFTER',    fn:function(x,y){var gd=(GALAXIES[3]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:14,color:'#66ff99',hp:Math.round((40+G.wave*12)*gd),maxHp:Math.round((40+G.wave*12)*gd),dmg:Math.round(10*gd),spd:Math.min(560,220+G.wave*16)*gd,xpVal:5,aiType:'chase',isJelly:true,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:0,galaxy:4,_poisonTrailT:0});}},
       {name:'TOXIC VOIDCRAB',   fn:function(x,y){var gd=(GALAXIES[3]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:17,color:'#44cc66',hp:Math.round((90+G.wave*22)*gd),maxHp:Math.round((90+G.wave*22)*gd),dmg:Math.round(16*gd),spd:Math.min(180,70+G.wave*5)*gd,xpVal:10,aiType:'chase',isToxicCrab:true,armor:0.2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:1,galaxy:4});}},
       {name:'VENOMOUS SPITTER', fn:function(x,y){var gd=(GALAXIES[3]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:13,color:'#88ff44',hp:Math.round((70+G.wave*18)*gd),maxHp:Math.round((70+G.wave*18)*gd),dmg:Math.round(14*gd),spd:Math.min(120,45+G.wave*3)*gd,xpVal:12,aiType:'kite',isVenomSpitter:true,shoots:true,shootCd:2.2,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:2,galaxy:4});}},
       {name:'BLOATED HIVEBUG',  fn:function(x,y){var gd=(GALAXIES[3]||GALAXIES[0]).diff;G.enemies.push({x:x,y:y,r:22,color:'#aaff66',hp:Math.round((180+G.wave*40)*gd),maxHp:Math.round((180+G.wave*40)*gd),dmg:Math.round(20*gd),spd:Math.min(80,28+G.wave*2)*gd,xpVal:18,aiType:'chase',isHivebug:true,flashTimer:0,frozen:0,isBoss:false,spinAngle:0,shootTimer:0,typeIdx:3,galaxy:4,_sporeT:0,_sporeCd:5+Math.random()*3});}},
@@ -37495,6 +37957,9 @@ function _openDevPanelInner(panel, content){
 
   // ── PROGRESSION SECTION ──
   var progRows=[
+    devRow('RESET RANK + TEMP CARDS','#ffcc44',function(){
+      if(devResetRankAndTempCards())openDevPanel();
+    }),
     devRow('UNLOCK ALL GALAXIES','#00f5ff',function(){
       for(var gi=0;gi<GALAXIES.length;gi++) markGalaxyVisited(gi);
       fmsg('DEV: ALL GALAXIES UNLOCKED','#00f5ff');
@@ -37690,6 +38155,13 @@ function _openDevPanelInner(panel, content){
     devToggleRow('PLAYER ATTACKS','#ffcc44',
       function(){return !G||!G.running?true:!G._devPlayerAttacksDisabled;},
       function(on){setDevPlayerAttacksEnabled(on);fmsg('DEV: PLAYER ATTACKS '+(on?'ON':'OFF'),'#ffcc44');},true),
+    devRow('SPAWN THE ROADIE','#ffad4f',function(){
+      if(!G||!G.running){fmsg('START A RUN FIRST','#ffad4f');panel.style.display='none';return;}
+      G.enemies=G.enemies.filter(function(e){return !e.isBoss&&!e.isHerald;});G.bullets=[];
+      G.bossAlive=false;G._heraldAlive=false;G._heraldFought=false;
+      spawnMeteorRoadie(G,G.player,Math.floor(getEffectiveBossKillRequirement(3)*.5));
+      panel.style.display='none';
+    }),
     devRow('SPAWN PICKUP BUFF...','#bb88ff',function(){
       if(!G||!G.running){fmsg('START A RUN FIRST','#bb88ff');panel.style.display='none';return;}
       var sub=document.createElement('div');
@@ -42311,7 +42783,7 @@ function rebuildMainMenu(){
     +'<div class="cmdFooter"><span class="cmdVersion">BUILD v0.9.60 · KEY CACHE</span><button class="btn cmdDev" id="menuDevBtn" aria-label="Dev Mode"><img class="cmdButtonArt" src="assests/images/menu/button-dev-mode-v1.png" alt="" draggable="false"><span class="cmdLiveLabel">DEV MODE</span></button></div>'
     +'<div id="presCount" style="display:none"></div><div id="mcd" style="display:none"></div><button id="menuResetBtn" style="display:none"></button>';
   ov.style.display='flex';
-  var _redlineBuildLabel=ov.querySelector('.cmdVersion');if(_redlineBuildLabel)_redlineBuildLabel.textContent='BUILD v0.9.66 - SYMMETRIC FRAME';
+  var _redlineBuildLabel=ov.querySelector('.cmdVersion');if(_redlineBuildLabel)_redlineBuildLabel.textContent='BUILD v0.9.78 - JELLY BLITZ';
   showMainMenu();playMenuMusic();
   k0InitMenu();
   updatePrestigeUI();
